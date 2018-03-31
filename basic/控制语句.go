@@ -13,7 +13,7 @@ func main() {
 		if b == 200*2 {
 			/* if 条件语句为 true 执行 */
 			fmt.Printf("a 的值为 100 ， b 的值为 200\n")
-		} else {
+		} else { //else不能换行
 			fmt.Printf("a 的值为 100 ， b 的值为 400\n")
 		}
 	} else {

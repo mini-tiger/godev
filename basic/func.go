@@ -26,7 +26,7 @@ func max(num1 int, num2 int) int { //num1 num2 指定类型，  int 返回的类
 	if num1 > num2 {
 		result = num1
 		return result
-	} else {
+	} else { //else不能换行
 		result = num2
 		return result
 	}
