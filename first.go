@@ -37,10 +37,12 @@ func main() {
 
 	fmt.Println(int(e), i, err)
 
+	fmt.Println(*new(int))
+
 }
 
 func zhizhen(x *string, y *string) {
-	fmt.Println(*x, *y)
+	fmt.Println(x, y, *x, *y)
 	temp := *x
 	*x = *y
 	*y = temp

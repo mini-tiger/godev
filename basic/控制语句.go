@@ -21,21 +21,52 @@ func main() {
 	}
 	fmt.Printf("a 值为 : %d\n", a)
 	fmt.Printf("b 值为 : %d\n", b)
+
 	switch_ex()
+	switch_ex1()
 	switch_type_ex()
 	select_ex()
 }
-
-func switch_ex() {
+func switch_ex1() {
 	/* 定义局部变量 */
 	var grade string = "B"
+	var marks int = 91
+
+	switch {
+	case marks > 90:
+		grade = "A"
+	case marks > 80:
+		grade = "B"
+	default:
+		grade = "D"
+	}
+
+	switch {
+	case grade == "A":
+		fmt.Printf("优秀!\n")
+	case grade == "B", grade == "C":
+		fmt.Printf("良好\n")
+	case grade == "D":
+		fmt.Printf("及格\n")
+	case grade == "F":
+		fmt.Printf("不及格\n")
+	default:
+		fmt.Printf("差\n")
+	}
+	fmt.Printf("你的等级是 %s\n", grade)
+}
+func switch_ex() {
+	/* 定义局部变量 */
+	var grade string = "D"
 	var marks int = 90
 
 	switch marks {
 	case 90:
 		grade = "A"
+		fallthrough //使用fallthrough强制执行后面的case代码，无论下一条结果是否为true
 	case 80:
-		grade = "B"
+		grade = "B" //每个都需要fallthough 往下
+		// fallthrough
 	case 50, 60, 70:
 		grade = "C"
 	default:
@@ -45,7 +76,7 @@ func switch_ex() {
 	switch {
 	case grade == "A":
 		fmt.Printf("优秀!\n")
-	case grade == "B", grade == "C":
+	case grade == "B", grade == "C": //or 有一个true
 		fmt.Printf("良好\n")
 	case grade == "D":
 		fmt.Printf("及格\n")
