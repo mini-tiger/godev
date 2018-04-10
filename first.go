@@ -10,7 +10,26 @@ const (
 	gb = "gb"
 )
 
+type nameer interface {
+	call()
+}
+
+type pp struct {
+	a int
+}
+
+func (p *pp) call() {
+
+	fmt.Println(p.a)
+}
+
 func main() {
+	var n nameer
+	var p1 pp
+	p1.a = 1
+	n = &p1
+	n.call()
+
 	a, b := 1, 2
 	fmt.Println(a, b)
 	if check(a, b) {
