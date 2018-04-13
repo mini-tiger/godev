@@ -1,5 +1,11 @@
 package main
 
+/*
+string 不可变
+btye可变
+
+*/
+
 import (
 	. "fmt"
 	"strings"

@@ -1,5 +1,10 @@
 package main
 
+/*
+string 不可变
+btye可变
+
+*/
 import (
 	"bytes"
 	. "fmt"
@@ -7,7 +12,7 @@ import (
 
 func main() {
 	var a [10]byte = [10]byte{1, 2, 3}
-	Printf("%d\n", a)
+	Printf("%d %[1]T\n", a)
 	// 将数组a转换为切片
 	b := a[:]
 	// 去除切片尾部的所有0

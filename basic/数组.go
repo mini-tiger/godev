@@ -4,7 +4,7 @@ import "fmt"
 
 func main() {
 
-	// b := []int{1, 2}   //type []int 长度空
+	// b := []int{1, 2}   //type []int slice 长度空
 	balance := [2]int{1, 2} // type [2]int， 长度固定
 	bl := [...]int{99: -1}  //第99元素指定，其它不指定默认是0
 
@@ -13,7 +13,7 @@ func main() {
 
 	/*
 		[...]int(1,2) 效果不一样,没有指定长度，则根据给的数据, type [2]int
-		[]空这种方式，只能用在类型定义处
+		[]int{}空这种方式，只能用在类型定义处,slice
 
 	*/
 	// fmt.Println(balance) // [0 0] 不指定默认元素是0
