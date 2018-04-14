@@ -19,7 +19,7 @@ func main() {
 
 	// var v []int = make([]int, 0)
 	v := make([]int, 0)
-	fmt.Println(*p, p, v)
+	fmt.Println(*p, p, v) //[] &[] []
 
 	vv := make([]int, 2)
 	vv[0] = 1
