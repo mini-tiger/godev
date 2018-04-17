@@ -31,4 +31,10 @@ func main() {
 
 	Printf("%q\n", bytes.Split([]byte("a man a plan a canal panama"), []byte("a "))) //["" "man " "plan " "canal panama"]
 	Printf("[%q]\n", bytes.Trim([]byte(" !!! Achtung! Achtung! !!! "), "! "))
+	Printf("%s\n", bytes.Map(func(s rune) rune {
+		if s == 'h' || s == 'd' {
+			return 'a'
+		}
+		return s
+	}, []byte("helloworld"))) //aelloworla
 }

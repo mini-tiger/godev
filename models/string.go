@@ -32,7 +32,7 @@ func main() {
 	Printf("%q\n", strings.Split("a,b,c", ",")) //切分
 
 	Println(strings.Trim(s, ";")) //删除前后
-
+	Println(strings.Map(func(s rune) rune { return s + 1 }, "hello"))
 	str := "hello roc"
 	bytes := []byte(str)
 	bytes[1] = 'a'

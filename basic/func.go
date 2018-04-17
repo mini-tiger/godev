@@ -2,8 +2,14 @@ package main
 
 import "fmt"
 import (
+	"bytes"
 	"math"
+	"strings"
 )
+
+func luo() (i int, s string) {
+	return // 不用写 i,s
+}
 
 func main() {
 	/* 定义局部变量 */
@@ -16,6 +22,8 @@ func main() {
 	fmt.Printf("max : %d \n", ret)
 	lambda_ex()
 	zhizhen()
+	i, s := luo()     //裸返回
+	fmt.Println(i, s) //0     i 0是默认值  s是空
 }
 
 /* 函数返回两个数的最大值 */
@@ -32,6 +40,10 @@ func max(num1 int, num2 int) int { //num1 num2 指定类型，  int 返回的类
 	}
 }
 
+func lambda(s rune) rune {
+	return s + 1
+}
+
 func lambda_ex() {
 
 	/* 声明函数变量 */
@@ -41,6 +53,17 @@ func lambda_ex() {
 
 	/* 使用函数 */
 	fmt.Println(getSquareRoot(8))
+
+	fmt.Printf("%s\n", bytes.Map(func(s rune) rune {
+		if s == 'h' || s == 'd' {
+			return 'a'
+		}
+		return s
+	}, []byte("helloworld"))) //aelloworla
+
+	fmt.Println(strings.Map(func(s rune) rune { return s + 1 }, "hello"))
+
+	fmt.Println(strings.Map(lambda, "hello")) //ifmmp
 
 }
 
