@@ -7,7 +7,7 @@ import (
 
 //!+main
 func bigSlowOperation() int {
-	defer trace("bigSlowOperation") // don't forget the extra parentheses
+	defer trace("bigSlowOperation")() // don't forget the extra parentheses
 	// ...lots of work...
 	time.Sleep(2 * time.Second) // simulate slow operation by sleeping
 	return 1

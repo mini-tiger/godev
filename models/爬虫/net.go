@@ -42,6 +42,7 @@ func main() {
 // response as HTML, and extracts and returns the links.
 func findLinks(url string) ([]string, error) {
 	resp, err := http.Get(url)
+	fmt.Println(resp.Header.Get("Content-Type"))
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,7 @@ import (
 	e "./ex"
 	"fmt"
 	"os"
-	// "path"
+	"path"
 	"path/filepath"
 )
 
@@ -28,7 +28,7 @@ import (
 
 func main() {
 	// a,b=os.getwd()
-	fmt.Println(os.Args[0])
+	fmt.Println(os.Args[0]) //执行文件
 	fmt.Println(os.Executable())
 	var file string = "1.txt"
 	// fmt.Println(file)
@@ -38,7 +38,10 @@ func main() {
 	} else {
 		fmt.Printf("create %s \n", f)
 		os.Create(f)
+		ff := path.Join("aaaaa", f)
+		os.MkdirAll(ff, 0755) //递归建立
 		fmt.Println(filepath.Abs(f))
+		fmt.Println(filepath.Abs(ff))
 	}
 	// a, err := os.Open("1.txt")
 	// fmt.Println(*a, err)

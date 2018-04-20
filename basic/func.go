@@ -8,7 +8,17 @@ import (
 )
 
 func luo() (i int, s string) {
-	return // 不用写 i,s
+	return // 不用写 i,s，裸返回
+}
+
+func long(aa ...int) {
+	fmt.Printf("%T,%[1]v\n", aa) //[]int,[1 2 2]
+
+}
+
+func long1(aa ...interface{}) { //可接受任意值
+	fmt.Printf("%T,%[1]v\n", aa) //[]interface {},[1]
+
 }
 
 func main() {
@@ -24,6 +34,17 @@ func main() {
 	zhizhen()
 	i, s := luo()     //裸返回
 	fmt.Println(i, s) //0     i 0是默认值  s是空
+
+	long(1, 2, 2) //[]int,[1 2 2]  可变长函数
+
+	long1(1)
+	long1("11")
+	long1([]int{2, 2})
+	/*
+	[]interface {},[1]
+	[]interface {},[11]
+	[]interface {},[[2 2]]
+	*/
 }
 
 /* 函数返回两个数的最大值 */
