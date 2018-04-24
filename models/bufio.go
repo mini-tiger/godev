@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	// "bytes"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,6 +23,10 @@ func (c *ByteCounter) Write(p []byte) (int, error) {
 //!-bytecounter
 
 func main() {
+	var b bytes.Buffer // A Buffer needs no initialization.
+	b.Write([]byte("Hello "))
+	fmt.Fprintf(&b, "world!\n")
+	b.WriteTo(os.Stdout)
 
 	contents, err := ioutil.ReadFile("111")
 	fmt.Println(strings.Count(string(contents), "\n")) //一共几行
