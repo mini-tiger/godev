@@ -57,6 +57,7 @@ func main() {
 	fmt.Println(int(e), i, err)
 
 	fmt.Println(*new(int))
+	fmt.Println("ab" < "abc")
 
 }
 

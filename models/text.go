@@ -5,6 +5,9 @@ import (
 	"strings"
 	"text/template" //模板类似 jinja  if range for 等查看徇私文档
 	//template.ParseFiles 文件模板方法
+	"fmt"
+	"sort"
+	"text/tabwriter"
 )
 
 type Px struct {
@@ -15,9 +18,13 @@ type Px struct {
 }
 
 func main() {
+	//模板打印
 	sample()
 	struct_ex()
 	func_ex()
+	//tabwriter打印
+	tabwriter_ex()
+
 }
 
 func sample() {
@@ -84,4 +91,40 @@ func func_ex() {
 	}
 	tmpl.Execute(os.Stdout, sp)
 
+}
+
+type s1 struct {
+	age, hight int
+	name, sex  string
+}
+
+var sample111 = []*s1{
+	{11, 150, "wang", "boy"},
+	{12, 147, "li", "girl"},
+	{11, 152, "zhnag", "boy"},
+}
+
+type byage []*s1
+
+func (b byage) Len() int           { return len(b) }
+func (b byage) Less(x, y int) bool { return b[x].age < b[y].age }
+func (b byage) Swap(x, y int)      { b[x].age, b[y].age = b[y].age, b[x].age }
+
+func tabwriter_ex() {
+	fmt.Println()
+	printTracks(sample111)
+	sort.Sort(byage(sample111)) //排序
+	fmt.Println()
+	printTracks(sample111)
+}
+
+func printTracks(tracks []*s1) {
+	const format = "%v\t%v\t%v\t%v\t\n"
+	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0) //https://studygolang.com/pkgdoc
+	fmt.Fprintf(tw, format, "age", "hight", "name", "sex")
+	fmt.Fprintf(tw, format, "-----", "------", "-----", "----")
+	for _, t := range tracks {
+		fmt.Fprintf(tw, format, t.age, t.hight, t.name, t.sex)
+	}
+	tw.Flush() // calculate column widths and print table
 }

@@ -19,6 +19,7 @@ func (n *Phone_instance) call(ex int) {
 }
 
 func main() {
+
 	var tjphone Phone
 
 	tjphone = &Phone_instance{"tj", 600, "nokia"} //内存地址给n，

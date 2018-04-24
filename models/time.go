@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 )
@@ -23,4 +24,10 @@ func trace(msg string) func() {
 
 func main() {
 	log.Println(bigSlowOperation())
+
+	seconds := 10
+	fmt.Print(time.Duration(seconds)*time.Minute, "\n") // 打印 10m0s,单位time.Duration(seconds)
+	d, _ := time.ParseDuration("3m10s")
+	fmt.Printf("%T,%[1]v\n", d)
+	fmt.Println(d.Seconds())
 }
