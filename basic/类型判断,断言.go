@@ -28,13 +28,43 @@ func main() {
 	*/
 	s := "BrainWu"
 	if v, ok := interface{}(s).(string); ok {
-		fmt.Println(v)
+		fmt.Println(v) //BrainWu
 	}
-	panduan()
-	pd_interface()
+
+	// 	pd_interface()
 	tt()
+	/*
+	第二种，如果断言的类型T是一个接口类型，类型断言x.(T)检查x的动态类型是否满足T接口。
+
+	如果这个检查成功，则检查结果的接口值的动态类型和动态值不变，但是该接口值的类型被转换为接口类型T。换句话说，对一个接口类型的类型断言改变了类型的表述方式，改变了可以获取的方法集合（通常更大），但是它保护了接口值内部的动态类型和值的部分。
+	如果检查失败，接下来这个操作会抛出panic，除非用两个变量来接收检查结果，如：f, ok := w.(io.ReadWriter)
+
+	*/
+	type Element interface{}    //接口类型
+	var e Element = 100         //第一种，如果断言的类型T是一个具体类型，类型断言x.(T)就检查x的动态类型是否和T的类型相同。
+	fmt.Println(type_switch(e)) //100
 }
 
+func type_switch(x interface{}) string {
+	switch x := x.(type) {
+	case nil:
+		return "null"
+	case int, uint:
+		return fmt.Sprintf("%d", x)
+	case bool:
+		if x {
+			return "TRUE"
+		}
+	case string:
+		return x //在调用 实际函数前面， any(x)
+	default:
+		panic(fmt.Sprintf("type: %T,value: %[1]v", x))
+
+	}
+	return "1"
+}
+
+/*												*/
 type name interface {
 	name11() string
 }
@@ -49,34 +79,20 @@ func (nn n) name11() string {
 }
 
 func (nn n) name22() {
-	fmt.Println("1")
+	fmt.Println("tt")
 }
 
 func tt() {
-	//接口name,name1，
+	//接口name,name1，方法都与 结构体n绑定
 	var n1 name
 	n1 = n{}
 
 	if f, ok1 := n1.(n); ok1 {
 		fmt.Printf("%T %s\n", f, f.name11())
 	}
-	if f, ok2 := n1.(name1); ok2 {
+	if f, ok2 := n1.(name1); ok2 { //同一 结构体绑定的接口， 转换为另一 接口
 		f.name22()
 
-	}
-}
-
-type Element interface{}
-
-func panduan() {
-	var e Element = 100
-	switch value := e.(type) {
-	case int:
-		fmt.Println("int", value)
-	case string:
-		fmt.Println("string", value)
-	default:
-		fmt.Println("unknown", value)
 	}
 }
 
