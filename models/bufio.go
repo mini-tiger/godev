@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	// "path/filepath"
@@ -55,4 +56,14 @@ func main() {
 
 	}
 	fmt.Println(rw) //一共几个单词
+
+	input := bufio.NewScanner(os.Stdin) //需要命令行 待输入
+	// fmt.Println(input)
+	for input.Scan() {
+		fmt.Println(input.Text())
+
+	}
+	if err := input.Err(); err != nil {
+		log.Fatal(err)
+	}
 }

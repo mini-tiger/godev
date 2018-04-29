@@ -7,7 +7,9 @@ btye可变
 */
 
 import (
+	"fmt"
 	. "fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -37,4 +39,13 @@ func main() {
 	bytes := []byte(str)
 	bytes[1] = 'a'
 	str = string(bytes) //str == "hallo roc  改变字符串中的某些字符
+
+	fmt.Println(ImageFile("abc.jpg"))
+
+}
+
+func ImageFile(infile string) string {
+	ext := filepath.Ext(infile)                                 // e.g., ".jpg", ".JPEG" 提取扩展名
+	outfile := strings.TrimSuffix(infile, ext) + ".thumb" + ext // 删除扩展名 在 拼接字符串
+	return outfile
 }

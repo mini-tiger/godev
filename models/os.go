@@ -2,7 +2,9 @@ package main
 
 import (
 	e "./ex"
+	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,6 +28,20 @@ import (
 // 	return false
 // }
 
+/*
+C:\godev\models>go run os.go
+C:\Users\ADMINI~1\AppData\Local\Temp\go-build492234478\command-line-arguments\_obj\exe\os.exe
+C:\Users\ADMINI~1\AppData\Local\Temp\go-build492234478\command-line-arguments\_obj\exe\os.exe <nil>
+文件: C:\godev\models/1.txt 存在
+remove 1.txt
+
+j
+j
+k
+k
+
+*/
+
 func main() {
 	// a,b=os.getwd()
 	fmt.Println(os.Args[0]) //执行文件
@@ -46,4 +62,13 @@ func main() {
 	// a, err := os.Open("1.txt")
 	// fmt.Println(*a, err)
 
+	input := bufio.NewScanner(os.Stdin) //需要命令行 输入
+	// fmt.Println(input)
+	for input.Scan() {
+		fmt.Println(input.Text())
+
+	}
+	if err := input.Err(); err != nil {
+		log.Fatal(err)
+	}
 }

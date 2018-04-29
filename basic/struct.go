@@ -5,7 +5,7 @@ import (
 )
 
 type Point struct { //定义,名字，变量名要大写，否则不能导出
-	X, Y int
+	X, Y int //tag 用在json
 	S    string
 }
 

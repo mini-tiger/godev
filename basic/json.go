@@ -7,7 +7,7 @@ import (
 
 // Product 商品信息
 type Product struct {
-	Name      string `json:"name,omitempty"`
+	Name      string `json:"name,omitempty"`       //tag
 	ProductID int64  `json:"product_id,omitempty"` //omitempy，可以在序列化的时候忽略0值或者空值
 	Number    int    `json:"-"`                    //tag  标签，json不序列化 此项
 	Price     float64

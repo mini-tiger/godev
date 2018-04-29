@@ -2,110 +2,67 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
-const (
-	ga = 10
-	gb = "gb"
-)
-
-type nameer interface {
-	call()
+type name interface {
+	Print()
 }
 
-type pp struct {
-	a int
+type sll struct {
+	i int
 }
 
-func (p *pp) call() {
+func (ss *sll) Print() {
+	fmt.Println(ss.i * ss.i)
+}
 
-	fmt.Println(p.a)
+func put(sa chan<- []int) {
+	s := []int{}
+	//加入一个接口调用
+	var n name
+	var sn sll
+	//
+	for i := 0; i < 3; i++ {
+		for x := 0; x < 100; x++ {
+			//加入一个接口调用
+			sn.i = x
+			n = &sn
+			n.Print()
+			//
+			s = append(s, x)
+
+		}
+		sa <- s
+		s = []int{} //清空
+	}
+	close(sa)
+}
+
+func jisuan(sa <-chan []int, sa1 chan<- int) {
+	for x := range sa { //遍历channel
+		s := 0
+		for _, v := range x { //遍历切片
+			s += v
+		}
+		sa1 <- s
+	}
+	close(sa1)
+}
+func tt() {
+	var (
+		sa  = make(chan []int)
+		sa1 = make(chan int)
+	)
+
+	go put(sa)
+	go jisuan(sa, sa1)
+	for x := range sa1 {
+		fmt.Println(x)
+
+	}
+
 }
 
 func main() {
-	var n nameer
-	var p1 pp
-	p1.a = 1
-	n = &p1
-	n.call()
-
-	a, b := 1, 2
-	fmt.Println(a, b)
-	if check(a, b) {
-		fmt.Printf("this is true \n")
-	} else {
-		fmt.Printf("this is false \n")
-	}
-
-	var arr = []int{1, 2, 3, 4, 5}
-	arr2 := [][]int{{1, 2}, {1, 2}}
-	xunhuan(arr, arr2)
-	gg()
-
-	c := "33"
-	d := "ss"
-	zhizhen(&c, &d)
-	fmt.Println(c, d)
-
-	//类型转换
-	e := 3.0
-	f := "4"
-
-	i, err := strconv.Atoi(f)
-
-	fmt.Println(int(e), i, err)
-
-	fmt.Println(*new(int))
-	fmt.Println("ab" < "abc")
-
-}
-
-func zhizhen(x *string, y *string) {
-	fmt.Println(x, y, *x, *y)
-	temp := *x
-	*x = *y
-	*y = temp
-
-}
-
-func check(a, b int) bool {
-	if a > 1 {
-		return true
-
-	} else {
-		return false
-	}
-
-}
-
-func xunhuan(args []int, args2 [][]int) {
-	//一维数组
-	for i := 0; i < len(args); i++ {
-		fmt.Printf("this is index %d ,value %d \n", i, args[i])
-
-	}
-	//二维数组
-	for i := 0; i < len(args2); i++ {
-
-		for j := 0; j < len(args2[i]); j++ {
-			fmt.Print(args2[i][j])
-
-		}
-		fmt.Println()
-
-	}
-
-}
-
-func gg() {
-	if ga >= 10 {
-		for i := 0; i < 10; i++ {
-			fmt.Println(i)
-
-		}
-	} else {
-		fmt.Println("小于10 ")
-	}
-
+	tt()
 }
