@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	// "github.com/golang/net/html"
+	//pag 188
 )
 
 func visit(links []string, n *html.Node) []string {

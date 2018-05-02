@@ -8,6 +8,14 @@ func main() {
 	var b int = 200
 
 	/* 判断条件 */
+loop:
+	for i := 0; i < 10; i++ {
+		if i > 2 {
+			break loop
+		}
+		fmt.Printf("%v", i) //012
+	}
+
 	if a == 100*1.1 {
 		/* if 条件语句为 true 执行 */
 		if b == 200*2 {

@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	// "time"
+	"io/ioutil"
+	"log"
 )
 
 type name interface {
@@ -64,5 +67,22 @@ func tt() {
 }
 
 func main() {
-	tt()
+	// tt()
+	// c := time.NewTicker(3 * time.Second)
+	// fmt.Printf("%d\n", 1)
+	// fmt.Println(<-c.C)
+	files, err := ioutil.ReadDir("c:/godev")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			_, b := ioutil.ReadDir(file.Name())
+			fmt.Println()
+		} else {
+			fmt.Printf("%s\n", file.Name())
+		}
+	}
+	// fmt.Println(a)
 }
