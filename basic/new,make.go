@@ -24,4 +24,8 @@ func main() {
 	vv := make([]int, 2)
 	vv[0] = 1
 	fmt.Println(vv)
+
+	var x []int
+
+	fmt.Println(x)
 }
