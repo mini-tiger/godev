@@ -3,6 +3,7 @@ package main
 import (
 	b "bao_demo"
 	b1 "bao_demo/bao1"
+	_ "bao_demo/bao2"
 	. "fmt"
 )
 
@@ -15,4 +16,5 @@ func main() {
 	Println(b.T1(x))
 	Println(b.AA)
 	Println(b1.CC)
+
 }

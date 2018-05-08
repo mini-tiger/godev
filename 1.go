@@ -2,36 +2,63 @@ package main
 
 import (
 	"fmt"
+	// "sync"
+	"runtime"
 	"time"
 )
 
-//!+
-func counter(put chan<- int) {
-	for x := 0; x < 10000; x++ {
-		put <- x
-	}
-	time.Sleep(1 * time.Second)
-	close(put)
-}
+// var n sync.WaitGroup
+func sss1(ss1 chan<- int) {
+	// n.Add(1)
+	for i := 0; i < 10000000; i++ {
 
-func squarer(put chan<- int, pop <-chan int) {
-	for v := range pop {
-		put <- v * v
-	}
-	close(put)
-}
+		if i%2 == 0 && i%3 == 0 {
+			ss1 <- i
+		}
+		// ss2 <- ss1
+		// fmt.Println(<-ss2)
 
-func printer(pop <-chan int) {
-	for v := range pop {
-		fmt.Println(v)
 	}
+	// n.Done()
 }
-
+func sss2(ss2 chan<- int) {
+	// n.Add(1)
+	for i := 0; i < 10000000; i++ {
+		if i%2 == 0 && i%3 == 0 {
+			// fmt.Println(i)
+			ss2 <- i
+		}
+		// fmt.Println(<-ss1)
+	}
+	// n.Done()
+}
 func main() {
-	naturals := make(chan int)
-	squares := make(chan int)
+	runtime.GOMAXPROCS(2)
+	fmt.Println(runtime.GOOS, runtime.GOARCH)
+	// var s1 chan int = make(chan int)
+	// var s2 chan int = make(chan int)
+	// // s2 <- "s2"
+	// go sss1(s1)
+	// // go func(ss1 chan int) {
+	// // 	for i := 0; i < 100; i++ {
 
-	go counter(naturals)
-	go squarer(squares, naturals)
-	printer(squares)
+	// // 		fmt.Println(<-ss1)
+	// // 	}
+	// // }(s1)
+	// go func() {
+	// 	for {
+
+	// 		fmt.Println(<-s1, <-s2)
+	// 	}
+	// }()
+	// go sss2(s2)
+
+	// // n.Wait()
+	// time.Sleep(5 * time.Second)
+	for a := 0; a < 10; a++ {
+		go fmt.Print(0)
+		time.Sleep(time.Second * 1)
+		fmt.Print(1)
+	}
+
 }
