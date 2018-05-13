@@ -50,3 +50,13 @@ func TestIntSet_Has(t *testing.T) {
 		t.Error("Has Fail")
 	}
 }
+
+func BenchmarkIntSet_Add(b *testing.B) {
+	for i:=0;i<b.N ;i++  {
+		var (
+			x IntSet
+		)
+		x.Add(1)
+
+	}
+}
