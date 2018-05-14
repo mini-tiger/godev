@@ -37,6 +37,15 @@ func main() {
 	create(&bl)
 	appen()
 	del()
+	//key 类型
+	type Key struct {
+		Path, Country string
+	}
+	m := map[Key]int{
+		Key{"1", "2"}: 11,
+		Key{"2", "3"}: 12,
+	}
+	fmt.Println(m)
 }
 func create(sl *[6]int) {
 	fmt.Printf("%v,%[1]T \n", (*sl)[:]) //指针创建

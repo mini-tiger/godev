@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	// "sync"
-	"runtime"
-	"time"
+	"io"
+	"os"
+	"reflect"
+	// "runtime"
+	// "time"
 )
 
 // var n sync.WaitGroup
@@ -33,8 +36,8 @@ func sss2(ss2 chan<- int) {
 	// n.Done()
 }
 func main() {
-	runtime.GOMAXPROCS(2)
-	fmt.Println(runtime.GOOS, runtime.GOARCH)
+	// runtime.GOMAXPROCS(2)
+	// fmt.Println(runtime.GOOS, runtime.GOARCH)
 	// var s1 chan int = make(chan int)
 	// var s2 chan int = make(chan int)
 	// // s2 <- "s2"
@@ -55,10 +58,19 @@ func main() {
 
 	// // n.Wait()
 	// time.Sleep(5 * time.Second)
-	for a := 0; a < 10; a++ {
-		go fmt.Print(0)
-		time.Sleep(time.Second * 1)
-		fmt.Print(1)
-	}
+	// for a := 0; a < 10; a++ {
+	// 	go fmt.Print(0)
+	// 	time.Sleep(time.Second * 1)
+	// 	fmt.Print(1)
+	// }
+	t := reflect.TypeOf(3)
+	fmt.Println(t, t.String(), t.Size(), t.Kind())
+
+	var (
+		w io.Writer = os.Stdout
+	)
+	ww := reflect.TypeOf(w)
+	fmt.Println(ww)
+	fmt.Printf("%T\n", os.Stdout)
 
 }

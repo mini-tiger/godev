@@ -5,7 +5,7 @@ import (
 )
 
 type Phone interface {
-	call(ex int)
+	call(ex int) string
 }
 
 type Phone_instance struct {
@@ -14,8 +14,9 @@ type Phone_instance struct {
 	pinpai string
 }
 
-func (n *Phone_instance) call(ex int) {
+func (n *Phone_instance) call(ex int) string {
 	fmt.Printf("I am %s,myphone is %s,how much?, %d + %d !\n", n.name, n.pinpai, n.money, ex)
+	return "return this is call"
 }
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 	var tjphone Phone
 
 	tjphone = &Phone_instance{"tj", 600, "nokia"} //内存地址给n，
-	tjphone.call(2)                               //先传到interface
+	fmt.Println(tjphone.call(2))                  //先传到interface
 	//_____________________________________________________________
 	var ctphone Phone
 	var pp Phone_instance
@@ -47,7 +48,7 @@ func example1() {
 }
 
 type Phone_er interface {
-	call(ex int)
+	call(ex int) string
 	touch()
 }
 

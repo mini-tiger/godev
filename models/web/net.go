@@ -9,7 +9,7 @@ import (
 )
 
 //!+main
-
+//  反射  解析json :ch12 search
 func main() {
 	db := database{"shoes": 50, "socks": 5}
 	http.HandleFunc("/list", db.list)
