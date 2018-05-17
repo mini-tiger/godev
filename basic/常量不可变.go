@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"unsafe"
+	"strconv"
+	"./导出"
 )
 
 /*
@@ -10,7 +12,33 @@ http://www.runoob.com/go/go-constants.html
 
 */
 
+const (
+	a = 1  //iota 0, 小写不能导出
+	B	//1  大写可以导出,没有定义数值和上面a一样是1
+	C	//2
+	D = 'A'
+	_E = "123" //常量名下划线开头不能导出
+	f = len(_E)//必须是已内建函数
+	g = iota//iota 无论何时定义，都是从const本组内 0至当前的行位置 ，当前行位置6
+)
+
+const   (
+	aa,BB,CC=2,"b","c"
+	dd,EE,FF//同时定义3个，与上面数量一样，和上面一样 2 b c
+	GG=iota//当前行位置 2
+	//HH=len(导出.N)// 只能const 可以，var定义的变量不能 初始化的时候引用
+
+)
+
 func init() { // 最先执行的 函数
+	fmt.Println(a, B, C, D, _E, f, g)
+	fmt.Println(string(D))
+	fmt.Println(strconv.Itoa(D))
+
+	fmt.Println(aa,BB,CC,dd,EE,FF,GG)
+
+	fmt.Println(导出.GG)
+
 	const a int = 1
 
 	const (
