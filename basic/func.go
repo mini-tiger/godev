@@ -21,7 +21,29 @@ func long1(aa ...interface{}) { //可接受任意值
 
 }
 
+func chuanchan(a, b, c int) (i int) { //已经定义了i
+	fmt.Println(a, b, c) // 1,21,1
+	i = b
+	return //不用写返回的变量名，上面已经定义
+}
+func chuanchan1(a ...int) []int { //不定长可变参数,
+	fmt.Println(a) // [1 1 1]
+	return a
+}
+
+func chuanchan2(a ...int) int {
+	fmt.Printf("%T\n", a) // [2 3 4]
+	return a[1]
+}
 func main() {
+	//传递参数
+	i := chuanchan(1, 21, 1)  //1,21,1
+	fmt.Println(i)            //21
+	bc := chuanchan1(1, 1, 1) //
+	fmt.Println(bc)           //[1 1 1]
+	m := chuanchan2(2, 3, 4)
+	fmt.Println(m) //3
+
 	/* 定义局部变量 */
 	var a int = 100
 	var b int = 200
@@ -32,6 +54,7 @@ func main() {
 	fmt.Printf("max : %d \n", ret)
 	lambda_ex()
 	zhizhen()
+	fmt.Println("---------------------------------")
 	i, s := luo()     //裸返回
 	fmt.Println(i, s) //0     i 0是默认值  s是空
 
@@ -41,9 +64,9 @@ func main() {
 	long1("11")
 	long1([]int{2, 2})
 	/*
-	[]interface {},[1]
-	[]interface {},[11]
-	[]interface {},[[2 2]]
+		[]interface {},[1]
+		[]interface {},[11]
+		[]interface {},[[2 2]]
 	*/
 }
 

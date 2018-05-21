@@ -43,7 +43,59 @@ func ps2() (r int) {
 
 }
 
+func ex() {
+	fs := [3]func(){}
+	// fmt.Println(fs)
+	for i := 0; i < len(fs); i++ {
+		defer fmt.Println("defer i:", i) // 直接引用i ,则是i 每次值的 复制
+		defer func() {                   //在func内，引用外层 i变量的内存地址，i在for中被修改多次，最后会是3,3不满足i<len(fs) ,不执行坛坛循环体
+			fmt.Println("defer func i:", i)
+		}()
+		fs[i] = func() { fmt.Println("func fs i:", i) } //这里也是func内
+
+	}
+	for _, f := range fs {
+		f()
+	}
+
+}
+
+func ex1() {
+	fs := [3]func(){}
+	// fmt.Println(fs)
+	for i := 0; i < len(fs); i++ {
+		defer fmt.Println("defer i:", i) // 直接引用i ,则是i 每次值的 复制
+		defer func(i int) {
+			fmt.Println("defer func i:", i)
+		}(i)
+		fs[i] = func() { fmt.Println("func fs i:", i) } //这里也是func内
+
+	}
+	for _, f := range fs {
+		f()
+	}
+
+}
+
 func main() {
+	ex()
+	fmt.Println("-------------------------------------")
+	ex1()
+
+	/*
+		func fs i: 4
+		func fs i: 4
+		func fs i: 4
+		func fs i: 4
+		defer func i: 4
+		defer i: 3
+		defer func i: 4
+		defer i: 2
+		defer func i: 4
+		defer i: 1
+		defer func i: 4
+		defer i: 0
+	*/
 	fmt.Println(ps1(1))
 
 	/*

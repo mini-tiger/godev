@@ -28,4 +28,12 @@ func main() {
 	}()
 	time.Sleep(3 * time.Second)
 	l.Wait()
+
+	c := make(chan bool)
+	go func() {
+		// fmt.Println(1)
+		c <- true
+	}()
+
+	<-c
 }

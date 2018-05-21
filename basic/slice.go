@@ -2,6 +2,10 @@ package main
 
 import "fmt"
 
+// import (
+// 	"math/rand"
+// )
+
 /*
 slice 类似数组 部分数据的 别名
 
@@ -15,44 +19,67 @@ func main() {
 
 	fmt.Printf("%v,%[1]T ,%d\n", bl, len(bl)) // [0 0 0 0 0 -1],[6]int,   0到5  6个元素
 
-	bl1 := bl[1:3] //slice 指针指向第一个 引用数组的元素即 索引为1
+	// bl1 := bl[1:3]                                         //slice 指针指向数组bl， 引用数组的元素即 索引为1至2，左开右闭，
+	fmt.Printf("bl[1:]长度:%d\n", len(bl[1:]))               //索引 1,2,3,4,5
+	fmt.Printf("bl[1:len(bl)]长度:%d\n", len(bl[1:len(bl)])) //索引 1,2,3,4,5
+	fmt.Printf("bl[:4]长度:%d\n", len(bl[:4]))               // 索引 0，1，2，3
 
-	fmt.Printf("%v,%[1]T %d, %d \n", bl1, len(bl1), cap(bl1))
-	// [11 0],[]int 2, 5，   长度2 (1,2)   容量5 (1,2,3,4,5) 容量包括底层数组 被引用第一个元素以及后面所有
+	slice1 := [...]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+	bl2 := slice1[2:5]
+	fmt.Printf("bl2: %v,len(): %d,cap(): %d \n", bl2, len(bl2), cap(bl2))
+	// len()=3, 索引：234
+	//cap()=8 索引：23456789 容量包括底层数组 被引用第一个元素以及后面所有
 
-	/*
-		bl 是 bl1(slice)的底层数组，bl1 长度2,容量5
-
-	*/
-
-	fmt.Printf("%v\n", bl1[:4]) // [11 0 0 0]
 	// 超过定义容量从底层数组中提取
+	fmt.Printf("超过slice范围的,从底层数组提取 bl2[:8]:%d\n", bl2[:8])
+	//bl2 引用的第一个元素是数组索引2的位置，从2往后8个元素，[2 3 4 5 6 7 8 9]
 
-	bl[1] = 111      //底层数组重新赋值
-	fmt.Println(bl1) //slice 随之修改
+	slice1[2], slice1[3] = 1, 1             //底层数组重新赋值
+	fmt.Println("底层数组重新赋值,slice 随之修改", bl2) //slice 随之修改
 
-	bl1 = bl[:]
-	fmt.Printf("%v\n", bl1)
+	a := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'}
+	a1 := a[1:3]
+	a2 := a[2:5]
+	fmt.Println(string(a1), string(a2))
+	a[2] = 'Z'                          // 切片再切片, 修改底层切片,随之修改
+	a2[1] = 'X'                         // 修改 生成出来的切片，所对应其它切片 也会修改
+	fmt.Println(string(a1), string(a2)) //bZ ZXe
+
+	a = []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'}
+	a3 := a[1:3]
+	a4 := a[2:5]
+	// fmt.Println(string(a3), string(a4))
+	a3 = append(a3, '1', '2', '3', '4', '5', '6', '7', '8', '9') //生成的切片，突破容量，重新分配内存
+	a[2] = 'Z'
+	fmt.Println(string(a3), string(a4)) //bc123456789 Zde 只有内存有映射关系的才会被修改
+
+	s1 := []int{1, 2, 3}
+	for index, v := range s1 { //循环
+		fmt.Println(index, v)
+	}
 
 	create(&bl)
 	appen()
-	del()
-	//key 类型
-	type Key struct {
-		Path, Country string
-	}
-	m := map[Key]int{
-		Key{"1", "2"}: 11,
-		Key{"2", "3"}: 12,
-	}
-	fmt.Println(m)
+	del_copy()
+
 }
 func create(sl *[6]int) {
+	fmt.Printf("%20s \n", "------------")
 	fmt.Printf("%v,%[1]T \n", (*sl)[:]) //指针创建
 
-	fmt.Printf("%20s \n", "------------")
-	sl1 := make([]string, 4, 6) // 建立切片，长度4，容量6，6可以省略，则和长度相同
+	a := 1
+	sp1 := []*int{&a, &a} //指针数组
+	fmt.Println(sp1)
+
+	sl1 := make([]string, 1, 2) // 建立切片，长度4，容量6，6可以省略，则和长度相同
 	fmt.Printf("%T,%d,%d \n", sl1, len(sl1), cap(sl1))
+
+	//每当append到了容量最大值，自动扩展内存容量之前的两倍
+	for i := 0; i < 6; i++ {
+		sl1 = append(sl1, string(i))
+		fmt.Printf("内存：%p第%d次追加,长度:%d,容量:%d \n", sl1, i+1, len(sl1), cap(sl1))
+
+	}
 
 	sl2 := []int{1, 2} //[]必须空，长度容量2
 	fmt.Printf("%T,%d,%d \n", sl2, len(sl2), cap(sl2))
@@ -98,7 +125,7 @@ func appen() {
 	// fmt.Println("length:", len(dataappend), ":", dataappend)
 }
 
-func del() {
+func del_copy() {
 	slice := []int{1, 2, 3, 4}
 	slice[0] = slice[len(slice)-1]    //将要删除的索引值 被最后一个 覆盖
 	fmt.Println(slice[:len(slice)-1]) // 不取最后一个
@@ -108,4 +135,18 @@ func del() {
 	copy(slice[index:], slice[index+1:]) //索引位置后一个 往前复制
 	fmt.Println(slice[:len(slice)-1])
 
+	s1 := []int{1, 2, 3, 4, 5}
+	s2 := []int{0, 1}
+	copy(s1, s2) //[0 1 3 4 5], s2 索引位置 覆盖到s1
+	fmt.Println(s1)
+
+	s1 = []int{1, 2, 3, 4, 5}
+	s2 = []int{0, 1}
+	copy(s1[4:5], s2[0:1]) //[1 2 3 4 0], s2 索引位置 覆盖到s1
+	fmt.Println(s1)
+
+	s1 = []int{1, 2, 3, 4, 5}
+	s2 = []int{0, 1, 2, 3, 4, 5, 6, 7, 8}
+	copy(s1, s2) //[0 1 2 3 4] 覆盖不会超过 s1最大长度
+	fmt.Println(s1)
 }

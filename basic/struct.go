@@ -11,8 +11,32 @@ type Point struct { //定义,名字，变量名要大写，否则不能导出
 
 func main() {
 
-	p2 := &Point{}
-	p2.S = "6" //赋值1
+	pp1 := Point{
+		X: 11, //逗号 注意
+		S: "1",
+	}
+	fmt.Println(pp1) //{11 0 1}
+
+	pp2 := &struct { //匿名
+		a int
+		b string
+	}{
+		a: 1,
+		b: "string",
+	}
+	fmt.Println(*pp2)
+
+	pp3 := &struct { //匿名
+		a int
+		b string
+	}{
+		1, //按照顺序，不用写元素名
+		"string",
+	}
+	fmt.Println(*pp3)
+
+	p2 := &Point{} //初始化空值
+	p2.S = "6"     //赋值1
 	p2.X = 4
 	p2.Y = 5
 	fmt.Println(*p2) //{4 5 6}
@@ -37,7 +61,7 @@ func main() {
 	fmt.Println(pp, *ppp) //{4 5 change} {4 5 change}
 
 	duibi(&pp, &p1) //对比
-	qitao()         //嵌套
+	qintao()        //嵌套
 }
 func duibi(px *Point, px1 *Point) {
 	fmt.Println((*px), (*px1))               //change
@@ -47,15 +71,17 @@ func duibi(px *Point, px1 *Point) {
 	fmt.Printf("%t \n", *px == *px1) //true
 }
 
-func qitao() {
+func qintao() {
 	type Point1 struct {
 		Point //嵌套全局 Point
 		M     int
 	}
 
+	pp := Point1{Point: Point{1, 2, "3"}, M: 3} //嵌套 初始化与p 效果一样
+
 	p := Point1{Point{1, 2, "3"}, 3} //初始化
 	p.M = 1
-	fmt.Println(p) //{{1 2 3} 1}
+	fmt.Println(pp, p) //{{1 2 3} 3} {{1 2 3} 1}
 
 	var p1 Point1  //初始化
 	p1.S = "6"     //赋值

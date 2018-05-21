@@ -16,10 +16,10 @@ func main() {
 	fmt.Println(c.CanAddr(), c.CanSet())
 	fmt.Printf("%v,%t,%t\n", d, d.CanAddr(), d.CanSet())
 	/*
+			false false
 		false false
-	false false
-	false false
-	2,true true
+		false false
+		2,true true
 	*/
 	fmt.Println(x)
 	d.Set(reflect.ValueOf(4)) //设置
@@ -31,8 +31,8 @@ func set_ex() {
 	x := 1
 	rx := reflect.ValueOf(&x).Elem()
 	/*
-	func (v Value) Elem() Value
-		Elem返回v持有的接口保管的值的Value封装，或者v持有的指针指向的值的Value封装。
+		func (v Value) Elem() Value
+			Elem返回v持有的接口保管的值的Value封装，或者v持有的指针指向的值的Value封装。
 
 	*/
 	rx.SetInt(22) // setint,注意类型rx.SetString("111")//错误
