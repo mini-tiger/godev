@@ -15,7 +15,12 @@ type Product struct {
 	Bt        bool //首字母必须大写
 }
 
+func tjson() {
+
+}
+
 func main() {
+
 	p := &Product{}
 	(*p).Name = "Xiao mi 6"
 	p.IsOnSale = true

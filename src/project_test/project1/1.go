@@ -7,4 +7,5 @@ import (
 
 func T() {
 	fmt.Printf("%T \n", time.Second)
+	fmt.Println("")
 }
