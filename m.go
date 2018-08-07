@@ -16,5 +16,4 @@ func main() {
 	Println(b.T1(x))
 	Println(b.AA)
 	Println(b1.CC)
-
 }

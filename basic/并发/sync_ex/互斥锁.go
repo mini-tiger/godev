@@ -4,7 +4,7 @@ package main
 import "sync"
 import (
 	"fmt"
-	"time"
+	// "time"
 )
 
 var (
@@ -16,7 +16,7 @@ func Deposit(amount int) {
 	mu.Lock() //Lock方法将rw锁定为写入状态，禁止其他线程读取或者写入。
 
 	balance = balance + amount
-	time.Sleep(200 * time.Millisecond)
+	// time.Sleep(200 * time.Millisecond)
 	defer mu.Unlock()
 }
 

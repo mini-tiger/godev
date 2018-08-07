@@ -3,30 +3,33 @@ package main
 import (
 	e "./ex"
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
+	"os/exec" //执行命令行
 	"path"
 	"path/filepath"
+	"strings"
 )
 
-// func exist(file string) bool {
-// 	if d, e := os.Getwd(); e == nil {
-// 		f := path.Join(d, file)
-// 		// fmt.Println(f)
+func exist(file string) bool {
+	if d, e := os.Getwd(); e == nil {
+		f := path.Join(d, file)
+		// fmt.Println(f)
 
-// 		if _, err := os.Stat(f); err != nil {
-// 			if os.IsNotExist(err) {
-// 				fmt.Printf("文件: %s 不存在\n", f)
-// 				return false
-// 			}
-// 		} else {
-// 			fmt.Printf("文件: %s 存在\n", f)
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+		if _, err := os.Stat(f); err != nil {
+			if os.IsNotExist(err) {
+				fmt.Printf("文件: %s 不存在\n", f)
+				return false
+			}
+		} else {
+			fmt.Printf("文件: %s 存在\n", f)
+			return true
+		}
+	}
+	return false
+}
 
 /*
 C:\godev\models>go run os.go
@@ -59,8 +62,19 @@ func main() {
 		fmt.Println(filepath.Abs(f))
 		fmt.Println(filepath.Abs(ff))
 	}
-	// a, err := os.Open("1.txt")
-	// fmt.Println(*a, err)
+
+	cmd := exec.Command("ipconfig")
+	cmd.Stdin = strings.NewReader("some input")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("in all caps: %q\n", out.String()) //in all caps: "SOME INPUT"
+
+	a, err := os.Open("1.txt")
+	fmt.Println(*a, err)
 
 	input := bufio.NewScanner(os.Stdin) //需要命令行 输入
 	// fmt.Println(input)
@@ -70,5 +84,6 @@ func main() {
 	}
 	if err := input.Err(); err != nil {
 		log.Fatal(err)
+
 	}
 }
