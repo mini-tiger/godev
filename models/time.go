@@ -30,13 +30,13 @@ func main() {
 	d, _ := time.ParseDuration("3m10s")
 	fmt.Printf("%T,%[1]v\n", d)
 	fmt.Println(d.Seconds())
-	//time.NewTicker(d) 每过d秒后触发，返回当前时间到通道,
+	//time.NewTicker(d) 每过d秒后触发，返回通道字段
 	chan1 := time.NewTicker(1 * time.Second)
 	for i := 0; i < 5; i++ {
 		fmt.Println(<-chan1.C)
 	}
 	// fmt.Printf("%d\n", 1)
-	fmt.Println(<-chan1.C) //提取时间
+	//fmt.Println(<-chan1.C) //提取时间
 
 	//时间格式
 	t1 := time.Now()
