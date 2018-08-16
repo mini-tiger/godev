@@ -10,4 +10,14 @@ func main() {
 	var i *int
 	i = &a
 	fmt.Println(*i)
+
+	x, y := 1, 2
+	fmt.Println(x, y)
+	x, y = y, x
+	fmt.Println(x, y)
+
+	func(x, y *int) {
+		*x, *y = *y, *x
+	}(&x, &y)
+	fmt.Println(x, y)
 }

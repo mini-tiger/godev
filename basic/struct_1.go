@@ -33,5 +33,25 @@ func main() {
 	var st2 = &utils.Struct_1{}
 	fmt.Println(st2)
 	fmt.Println(st2.Bind_str1_b())
+	ex()
+}
+
+type st1 struct {
+	a, b int
+	c    []int
+}
+
+func ex() {
+	var st11 *st1 = &st1{}
+	st11.a = 1
+	st11.b = 1
+	st11.c = []int{1}
+	fmt.Println(*st11)
+	//
+	st22 := &struct {
+		a, b int
+		c    []int
+	}{1, 1, []int{1, 2}}
+	fmt.Println(*st22)
 
 }
