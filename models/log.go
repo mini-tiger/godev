@@ -12,11 +12,11 @@ func main() {
 	if err != nil {
 		log.Fatalln("fail to create test.log file!")
 	}
-	logger := log.New(file, "",3)
+	logger := log.New(file, "",log.Llongfile)
 	//log.Println("1.Println log with log.LstdFlags ...")
 	logger.Println("1.Println log with log.LstdFlags ...")
 
-	logger.SetFlags(log.LstdFlags)
+	logger.SetFlags(0)
 
 	//log.Println("2.Println log without log.LstdFlags ...")
 	logger.Println("2.Println log without log.LstdFlags ...")
