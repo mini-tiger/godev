@@ -25,12 +25,12 @@ func main() {
 
 	defer fmt.Println("defer end")
 	fmt.Println(config.Ip, config.DB)
-	var st1 = &S1{}    //本地别名之后， 别名类型 只有别名自己 绑定的方法
-	st1.A= map[int]string{
-		1:"a",
+	var st1 = &S1{} //本地别名之后， 别名类型 只有别名自己 绑定的方法
+	st1.A = map[int]string{
+		1: "a",
 	}
 
-	var st2 = &utils.Struect_1{} //原始的 有原始绑定的方法
+	var st2 = &utils.Struct_1{}
 	fmt.Println(st2)
 	fmt.Println(st2.Bind_str1_b())
 
