@@ -6,6 +6,14 @@ import (
 )
 
 func main() {
+	m22 := new(map[int]string)
+	fmt.Println(*m22)
+	// m22 = {1:"a"}
+	fmt.Println(m22)
+	m22 = &map[int]string{
+		1: "a",
+	}
+	fmt.Println(*m22)
 	b := map[int]string{1: "a"}
 	fmt.Println(b)
 	m1 := make(map[string]int)

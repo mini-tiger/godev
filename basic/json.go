@@ -22,6 +22,7 @@ func tjson() {
 func main() {
 
 	p := &Product{}
+	fmt.Println(p)
 	(*p).Name = "Xiao mi 6"
 	p.IsOnSale = true
 	p.Number = 10000
