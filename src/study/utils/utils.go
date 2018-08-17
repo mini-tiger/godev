@@ -23,9 +23,10 @@ func (self *Struct_1) Bind_str1_b() string  {
 }
 
 
+
+
+
 //interface
-
-
 
 type Iface_1 interface {
 	look() string
