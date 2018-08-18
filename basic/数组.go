@@ -1,9 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"godev/src/study/utils"
+)
 
 func main() {
-
+	//语法糖
+	var arr1 = utils.Arr1
+	fmt.Printf("utils.Arr1 type: %T, value: %v\n", utils.Arr1, utils.Arr1)
+	fmt.Printf("arr1 type: %T, value: %v\n", arr1, arr1)
+	arr1[0] = 100 //语法糖不用使用*
+	fmt.Printf("utils.Arr1 type: %T, value: %v\n", utils.Arr1, utils.Arr1)
+	fmt.Printf("arr1 type: %T, value: %v\n", arr1, arr1)
+	fmt.Println("===============================================================")
 	// b := []int{1, 2}   //type []int slice 长度空
 	b := [2]int{1, 2}      // type [2]int， 长度固定的数组
 	bl := [...]int{99: -1} //解释器判断长度，指定第99元素，其它不指定默认是0
