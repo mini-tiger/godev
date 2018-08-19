@@ -1,0 +1,19 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "eRsftn4EG5rXqSnjbpk1AzqHYos=",
+			"path": "github.com/spf13/pflag",
+			"revision": "947b89bd1b7dabfed991ac30e1a56f5193f0c88b",
+			"revisionTime": "2018-08-15T21:04:06Z"
+		},
+		{
+			"checksumSHA1": "KteiWCaG6v/+pE4LQ9FmqQhv7Js=",
+			"path": "godev/g",
+			"revision": "284b8ecb4d4af5d5a16c2898f3a9533a4648272c",
+			"revisionTime": "2018-08-19T14:31:38Z"
+		}
+	],
+	"rootPath": "godev/mymodels"
+}
