@@ -34,9 +34,9 @@ func main()  {
 	s55 = append(s55,1,2,3,54,6,6,7)
 	print_info("s55",s55)  //增长后 len一直与cap一样
 
-	s66 := make([]int,0)
+	s66 := make([]int,2) //初始len cap为2。 {0，0}
 	print_info("s66",s66)
-	s66=append(s66,1,2,3,5,6,7,8)
+	s66=append(s66,1,2,3,4,5,6,7)//增加 7个元素，每次增长cap 2，len 实际元素， 加完之后是 len 9  cap 10
 	print_info("s66",s66)
 	}
 func print_info(name string,s ...interface{})  {
