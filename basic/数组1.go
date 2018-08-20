@@ -20,7 +20,12 @@ func main() {
 	}
 
 	//二维数组
-	arr4 := [2][3]int{{1, 2, 3}}
+	arr4 := [2][3]int{{1, 2, 3},{0,0,0}}
 	fmt.Println(arr4)
+	for i,_:= range arr4{
+		for _,vv:=range arr4[i]{
+			fmt.Printf("arr4 row:%d,value:%v\n",i,vv)
+		}
+	}
 
 }
