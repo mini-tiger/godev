@@ -6,6 +6,7 @@ import (
 	"net/rpc"
 	"net"
 	"log"
+	"time"
 )
 
 func main() {
@@ -26,20 +27,29 @@ func main() {
 	//方式二
 	var args= common.Args{17, 8}
 	var result= common.Result{}
-	address, err := net.ResolveTCPAddr("tcp", "127.0.0.1:1234")
-	if err != nil {
-		panic(err)
-	}
-	conn, _ := net.DialTCP("tcp", nil, address)
-	defer conn.Close()
+	for {
+		address, err := net.ResolveTCPAddr("tcp", "127.0.0.1:1234")
+		if err != nil {
+			time.Sleep(1*time.Second)
+			log.Println("1s after reconn")
+			continue
+		}
+		conn, err := net.DialTCP("tcp", nil, address)
+		if err!=nil {
+			time.Sleep(1*time.Second)
+			log.Println("1s after reconn")
+			continue
+		}
+		defer conn.Close()
+		client := rpc.NewClient(conn)
+		defer client.Close()
 
-	client := rpc.NewClient(conn)
-	defer client.Close()
-
-	//reply := make([]string, 10)
-	err = client.Call("MathService.Divide", args, &result)
-	if err != nil {
-		fmt.Println("arith error:", err)
+		//reply := make([]string, 10)
+		err = client.Call("MathService.Divide", args, &result)
+		if err != nil {
+			fmt.Println("arith error:", err)
+		}
+		log.Println(result)
+		time.Sleep(2*time.Second)
 	}
-	log.Println(result)
 }
