@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var totle_run int =1
+
 type Human struct {
 	name string
 	age  int
@@ -49,7 +51,10 @@ func main() {
 func crond() {
 	for {
 		select {
-		case <-c:
+		case t:=<-c:
+			time.Sleep(3*time.Second)
+			fmt.Printf("this is No. %d run,waited 3s",t)
+
 			backend()
 		}
 
@@ -63,9 +68,9 @@ func crond1() {
 	for {
 		select {
 		case out := <-tick:
-			fmt.Printf("this is crond1 %s \n", out)
-			//backend()
-			c <- 1
+			fmt.Printf("this is crond1 %s ,this is No. %d run\n", out,totle_run)
+			c <- totle_run
+			totle_run+=1
 		}
 	}
 }
