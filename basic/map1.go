@@ -8,7 +8,7 @@ func main()  {
 
 	fmt.Println(map1)
 	var map2 map[string]string = make(map[string]string)
-	fmt.Println(map2)
+	fmt.Printf("%p\n",map2)
 	//增加
 	map2[string("a")]= "a"
 	fmt.Println(map2)
