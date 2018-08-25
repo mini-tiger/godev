@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
+
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
