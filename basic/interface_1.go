@@ -33,5 +33,5 @@ func main()  {
 	iface1 = &s2//只要有 look方法都可以 挂在 接口上
 	fmt.Println(iface1.look()) //接口只有 look方法，没有其它方法，结构体和接口要在同一个文件
 
-	utils.Inter() // 调用其它文件的接口方法
+	//utils.Inter() // 调用其它文件的接口方法
 	}

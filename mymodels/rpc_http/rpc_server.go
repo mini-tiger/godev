@@ -1,5 +1,5 @@
 package main
-
+// rpc  传送list可能会有问题
 import (
 	"godev/mymodels/rpc_http/common"
 	"net/rpc"

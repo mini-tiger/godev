@@ -1,5 +1,5 @@
 package main
-
+// rpc  传送list可能会有问题
 import (
 	"fmt"
 	"godev/mymodels/rpc_http/common"
