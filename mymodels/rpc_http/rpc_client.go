@@ -44,7 +44,7 @@ func main() {
 		client := rpc.NewClient(conn)
 		defer client.Close()
 
-		//reply := make([]string, 10)
+		//reply := make([]string, 10) //调用服务端的方法，发送的args ，list会有问题
 		err = client.Call("MathService.Divide", args, &result)
 		if err != nil {
 			fmt.Println("arith error:", err)
