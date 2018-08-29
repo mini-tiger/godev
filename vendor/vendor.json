@@ -79,6 +79,18 @@
 			"revisionTime": "2018-08-25T17:12:13Z"
 		},
 		{
+			"checksumSHA1": "zx9iC2aelmwqib3H+N72YzWDY4g=",
+			"path": "github.com/tidwall/gjson",
+			"revision": "1e3f6aeaa5bad08d777ea7807b279a07885dd8b2",
+			"revisionTime": "2018-08-02T15:58:17Z"
+		},
+		{
+			"checksumSHA1": "gEpdu1QrdYgZVliuH3JhGph9TQY=",
+			"path": "github.com/tidwall/match",
+			"revision": "1731857f09b1f38450e2c12409748407822dc6be",
+			"revisionTime": "2017-10-02T07:59:45Z"
+		},
+		{
 			"checksumSHA1": "Ef6istEK0gHoRzGpowUThS79YZk=",
 			"origin": "godev/mymodels/vendor/github.com/ugorji/go/codec",
 			"path": "github.com/ugorji/go/codec",

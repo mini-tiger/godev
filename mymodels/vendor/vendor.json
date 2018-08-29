@@ -63,6 +63,20 @@
 			"revisionTime": "2018-08-15T21:04:06Z"
 		},
 		{
+			"checksumSHA1": "zx9iC2aelmwqib3H+N72YzWDY4g=",
+			"origin": "godev/vendor/github.com/tidwall/gjson",
+			"path": "github.com/tidwall/gjson",
+			"revision": "55df06d4b5876fcf95c46f225fce01429ea9ba75",
+			"revisionTime": "2018-08-28T09:22:28Z"
+		},
+		{
+			"checksumSHA1": "gEpdu1QrdYgZVliuH3JhGph9TQY=",
+			"origin": "godev/vendor/github.com/tidwall/match",
+			"path": "github.com/tidwall/match",
+			"revision": "55df06d4b5876fcf95c46f225fce01429ea9ba75",
+			"revisionTime": "2018-08-28T09:22:28Z"
+		},
+		{
 			"checksumSHA1": "nTHyEY0AoEGpzD+0hNSLavmhVsk=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "00b869d2f4a5e27445c2d916fa106fc72c106d4c",
@@ -73,6 +87,13 @@
 			"path": "godev/g",
 			"revision": "284b8ecb4d4af5d5a16c2898f3a9533a4648272c",
 			"revisionTime": "2018-08-19T14:31:38Z"
+		},
+		{
+			"checksumSHA1": "0YaJxT/qQOqE1/hv9j5oSaMJOUQ=",
+			"origin": "godev/vendor/golang.org/x/sys/unix",
+			"path": "golang.org/x/sys/unix",
+			"revision": "55df06d4b5876fcf95c46f225fce01429ea9ba75",
+			"revisionTime": "2018-08-28T09:22:28Z"
 		},
 		{
 			"checksumSHA1": "q190bL03wQok3wVwYmMub2XhOiU=",

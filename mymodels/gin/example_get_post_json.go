@@ -6,11 +6,45 @@ import (
 	"fmt"
 	"log"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/tidwall/gjson"
 )
+
+func ResponseSuccess(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status": gin.H{
+			"code":  http.StatusOK,
+			"message": "ok",
+		},
+	})
+}
+
+func ResponseError(c *gin.Context, err error) {
+	fmt.Println(err)
+	c.JSON(http.StatusOK, gin.H{
+		"status": gin.H{
+			"code":  http.StatusBadRequest,
+			"message": err.Error(),
+		},
+	})
+}
 
 func main() {
 
 	router := gin.Default()
+
+// 接收json ，解析json
+	router.POST("/test_json", func(c *gin.Context) {
+		bytes, err := c.GetRawData() // 接收json数据
+		if err != nil {
+			ResponseError(c, err) //统一返回
+			return
+		}
+		data := string(bytes)
+		fmt.Println(data) //打印json 数据
+		value := gjson.Get(data, "address.street") //gjson 包 来解析json文件
+		println(value.String())
+		c.String(http.StatusOK, "Hello World")
+	})
 
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello World")
