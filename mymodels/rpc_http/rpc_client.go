@@ -1,6 +1,7 @@
 package main
 // rpc  传送list可能会有问题
 import (
+	//_ "github.com/CodyGuo/godaemon"
 	"fmt"
 	"godev/mymodels/rpc_http/common"
 	"net/rpc"
