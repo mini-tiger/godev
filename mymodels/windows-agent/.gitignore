@@ -1,0 +1,11 @@
+*.swp
+*.swo
+/cfg.json
+/agent
+/var
+/windows-agent*
+.DS_Store
+*.iml
+*.idea
+/gitversion
+windows.log
