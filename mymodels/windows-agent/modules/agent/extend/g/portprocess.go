@@ -1,7 +1,7 @@
 package g
 
 import (
-	"github.com/open-falcon/falcon-plus/common/model"
+	"godev/mymodels/windows-agent/common/model"
 	"fmt"
 	"os/exec"
 	"log"
@@ -46,31 +46,31 @@ func Getportprocess_data() (model.Portprocess_result) {
 	portprocess_result_env := model.Portprocess_result{}
 
 	for _, v := range gp.JsonConfig.Portprocess_slice {
-		ips, err := ips_business(v)
-		if err != nil {
-			log.Fatal(err)
-		}
+		//ips, err := ips_business(v)
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
 		//fmt.Println(ips)
 
 		pidsi, err := pids_business(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		//fmt.Println(pidsi)
+		fmt.Println(pidsi)
 
-		temp := model.Portprocess_sub_result{
-			Type:     v.Type,
-			Port:     v.Port,
-			Pids:     pidsi,
-			Ip_route: ips,
-		}
+		//temp := model.Portprocess_sub_result{
+		//	Type:     v.Type,
+		//	Port:     v.Port,
+		//	Pids:     pidsi,
+		//	Ip_route: ips,
+		//}
 		//fmt.Println("=======================================")
 		//for k,v:=range temp.Ip_route {
 		//	if v.Back() != nil {
 		//		fmt.Println(k, v.Back().Value)
 		//	}
 		//}
-		portprocess_result_env.Pr = append(portprocess_result_env.Pr, &temp)
+		//portprocess_result_env.Pr = append(portprocess_result_env.Pr, &temp)
 
 	}
 
@@ -78,32 +78,47 @@ func Getportprocess_data() (model.Portprocess_result) {
 }
 
 func pids_business(v model.PortProcessEnv) ([]int, error) {
-	cmd_string := fmt.Sprintf("lsof -i tcp:%d|awk '{print $2}'|uniq|grep -v 'PID'", v.Port)
-	fmt.Println("bash", "-c", cmd_string)
-	cmd := exec.Command("/bin/bash", "-c", cmd_string)
+	cmd_string := fmt.Sprintf("netstat -ano")
+	fmt.Println("cmd", "/c", cmd_string)
+	cmd := exec.Command("cmd", "/c", cmd_string)
 
 	pids := make([]string, 0)
 
 	var pidsi []int = make([]int, 0)
 
 	stdout, err := cmd.StdoutPipe()
+	//fmt.Println("=============",stdout)
+	//
+	//stderr,err:=cmd.StderrPipe()
+	//fmt.Println("--------------",stderr)
 	if err != nil {
-		log.Fatalf("ips_business run port:%d, err:%v", v.Port, err)
+		log.Fatalf("pid_business run port:%d, err:%v", v.Port, err)
 		return pidsi, err
 	}
 	cmd.Start()
 
 	reader := bufio.NewReader(stdout)
-
+	//reader := bufio.NewReader(stderr)
+	//fmt.Println(reader)
 	for {
-		line, err := reader.ReadString('\n')
+		line,err := reader.ReadString('\n')
 		if err != nil || io.EOF == err {
 			break
 		}
 		line = strings.TrimSpace(strings.Trim(line, "\n"))
+		tmp_data_slice  := strings.Fields(line)
+		if len(tmp_data_slice) < 5 {
+			continue
+		}
+		if tmp_data_slice[3] != "ESTABLISHED"{
+			continue
+		}
 
-		//fmt.Println([]byte(line))
-		pids = append(pids, line)
+		ip_port:=strings.Split(tmp_data_slice[1],":")
+		if ip_port[1] == fmt.Sprintf("%d",v.Port){
+			fmt.Println(ip_port)
+		}
+		//pids = append(pids, line)
 	}
 
 	cmd.Wait()

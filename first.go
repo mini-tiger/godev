@@ -1,39 +1,36 @@
 package main
 
 import (
+
+	"syscall"
+	"unsafe"
+	"log"
 	"fmt"
-	"sync"
-	"time"
 )
 
-var deposits = make(chan int) // send amount to deposit
-var balances = make(chan int) // receive balance
-
-func Deposit(amount int) { deposits <- amount }
-func Balance() int       { return <-balances }
-
 func main() {
-	var l sync.WaitGroup
-	go func() {
-		l.Add(1)
-		<-balances
-		fmt.Println(1)
-		l.Done()
-	}()
+	kernel32, err := syscall.LoadLibrary("Kernel32.dll")
+	if err != nil {
+		log.Panic(err)
+	}
+	defer syscall.FreeLibrary(kernel32)
+	GetDiskFreeSpaceEx, err := syscall.GetProcAddress(syscall.Handle(kernel32), "GetDiskFreeSpaceExW")
 
-	go func() {
-		time.Sleep(1 * time.Second)
-		fmt.Println(2)
-		balances <- 11
-	}()
-	time.Sleep(3 * time.Second)
-	l.Wait()
+	if err != nil {
+		log.Panic(err)
+	}
 
-	c := make(chan bool)
-	go func() {
-		// fmt.Println(1)
-		c <- true
-	}()
+	lpFreeBytesAvailable := int64(0)
+	lpTotalNumberOfBytes := int64(0)
+	lpTotalNumberOfFreeBytes := int64(0)
+	r, a, b := syscall.Syscall6(uintptr(GetDiskFreeSpaceEx), 4,
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("C:"))),
+		uintptr(unsafe.Pointer(&lpFreeBytesAvailable)),
+		uintptr(unsafe.Pointer(&lpTotalNumberOfBytes)),
+		uintptr(unsafe.Pointer(&lpTotalNumberOfFreeBytes)), 0, 0)
+	fmt.Println(r,a,b)
+	log.Printf("Available  %dmb", lpFreeBytesAvailable/1024/1024.0)
+	log.Printf("Total      %dmb", lpTotalNumberOfBytes/1024/1024.0)
+	log.Printf("Free       %dmb", lpTotalNumberOfFreeBytes/1024/1024.0)
 
-	<-c
 }

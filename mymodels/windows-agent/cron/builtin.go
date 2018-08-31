@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/freedomkk-qfeng/windows-agent/g"
-	"github.com/open-falcon/common/model"
+	"godev/mymodels/windows-agent/g"
+	"godev/mymodels/windows-agent/common/model"
 )
 
 func SyncBuiltinMetrics() {
@@ -76,7 +76,6 @@ func syncBuiltinMetrics() {
 
 			if metric.Metric == g.PROC_NUM {
 				arr := strings.Split(metric.Tags, ",")
-
 				tmpMap := make(map[int]string)
 
 				for i := 0; i < len(arr); i++ {

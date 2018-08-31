@@ -37,7 +37,7 @@ func BuildMappers() {
 		FuncsAndInterval{
 			Fs: []func() []*model.MetricValue{
 				iisMetrics,
-				//mssqlMetrics,
+				mssqlMetrics,
 			},
 			Interval: interval,
 		},

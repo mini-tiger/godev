@@ -25,7 +25,6 @@ func NetMetrics() []*model.MetricValue {
 }
 
 func CoreNetMetrics(ifacePrefix []string) (L []*model.MetricValue) {
-
 	netIfs, err := net_status(ifacePrefix)
 	if err != nil {
 		g.Logger().Println(err)

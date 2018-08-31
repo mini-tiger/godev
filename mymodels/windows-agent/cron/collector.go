@@ -3,9 +3,10 @@ package cron
 import (
 	"time"
 
-	"github.com/freedomkk-qfeng/windows-agent/funcs"
-	"github.com/freedomkk-qfeng/windows-agent/g"
-	"github.com/open-falcon/common/model"
+	"godev/mymodels/windows-agent/funcs"
+	"godev/mymodels/windows-agent/g"
+	"godev/mymodels/windows-agent/common/model"
+	"fmt"
 )
 
 func InitDataHistory() {
@@ -61,7 +62,7 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 				}
 			}
 		}
-
+		fmt.Println(mvs)
 		now := time.Now().Unix()
 		for j := 0; j < len(mvs); j++ {
 			mvs[j].Step = sec

@@ -5,8 +5,8 @@ import (
 
 	"time"
 
-	"github.com/freedomkk-qfeng/windows-agent/g"
-	"github.com/open-falcon/common/model"
+	"godev/mymodels/windows-agent/g"
+	"godev/mymodels/windows-agent/common/model"
 )
 
 func ReportAgentStatus() {
