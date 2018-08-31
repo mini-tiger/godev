@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
-	"os"
+	"fmt"
 	"godev/mymodels/windows-agent/cron"
+	extend_cron "godev/mymodels/windows-agent/extend/cron"
 	"godev/mymodels/windows-agent/funcs"
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/http"
-	extend_cron "godev/mymodels/windows-agent/extend/cron"
-	"fmt"
+	"os"
 )
 
 func main() {
@@ -44,14 +44,12 @@ func main() {
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 
-
-	//cron.LoadEnvironmentGridConfig()
-
+	cron.LoadEnvironmentGridConfig()
 
 	extend_cron.Loadportporcess_taskConfig()
-	extend_cron.Updateportprocess_env_task()
+	go extend_cron.Updateportprocess_env_task()
 
-	cron.UploadEnvironmentGrid() //硬件信息
+	//cron.UploadEnvironmentGrid() //硬件信息
 
 	cron.Collect()
 	//

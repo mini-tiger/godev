@@ -28,7 +28,7 @@ func main() {
 }
 
 func cli(x string) {
-	conn, err := net.Dial("tcp", "localhost:"+x)
+	conn, err := net.Dial("tcp", "192.168.1.105:"+x)
 	if err != nil {
 		log.Fatal(err)
 	}

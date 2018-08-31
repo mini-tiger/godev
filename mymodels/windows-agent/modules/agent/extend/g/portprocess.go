@@ -1,14 +1,15 @@
 package g
 
 import (
-	"godev/mymodels/windows-agent/common/model"
-	"fmt"
-	"os/exec"
-	"log"
 	"bufio"
+	"fmt"
+	"godev/mymodels/windows-agent/common/model"
+	extned_funcs "godev/mymodels/windows-agent/extend/funcs"
 	"io"
-	"strings"
+	"log"
+	"os/exec"
 	"strconv"
+	"strings"
 )
 
 //config
@@ -40,37 +41,71 @@ func NewPortProcessConfig() *EnvPortProcessConfig {
 
 //var Portprocess_search_env Portprocess_task_env
 
-func Getportprocess_data() (model.Portprocess_result) {
+var Cmdline []string
+
+func create_cmdline_data() error {
+	cmd_string := fmt.Sprintf("netstat -ano")
+	//fmt.Println("cmd", "/c", cmd_string)
+	cmd := exec.Command("cmd", "/c", cmd_string)
+
+	stdout, err := cmd.StdoutPipe()
+	cmd.Start()
+
+	if err != nil {
+		log.Fatalf("err:%v", err)
+		return err
+	}
+	reader := bufio.NewReader(stdout)
+	Cmdline = make([]string, 0)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil || io.EOF == err {
+			break
+		}
+		line = strings.Trim(strings.TrimSpace(line), "\n")
+		Cmdline = append(Cmdline, line)
+	}
+
+	cmd.Wait()
+
+	return nil
+}
+
+func Getportprocess_data() model.Portprocess_result {
 	gp := EnvPortConfig
 
 	portprocess_result_env := model.Portprocess_result{}
 
 	for _, v := range gp.JsonConfig.Portprocess_slice {
-		//ips, err := ips_business(v)
-		//if err != nil {
-		//	log.Fatal(err)
-		//}
-		//fmt.Println(ips)
 
+		err := create_cmdline_data()
+		//fmt.Println(Cmdline)
+		//fmt.Println("==================111111")
+		if err != nil {
+
+			return portprocess_result_env
+		}
+		//fmt.Println("==================222222")
 		pidsi, err := pids_business(v)
+		if err != nil {
+			log.Printf("get port: %d, pid err: %s", v.Port, err)
+		}
+		fmt.Println(pidsi)
+		//
+		ips, err := ips_business(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(pidsi)
+		fmt.Println(ips)
 
-		//temp := model.Portprocess_sub_result{
-		//	Type:     v.Type,
-		//	Port:     v.Port,
-		//	Pids:     pidsi,
-		//	Ip_route: ips,
-		//}
-		//fmt.Println("=======================================")
-		//for k,v:=range temp.Ip_route {
-		//	if v.Back() != nil {
-		//		fmt.Println(k, v.Back().Value)
-		//	}
-		//}
-		//portprocess_result_env.Pr = append(portprocess_result_env.Pr, &temp)
+		temp := model.Portprocess_sub_result{
+			Type:     v.Type,
+			Port:     v.Port,
+			Pids:     pidsi,
+			Ip_route: ips,
+		}
+
+		portprocess_result_env.Pr = append(portprocess_result_env.Pr, &temp)
 
 	}
 
@@ -78,52 +113,33 @@ func Getportprocess_data() (model.Portprocess_result) {
 }
 
 func pids_business(v model.PortProcessEnv) ([]int, error) {
-	cmd_string := fmt.Sprintf("netstat -ano")
-	fmt.Println("cmd", "/c", cmd_string)
-	cmd := exec.Command("cmd", "/c", cmd_string)
+	log.Printf("begin check port : %d pid\n", v.Port)
 
 	pids := make([]string, 0)
 
 	var pidsi []int = make([]int, 0)
 
-	stdout, err := cmd.StdoutPipe()
-	//fmt.Println("=============",stdout)
-	//
-	//stderr,err:=cmd.StderrPipe()
-	//fmt.Println("--------------",stderr)
-	if err != nil {
-		log.Fatalf("pid_business run port:%d, err:%v", v.Port, err)
-		return pidsi, err
-	}
-	cmd.Start()
+	for _, line := range Cmdline {
 
-	reader := bufio.NewReader(stdout)
-	//reader := bufio.NewReader(stderr)
-	//fmt.Println(reader)
-	for {
-		line,err := reader.ReadString('\n')
-		if err != nil || io.EOF == err {
-			break
-		}
-		line = strings.TrimSpace(strings.Trim(line, "\n"))
-		tmp_data_slice  := strings.Fields(line)
+		//line = strings.TrimSpace(strings.Trim(line, "\n"))
+		tmp_data_slice := strings.Fields(line)
 		if len(tmp_data_slice) < 5 {
 			continue
 		}
-		if tmp_data_slice[3] != "ESTABLISHED"{
+		if tmp_data_slice[3] != "ESTABLISHED" {
 			continue
 		}
 
-		ip_port:=strings.Split(tmp_data_slice[1],":")
-		if ip_port[1] == fmt.Sprintf("%d",v.Port){
-			fmt.Println(ip_port)
+		ip_port := strings.Split(tmp_data_slice[1], ":")
+		if ip_port[1] == fmt.Sprintf("%d", v.Port) {
+			//fmt.Println(ip_port)
+			//fmt.Printf("pid: %s\n",tmp_data_slice[len(tmp_data_slice)-1])
+			pids = append(pids, tmp_data_slice[len(tmp_data_slice)-1])
 		}
-		//pids = append(pids, line)
+
 	}
 
-	cmd.Wait()
-
-	pidsi = func(s []string) ([]int) { //conv  string -> int
+	pidsi = func(s []string) []int { //conv  string -> int
 		for _, v := range s {
 			i, err := strconv.Atoi(v)
 			if err != nil {
@@ -136,94 +152,100 @@ func pids_business(v model.PortProcessEnv) ([]int, error) {
 		return pidsi
 
 	}(pids)
+	log.Printf("end check port : %d pid\n", v.Port)
 
-	return pidsi, nil
+	return extned_funcs.Set(pidsi), nil
 }
 
 func ips_business(v model.PortProcessEnv) (map[string]model.Route_link, error) {
-	cmd_string := fmt.Sprintf("lsof -i tcp:%d|grep ESTABLISHED|awk '{print $9}'|awk -F '->' '{print $2}'|grep -v local|cut -d : -f 1|uniq", v.Port)
-	fmt.Println("bash", "-c", cmd_string)
-	cmd := exec.Command("/bin/bash", "-c", cmd_string)
+	//cmd_string := fmt.Sprintf("lsof -i tcp:%d|grep ESTABLISHED|awk '{print $9}'|awk -F '->' '{print $2}'|grep -v local|cut -d : -f 1|uniq", v.Port)
+	//fmt.Println("bash", "-c", cmd_string)
+	//cmd := exec.Command("/bin/bash", "-c", cmd_string)
 	//ips := make([]string, 1)
 	ips_route := make(map[string]model.Route_link)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatalf("ips_business run port:%d, err:%v", v.Port, err)
-		return ips_route, err
-	}
-	cmd.Start()
+	//stdout, err := cmd.StdoutPipe()
+	//if err != nil {
+	//	log.Fatalf("ips_business run port:%d, err:%v", v.Port, err)
+	//	return ips_route, err
+	//}
+	//cmd.Start()
 
-	reader := bufio.NewReader(stdout)
+	//reader := bufio.NewReader(stdout)
 
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil || io.EOF == err {
-			break
+	for _, line := range Cmdline {
+
+		//line = strings.TrimSpace(strings.Trim(line, "\n"))
+		tmp_data_slice := strings.Fields(line)
+		if len(tmp_data_slice) < 5 {
+			continue
 		}
-		line = strings.Trim(strings.TrimSpace(line), "\n")
-		//fmt.Println([]byte(line))
-		//ips = append(ips, line)
-		ips_route[line] = route_link(v.Port, line)
+		if tmp_data_slice[3] != "ESTABLISHED" {
+			continue
+		}
+		ip_port := strings.Split(tmp_data_slice[1], ":")
+		if ip_port[1] == fmt.Sprintf("%d", v.Port) { //port 匹配
+
+			tmp := strings.Split(tmp_data_slice[2], ":")
+			if tmp[0] == "127.0.0.1" {
+				continue
+			}
+			//fmt.Println(tmp[0])
+
+			ips_route[line] = route_link(v.Port, tmp[0])
+		}
 	}
 
-	cmd.Wait()
+	//cmd.Wait()
 
 	return ips_route, nil
 }
 
-func route_link(port int, ip string) (model.Route_link) {
-	cmd_string := fmt.Sprintf("traceroute -n -w 5 -m 15 -q 1 -p %d -4 %s|awk '{print $1,$2}'", port, ip)
-	fmt.Println("bash", "-c", cmd_string)
-	cmd := exec.Command("/bin/bash", "-c", cmd_string)
+func route_link(port int, ip string) model.Route_link {
+	cmd_string := fmt.Sprintf("tracert -d -h 15 -w 15 -4 %s", "www.baidu.com")
+	fmt.Println("cmd", "/c", cmd_string)
 
-	//route := model.Route_link{}
-
+	cmd := exec.Command("cmd", "/c", cmd_string)
 	route_links := model.Newroute_list()
-	stdout, err := cmd.StdoutPipe()
+
+	stdout, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("route_link run port:%d, ip:%s,err:%v", port, ip, err)
+		log.Println(err)
 		return *route_links
 	}
-	cmd.Start()
-	reader := bufio.NewReader(stdout)
-	for {
-		line, err := reader.ReadString('\n')
-		//fmt.Printf(line)
-		//time.Sleep(2*time.Second)
-		if err != nil || io.EOF == err {
-			break
-		}
-		if strings.Contains(line, "traceroute to") || strings.Contains(line, "*") {
-			continue
-		}
-		line = strings.TrimSpace(line)
-		line = strings.Trim(line, "\n")
-		//route_links.Lock.Lock()
-		//fmt.Println("==================================",line)
-		//route_links.PushBack(strings.TrimSpace(line))
-		//route_links.Links = append(route_links.Links,line)
-		//route_links.Lock.Unlock()
-		split_data := strings.Split(line, " ")
-		if len(split_data) < 2 {
-			continue
-		}
-		fmt.Printf("%T,%s\n", split_data[0],split_data[0])
-		key:=strings.TrimSpace(split_data[0])
-		k,err:=strconv.Atoi(key)
-		if err !=nil{
-			continue
-		}
-		route_links.L[k] = split_data[1]
-	}
-	cmd.Wait()
-	//if route_links.Links.Back() != nil{
-	//	fmt.Println("--------------------------------")
-	//	fmt.Println(route_links.Links.Back().Value)
-	//	fmt.Println(route_links.Links.Back().Value)
-	//	fmt.Println(route_links.Links.Back().Value)
-	//	fmt.Println(route_links.Links.Len())
-	//}
+	ss := extned_funcs.ConvertByte2String(stdout, extned_funcs.GB18030)
+	//fmt.Println(ss)
+	//fmt.Println("===================================")
+	ss = strings.TrimSpace(ss)
+	ss = strings.Trim(ss, "\n")
 
+	s_sub := "路由"
+	if strings.Index(ss, "路由:") != -1 {
+		s_sub = fmt.Sprintf("%s:", s_sub)
+	}
+	ss1 := strings.Split(ss, s_sub)
+
+	ss2 := strings.Split(ss1[1], "跟踪完成。")
+	ss = strings.Trim(ss2[0], "\n")
+	ss = strings.Trim(ss2[0], "\r")
+	ss = strings.TrimSpace(ss2[0])
+
+	ss3 := strings.Split(ss, "\r\n")
+	//fmt.Println(len(ss3))
+	for _, v := range ss3 {
+		sl := strings.Fields(v)
+
+		if strings.Contains(sl[len(sl)-1], "请求超时") {
+			continue
+		}
+		k, err := strconv.Atoi(sl[0])
+		if err != nil {
+			continue
+		}
+		route_links.L[k] = sl[len(sl)-1]
+		//fmt.Println(temp)
+
+	}
+	fmt.Println(route_links)
 	return *route_links
 
 }
