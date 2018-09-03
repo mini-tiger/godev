@@ -78,7 +78,7 @@ func Getportprocess_data() model.Portprocess_result {
 
 	for _, v := range gp.JsonConfig.Portprocess_slice {
 
-		err := create_cmdline_data()
+		err := create_cmdline_data()  //除了路由以外，都使用netstat -ano为数据基础
 		//fmt.Println(Cmdline)
 		//fmt.Println("==================111111")
 		if err != nil {
@@ -90,13 +90,13 @@ func Getportprocess_data() model.Portprocess_result {
 		if err != nil {
 			log.Printf("get port: %d, pid err: %s", v.Port, err)
 		}
-		fmt.Println(pidsi)
+		//fmt.Println(pidsi)
 		//
 		ips, err := ips_business(v)
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(ips)
+		//fmt.Println(ips)
 
 		temp := model.Portprocess_sub_result{
 			Type:     v.Type,
@@ -245,7 +245,7 @@ func route_link(port int, ip string) model.Route_link {
 		//fmt.Println(temp)
 
 	}
-	fmt.Println(route_links)
+	//fmt.Println(route_links)
 	return *route_links
 
 }

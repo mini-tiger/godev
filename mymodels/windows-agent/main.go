@@ -47,9 +47,9 @@ func main() {
 	cron.LoadEnvironmentGridConfig()
 
 	extend_cron.Loadportporcess_taskConfig()
-	go extend_cron.Updateportprocess_env_task()
+	extend_cron.Updateportprocess_env_task()
 
-	//cron.UploadEnvironmentGrid() //硬件信息
+	cron.UploadEnvironmentGrid() //硬件信息
 
 	cron.Collect()
 	//

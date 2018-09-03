@@ -22,14 +22,14 @@
   },
   "heartbeat": {
     "enabled": true,
-    "addr": "192.168.1.108:6030",
+    "addr": "192.168.43.12:6030",
     "interval": 60,
     "timeout": 1000
   },
   "transfer": {
     "enabled": true,
     "addrs": [
-      "127.0.0.1:8433"
+      "192.168.43.11:8433"
     ],
     "interval": 60,
     "timeout": 1000

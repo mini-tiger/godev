@@ -16,8 +16,8 @@ func Updateportprocess_env_task() {
 	log.Println("start update portprocess_env  ",g.Config().Heartbeat.Enabled," -> ",g.Config().Heartbeat.Addr)
 	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
 		Updateportprocess_env(-1)
-		go Updateportprocess_env(time.Duration(5)*time.Second)
-		//go Updateportprocess_env(time.Duration(extend_g.EnvPortConfig.DataInterval) * time.Second)
+		//go Updateportprocess_env(time.Duration(5)*time.Second)
+		go Updateportprocess_env(time.Duration(extend_g.EnvPortConfig.DataInterval) * time.Second)
 	}
 }
 
