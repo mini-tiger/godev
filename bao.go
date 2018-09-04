@@ -1,14 +1,34 @@
 package main
 
-import "fmt"
+import (
+	log "github.com/sirupsen/logrus"
+	"time"
+)
 
-func main() {
-	aa := []int{1, 2, 3}
-	fmt.Println(aa)
-	test(aa...)
-
+type Animal struct {
+	Name string
+	age int
 }
 
-func test(a ...int) {
-	fmt.Println(a)
+func main() {
+	//log.SetFormatter(&log.JSONFormatter{})
+	a := Animal{"dog", 22}
+	log.SetLevel(log.DebugLevel) //级别
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:true})
+
+	logcustom:=log.WithFields(log.Fields{ //自定义格式
+		"event": "ne",
+		"topic": "title",
+		"key": "my key",
+	})
+
+	log.Error("hello world")
+	for {
+		time.Sleep(time.Second)
+		a.age++
+		logcustom.Info(a)
+		log.Printf("i am ok %s", "dock")
+	}
+	log.Fatal("kill ")
 }

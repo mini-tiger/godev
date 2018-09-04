@@ -113,7 +113,7 @@ func Getportprocess_data() model.Portprocess_result {
 }
 
 func pids_business(v model.PortProcessEnv) ([]int, error) {
-	log.Printf("begin check port : %d pid\n", v.Port)
+	log.Printf("begin check pids port : %d \n", v.Port)
 
 	pids := make([]string, 0)
 
@@ -152,12 +152,13 @@ func pids_business(v model.PortProcessEnv) ([]int, error) {
 		return pidsi
 
 	}(pids)
-	log.Printf("end check port : %d pid\n", v.Port)
+	log.Printf("end check pids port : %d \n", v.Port)
 
 	return extned_funcs.Set(pidsi), nil
 }
 
 func ips_business(v model.PortProcessEnv) (map[string]model.Route_link, error) {
+	log.Printf("begin check ips port : %d \n", v.Port)
 	//cmd_string := fmt.Sprintf("lsof -i tcp:%d|grep ESTABLISHED|awk '{print $9}'|awk -F '->' '{print $2}'|grep -v local|cut -d : -f 1|uniq", v.Port)
 	//fmt.Println("bash", "-c", cmd_string)
 	//cmd := exec.Command("/bin/bash", "-c", cmd_string)
@@ -196,7 +197,7 @@ func ips_business(v model.PortProcessEnv) (map[string]model.Route_link, error) {
 	}
 
 	//cmd.Wait()
-
+	log.Printf("end check ips port : %d \n", v.Port)
 	return ips_route, nil
 }
 
@@ -242,10 +243,9 @@ func route_link(port int, ip string) model.Route_link {
 			continue
 		}
 		route_links.L[k] = sl[len(sl)-1]
-		//fmt.Println(temp)
 
 	}
-	//fmt.Println(route_links)
+	fmt.Println(route_links)
 	return *route_links
 
 }
