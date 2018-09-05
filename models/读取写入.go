@@ -13,7 +13,8 @@ import (
 )
 
 const file = "D:\\work\\project-dev\\src\\godev\\models\\111"
-
+//TODO 文件追加
+//	f,err:=os.OpenFile(file,os.O_WRONLY|os.O_APPEND,0777)
 func main() {
 
 	flag.Set("alsologtostderr", "true") // 日志写入文件的同时，输出到stderr
