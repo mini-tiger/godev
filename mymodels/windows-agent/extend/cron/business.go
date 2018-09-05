@@ -5,7 +5,7 @@ import (
 	"time"
 	"godev/mymodels/windows-agent/common/model"
 	"godev/mymodels/windows-agent/g"
-	extend_g "godev/mymodels/windows-agent/modules/agent/extend/g"
+	extend_g "godev/mymodels/windows-agent/extend/g"
 	"fmt"
 )
 
