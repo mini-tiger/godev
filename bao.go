@@ -14,16 +14,18 @@ import (
 	"io/ioutil"
 	"bufio"
 	"syscall"
-	"fmt"
+	_ "gitee.com/taojun319/godaemon"
 )
 
-const filename = "_tmp.txt"
+const (
+	filename = "_tmp.txt"
+	deamon   = true
+)
 
 type pan string
+
 var pf map[pan]uint64
 var os_type string = runtime.GOOS
-
-
 
 func win_run() {
 	pf = make(map[pan]uint64, 0)
@@ -61,31 +63,31 @@ func win_run() {
 
 }
 
-func loop_write(f *os.File,freesize uint64)  {
+func loop_write(f *os.File, freesize uint64) {
 	for i := uint64(0); i < freesize; i++ {
 		//ioutil.WriteFile(file,[]byte{65},0644)
 		f.Write([]byte{65})
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 
-func create_file_sub(file string,freesize uint64) {
-	fmt.Println(file)
+func create_file_sub(file string, freesize uint64) {
+	log.Infof("write file path:%s", file)
 	//create file
 
-	if _,err:=os.Stat(file);err==nil{
+	if _, err := os.Stat(file); err == nil {
 		if os.IsNotExist(err) {
-			f,err1:=os.Create(file)
-			if err1!=nil{
-				log.Errorf("file err:%s\n",err)
+			f, err1 := os.Create(file)
+			if err1 != nil {
+				log.Errorf("file err:%s\n", err)
 			}
-			loop_write(f,freesize)
-		}else{
-			f,err1:=os.OpenFile(file,os.O_WRONLY|os.O_APPEND,0777)
-			if err1!=nil{
-				log.Errorf("file err:%s\n",err)
+			loop_write(f, freesize)
+		} else {
+			f, err1 := os.OpenFile(file, os.O_WRONLY|os.O_APPEND, 0777)
+			if err1 != nil {
+				log.Errorf("file err:%s\n", err)
 			}
-			loop_write(f,freesize)
+			loop_write(f, freesize)
 		}
 
 	}
@@ -94,12 +96,12 @@ func create_file_sub(file string,freesize uint64) {
 
 func create_file() {
 	for pan, freesize := range pf {
-		if strings.Contains(os_type,"linux"){
+		if strings.Contains(os_type, "linux") {
 			file := filepath.Join(string(pan), filename)
 			//fmt.Println(file)
 			go create_file_sub(file, freesize)
-		}else{
-			file := filepath.Join(string(pan),"\\", filename)
+		} else {
+			file := filepath.Join(string(pan), "\\", filename)
 			go create_file_sub(file, freesize)
 		}
 
@@ -109,7 +111,16 @@ func create_file() {
 func main() {
 
 	//fmt.Println(os_type)
-	log.SetOutput(os.Stdout)
+	//if deamon {
+	f, _ := os.OpenFile("./log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	//ff,_:=f.Stat()
+	//
+	//fmt.Println(ff.Name())
+	log.SetOutput(f)
+	//}else{
+	//	log.SetOutput(os.Stdout)
+	//}
+
 	log.SetLevel(log.DebugLevel) //级别
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true})
@@ -117,41 +128,41 @@ func main() {
 		win_run()
 		create_file()
 	}
-	if strings.Contains(os_type,"linux"){
+	if strings.Contains(os_type, "linux") {
 		linux_run()
 		create_file()
 	}
 	select {}
 }
 
-func linux_run()  {
+func linux_run() {
 	pf = make(map[pan]uint64, 0)
-	data,err:=ioutil.ReadFile("/proc/mounts")
-	if err!=nil {
-		if err!=io.EOF{
-			log.Errorf("linux /proc/mounts err:%s\n",err)
+	data, err := ioutil.ReadFile("/proc/mounts")
+	if err != nil {
+		if err != io.EOF {
+			log.Errorf("linux /proc/mounts err:%s\n", err)
 		}
 
 	}
-	bb:=bytes.NewBuffer(data)
-	bf:=bufio.NewReader(bb)
-	for   {
-		line,err:=bf.ReadString('\n')
-		if err!=nil{
-			if err!=io.EOF{
-				log.Errorf("linux /proc/mounts err:%s\n",err)
+	bb := bytes.NewBuffer(data)
+	bf := bufio.NewReader(bb)
+	for {
+		line, err := bf.ReadString('\n')
+		if err != nil {
+			if err != io.EOF {
+				log.Errorf("linux /proc/mounts err:%s\n", err)
 			}
 			break
 		}
-		tmp_s:=strings.Fields(line)
-		if strings.Contains(tmp_s[0],"/dev"){
+		tmp_s := strings.Fields(line)
+		if strings.Contains(tmp_s[0], "/dev") {
 			//fmt.Println(tmp_s)
 
 			pf[pan(tmp_s[1])] = linux_freesize(tmp_s[1])
 		}
 	}
 
-	}
+}
 func linux_freesize(pan string) (freeze uint64) {
 
 	fs := syscall.Statfs_t{}
@@ -163,7 +174,7 @@ func linux_freesize(pan string) (freeze uint64) {
 	Free := fs.Bfree * uint64(fs.Bsize)
 	Used := All - Free //unit   byte
 	//fmt.Println(Used)
-	freeze=Used
+	freeze = Used
 	return
 
 }
