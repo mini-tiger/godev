@@ -1,24 +1,25 @@
 package main
 
 import (
-	"runtime"
-	"strings"
-	"os/exec"
-	"os"
-	"bytes"
-	log "github.com/Sirupsen/logrus"
-	"strconv"
-	"io"
-	"path/filepath"
-	"time"
-	"io/ioutil"
 	"bufio"
+	"bytes"
 	_ "gitee.com/taojun319/godaemon"
+	log "github.com/Sirupsen/logrus"
+	"io"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
 	filename = "_tmp.txt"
 )
+
 //todo  win环境运行前注释 func linux_freesize
 
 type pan string
@@ -74,22 +75,14 @@ func create_file_sub(file string, freesize uint64) {
 	log.Infof("write file path:%s", file)
 	//create file
 
-	if _, err := os.Stat(file); err == nil {
-		if os.IsNotExist(err) {
-			f, err1 := os.Create(file)
-			if err1 != nil {
-				log.Errorf("file err:%s\n", err)
-			}
-			loop_write(f, freesize)
-		} else {
-			f, err1 := os.OpenFile(file, os.O_WRONLY|os.O_APPEND, 0777)
-			if err1 != nil {
-				log.Errorf("file err:%s\n", err)
-			}
-			loop_write(f, freesize)
-		}
-
+	f, err1 := os.OpenFile(file, os.O_CREATE|os.O_SYNC|os.O_WRONLY|os.O_APPEND, 0666)
+	if err1 != nil {
+		log.Errorf("file err:%s\n", err1)
 	}
+	loop_write(f, freesize)
+	//}
+
+	//}
 
 }
 
@@ -162,6 +155,7 @@ func linux_run() {
 	}
 
 }
+
 //func linux_freesize(pan string) (freeze uint64) {
 //
 //	fs := syscall.Statfs_t{}
