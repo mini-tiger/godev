@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "0lHl/qG5zBtVc6K62cViDOjgur8=",
+			"path": "gitee.com/taojun319/godaemon",
+			"revision": "b9cdea14c9c725fcb2315edb910118f3d39abeb6",
+			"revisionTime": "2018-09-06T04:25:11Z"
+		},
+		{
 			"checksumSHA1": "BhMowD2DIKSd9qq8Pzh7Y3mh2/w=",
 			"origin": "godev/mymodels/vendor/github.com/gin-contrib/sse",
 			"path": "github.com/gin-contrib/sse",
@@ -36,6 +42,13 @@
 			"path": "github.com/gin-gonic/gin/render",
 			"revision": "9474b8546c32e2e3d5fdbea5fab9efe1510a57b9",
 			"revisionTime": "2018-08-25T17:12:13Z"
+		},
+		{
+			"checksumSHA1": "8Cqos4GXIgmoBnjtwZppdwTl2m0=",
+			"origin": "godev/mymodels/vendor/github.com/go-sql-driver/mysql",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "8e84467e74995b9a3e671814f1571af74d64f064",
+			"revisionTime": "2018-09-06T04:47:13Z"
 		},
 		{
 			"checksumSHA1": "Y27Agdpf4FN4HGANJ8cp8+Q6VO4=",
@@ -72,6 +85,20 @@
 			"revisionTime": "2018-08-25T17:12:13Z"
 		},
 		{
+			"checksumSHA1": "VCpPj8GiwvqJayb6hkbrut/c3Hg=",
+			"origin": "godev/mymodels/vendor/github.com/open-falcon/falcon-plus/common/model",
+			"path": "github.com/open-falcon/falcon-plus/common/model",
+			"revision": "8e84467e74995b9a3e671814f1571af74d64f064",
+			"revisionTime": "2018-09-06T04:47:13Z"
+		},
+		{
+			"checksumSHA1": "cJabxptmr9ekU1Eniw10mBeQLTY=",
+			"origin": "godev/mymodels/vendor/github.com/open-falcon/falcon-plus/common/utils",
+			"path": "github.com/open-falcon/falcon-plus/common/utils",
+			"revision": "8e84467e74995b9a3e671814f1571af74d64f064",
+			"revisionTime": "2018-09-06T04:47:13Z"
+		},
+		{
 			"checksumSHA1": "uGBzQf4fGElSsr8JhaGWITGRYts=",
 			"origin": "godev/mymodels/vendor/github.com/spf13/pflag",
 			"path": "github.com/spf13/pflag",
@@ -89,6 +116,20 @@
 			"path": "github.com/tidwall/match",
 			"revision": "1731857f09b1f38450e2c12409748407822dc6be",
 			"revisionTime": "2017-10-02T07:59:45Z"
+		},
+		{
+			"checksumSHA1": "z+3rNL8vUZjy1XUq/rik25ITwC0=",
+			"origin": "godev/mymodels/vendor/github.com/toolkits/conn_pool",
+			"path": "github.com/toolkits/conn_pool",
+			"revision": "8e84467e74995b9a3e671814f1571af74d64f064",
+			"revisionTime": "2018-09-06T04:47:13Z"
+		},
+		{
+			"checksumSHA1": "ta0M7z6B+Q62WjfyDR2rGJDqECI=",
+			"origin": "godev/mymodels/vendor/github.com/toolkits/conn_pool/rpc_conn_pool",
+			"path": "github.com/toolkits/conn_pool/rpc_conn_pool",
+			"revision": "8e84467e74995b9a3e671814f1571af74d64f064",
+			"revisionTime": "2018-09-06T04:47:13Z"
 		},
 		{
 			"checksumSHA1": "Ef6istEK0gHoRzGpowUThS79YZk=",
