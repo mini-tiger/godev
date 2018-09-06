@@ -157,23 +157,23 @@ func linux_run() {
 		if strings.Contains(tmp_s[0], "/dev") {
 			//fmt.Println(tmp_s)
 
-			pf[pan(tmp_s[1])] = linux_freesize(tmp_s[1])
+			//pf[pan(tmp_s[1])] = linux_freesize(tmp_s[1])
 		}
 	}
 
 }
-func linux_freesize(pan string) (freeze uint64) {
-
-	fs := syscall.Statfs_t{}
-	err := syscall.Statfs(pan, &fs)
-	if err != nil {
-		return
-	}
-	All := fs.Blocks * uint64(fs.Bsize)
-	Free := fs.Bfree * uint64(fs.Bsize)
-	Used := All - Free //unit   byte
-	//fmt.Println(Used)
-	freeze = Used
-	return
-
-}
+//func linux_freesize(pan string) (freeze uint64) {
+//
+//	fs := syscall.Statfs_t{}
+//	err := syscall.Statfs(pan, &fs)
+//	if err != nil {
+//		return
+//	}
+//	All := fs.Blocks * uint64(fs.Bsize)
+//	Free := fs.Bfree * uint64(fs.Bsize)
+//	Used := All - Free //unit   byte
+//	//fmt.Println(Used)
+//	freeze = Used
+//	return
+//
+//}
