@@ -37,9 +37,10 @@ func main()  {
 	//fmt.Println(filepath.ToSlash(file))
 
 	if os_type == "linux"{
-		p:=os.Getenv("GOPATH")
-		fmt.Println(p)
-		file := filepath.Join(p, "src","godev", "bao.go")
+		//p:=os.Getenv("GOPATH")
+		//fmt.Println(p)
+		// todo linux
+		file := filepath.Join("/home/go", "src","godev", "bao.go")
 		file_info(file)
 	}
 
