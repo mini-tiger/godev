@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/terminal"
 	"time"
 	"net"
 	"log"
+	"strings"
 	"os"
+	"io"
+	"sync"
 )
 
 type sshinfo struct {
@@ -84,34 +86,111 @@ func main() {
 
 func terminal_run(session *ssh.Session)  {
 
-	fd := int(os.Stdin.Fd())
-	oldState, err := terminal.MakeRaw(fd)
-	if err != nil {
-		panic(err)
-	}
-	defer terminal.Restore(fd, oldState)
+	//fd := int(os.Stdin.Fd())
+	//oldState, err := terminal.MakeRaw(fd)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer terminal.Restore(fd, oldState)
 
 	// excute command
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
-	session.Stdin = os.Stdin
-
-	termWidth, termHeight, err := terminal.GetSize(fd)
+	w, err := session.StdinPipe()
 	if err != nil {
 		panic(err)
 	}
+	r, err := session.StdoutPipe()
+	if err != nil {
+		panic(err)
+	}
+	e, err := session.StderrPipe()
+	if err != nil {
+		panic(err)
+	}
+
+	//
+	//termWidth, termHeight, err := terminal.GetSize(fd)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	// Set up terminal modes
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     // enable echoing
+		ssh.ECHO:          0,     // disable echoing
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
 	}
-
 	// Request pseudo terminal
-	if err := session.RequestPty("xterm-256color", termHeight, termWidth, modes); err != nil {
+	if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
+		log.Fatal("request for pseudo terminal failed: ", err)
+	}
+	// Start remote shell
+	//if err := session.Shell(); err != nil {
+	//	log.Fatal("failed to start shell: ", err)
+	//}
+
+	in, out := MuxShell(w, r, e)
+	if err := session.Shell(); err != nil {
 		log.Fatal(err)
 	}
+	<-out //ignore the shell output
+	in <- "ls /"
+	in <- "ls /tmp"
 
-	session.Run("top")
+	in <- "exit"
+	//in <- "exit"
+
+	fmt.Printf("%s\n%s\n", <-out, <-out)
+
+	_, _ = <-out, <-out
+	session.Wait()
+
+
+
+}
+
+func checkError(err error, info string) {
+	if err != nil {
+		fmt.Printf("%s. error: %s\n", info, err)
+		os.Exit(1)
+	}
+}
+
+func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {
+	in := make(chan string, 3)
+	out := make(chan string, 5)
+	var wg sync.WaitGroup
+	wg.Add(1) //for the shell itself
+	go func() {
+		for cmd := range in {
+			wg.Add(1)
+			w.Write([]byte(cmd + "\n"))
+			wg.Wait()
+		}
+	}()
+
+	go func() {
+		var (
+			buf [65 * 1024]byte
+			t   int
+		)
+		for {
+			n, err := r.Read(buf[t:])
+			if err != nil {
+				fmt.Println(err.Error())
+				close(in)
+				close(out)
+				return
+			}
+			t += n
+			result := string(buf[:t])
+			if strings.Contains(result, "Username:") ||
+				strings.Contains(result, "Password:") ||
+				strings.Contains(result, "#") {
+				out <- string(buf[:t])
+				t = 0
+				wg.Done()
+			}
+		}
+	}()
+	return in, out
 }
