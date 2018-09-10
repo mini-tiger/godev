@@ -82,6 +82,12 @@ func main()  {
 	dt = tx.Table("endpoint").Where("endpoint in (?)", inputs).Delete(&Endpoint{})
 	//fmt.Println(Endpoint{})
 	fmt.Println(dt.RowsAffected)//返回删除了几行
+
+	//
+	//dt = tx.Exec(`delete from tag_endpoint where endpoint_id in
+	//		(select id from endpoint where endpoint in (?))`, inputs)
+
+	tx.Rollback()
 	//tx.Commit() // todo 这行代表提交到数据库
 	}
 
