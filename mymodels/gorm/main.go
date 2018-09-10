@@ -20,6 +20,15 @@ type EndpointCounter struct {
 }
 
 
+type Endpoint struct {
+	ID               uint              `gorm:"primary_key"`
+	Endpoint         string            `json:"endpoint"`
+	Ts               int               `json:"-"`
+	TCreate          time.Time         `json:"-"`
+	TModify          time.Time         `json:"-"`
+	EndpointCounters []EndpointCounter `gorm:"ForeignKey:EndpointIDE"`
+}
+
 func main()  {
 	utils.Init_db()
 	db:=utils.Conn().Uic
@@ -45,6 +54,34 @@ func main()  {
 
 	fmt.Printf("%s\n","====================================")
 
-
+	type DBRows struct {
+		Endpoint  string
+		CounterId int
+		Counter   string
+		Type      string
+		Step      int
 	}
+	inputs:=[]string{}
+	inputs=append(inputs, []string{"falcon-win12-1","localhost.localdomain"}... )
+	rows := []DBRows{}
+	dt = db.Raw(
+		`select a.endpoint, b.id AS counter_id, b.counter, b.type, b.step from endpoint as a, endpoint_counter as b
+		where b.endpoint_id = a.id
+		AND a.endpoint in (?)`, inputs)
+
+	dt.Limit(10).Scan(&rows)
+	for _,v:=range rows  {
+		fmt.Printf("%+v\n",v)
+	}
+
+
+	fmt.Printf("%s\n","====================================")
+
+	//del_r := Endpoint{}
+	tx := db.Begin()
+	dt = tx.Table("endpoint").Where("endpoint in (?)", inputs).Delete(&Endpoint{})
+	//fmt.Println(Endpoint{})
+	fmt.Println(dt.RowsAffected)
+	}
+
 
