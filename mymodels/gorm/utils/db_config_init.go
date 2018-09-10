@@ -14,6 +14,7 @@ func Conn() DBpool {
 type DBpool struct {
 	Portaldb *gorm.DB
 	Uic      *gorm.DB
+	Graph    *gorm.DB
 	//测试MAP
 	Dbs map[string]*gorm.DB
 }
@@ -42,6 +43,7 @@ func Init_db() (err error) {
 	uic, err := gorm.Open("mysql", "falcon:123456@tcp(192.168.43.11:3306)/uic?charset=utf8&parseTime=True&loc=Local")
 
 
+
 	if err != nil {
 		return fmt.Errorf("connect to falcon_portal: %s", err.Error())
 	}
@@ -54,6 +56,18 @@ func Init_db() (err error) {
 	//uic.First(&models.User,1)
 	//fmt.Println(uic.HasTable("user"))
 
+
+	var g *sql.DB
+	graph, err := gorm.Open("mysql", "falcon:123456@tcp(192.168.43.11:3306)/graph?charset=utf8&parseTime=True&loc=Local")
+
+	if err != nil {
+		return fmt.Errorf("connect to falcon_portal: %s", err.Error())
+	}
+	graph.LogMode(true) //打开日志
+	graph.Dialect().SetDB(g)
+	graph.SingularTable(true)
+	dbp.Graph = graph
+	dbsp.Dbs["graph"] = graph
 	return
 }
 
