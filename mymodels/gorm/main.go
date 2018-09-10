@@ -67,9 +67,9 @@ func main()  {
 	dt = db.Raw(
 		`select a.endpoint, b.id AS counter_id, b.counter, b.type, b.step from endpoint as a, endpoint_counter as b
 		where b.endpoint_id = a.id
-		AND a.endpoint in (?)`, inputs)
+		AND a.endpoint in (?)`, inputs) // #这里也可以加scan
 
-	dt.Limit(10).Scan(&rows)
+	dt.Limit(10).Scan(&rows) //limit 限制输出的条数
 	for _,v:=range rows  {
 		fmt.Printf("%+v\n",v)
 	}
@@ -78,10 +78,11 @@ func main()  {
 	fmt.Printf("%s\n","====================================")
 
 	//del_r := Endpoint{}
-	tx := db.Begin()
+	tx := db.Begin() // todo 做update,delete时候要 用begin
 	dt = tx.Table("endpoint").Where("endpoint in (?)", inputs).Delete(&Endpoint{})
 	//fmt.Println(Endpoint{})
-	fmt.Println(dt.RowsAffected)
+	fmt.Println(dt.RowsAffected)//返回删除了几行
+	//tx.Commit() // todo 这行代表提交到数据库
 	}
 
 
