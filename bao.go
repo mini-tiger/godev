@@ -2,195 +2,138 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path"
+	"github.com/pkg/sftp"
+	"net"
 	"golang.org/x/crypto/ssh"
 	"time"
-	"net"
-	"log"
-	"strings"
-	"os"
-	"io"
-	"sync"
 )
 
-type sshinfo struct {
-	IP, Username string
-	Passwd       string
-	Port         int
-	client       *ssh.Client
-	Session      *ssh.Session
-	Result       string
+func main() {
+	var (
+		err        error
+		sftpClient *sftp.Client
+	)
+
+	// 这里换成实际的 SSH 连接的 用户名，密码，主机名或IP，SSH端口
+	sftpClient, err = connect("root", "root", "192.168.43.12", 22)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sftpClient.Close()
+
+	// 用来测试的本地文件路径 和 远程机器上的文件夹
+	var localFilePath = "c:/_tmp.txt"
+	var remoteDir = "/root/"
+	srcFile, err := os.Open(localFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer srcFile.Close()
+
+	var remoteFileName = path.Base(localFilePath)
+
+	fmt.Printf("准备上传的文件%s\n",path.Join(remoteDir, remoteFileName))
+
+	dstFile, err := sftpClient.Create(path.Join(remoteDir, remoteFileName))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dstFile.Close()
+
+	buf := make([]byte, 1024)
+	for {
+		n, _ := srcFile.Read(buf)
+		//if err!=nil{
+		//	fmt.Printf("读取需要上传的文件%s err:%s\n",localFilePath,err)
+		//}
+		if n == 0 {
+			break
+		}
+		dstFile.Write(buf)
+	}
+
+	fmt.Println("copy file to remote server finished!")
+
+	// 下载文件
+	download()
+
 }
 
-func New_ssh(port int, args ...string) *sshinfo {
-	temp := new(sshinfo)
-	temp.Port = port
-	temp.IP = args[0]
-	temp.Username = args[1]
-	temp.Passwd = args[2]
-	return temp
+func connect(user, password, host string, port int) (*sftp.Client, error) {
+	var (
+		auth         []ssh.AuthMethod
+		addr         string
+		clientConfig *ssh.ClientConfig
+		sshClient    *ssh.Client
+		sftpClient   *sftp.Client
+		err          error
+	)
+	// get auth method
+	auth = make([]ssh.AuthMethod, 0)
+	auth = append(auth, ssh.Password(password))
 
-}
-func (cli *sshinfo) connect() error {
-	auth := make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(cli.Passwd))
 
 	hostKeyCallbk := func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 		return nil
 	}
-	clientConfig := &ssh.ClientConfig{
-		User:            cli.Username,
-		Auth:            auth,
-		Timeout:         30 * time.Second,
+
+	clientConfig = &ssh.ClientConfig{
+		User:    user,
+		Auth:    auth,
+		Timeout: 30 * time.Second,
 		HostKeyCallback: hostKeyCallbk,
 	}
 
 	// connet to ssh
-	addr := fmt.Sprintf("%s:%d", cli.IP, cli.Port)
+	addr = fmt.Sprintf("%s:%d", host, port)
 
-	client, err := ssh.Dial("tcp", addr, clientConfig)
-	if err != nil {
-		return err
+	if sshClient, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
+		return nil, err
 	}
 
-	// create session
-	session, err := client.NewSession()
-	if err != nil {
-		defer cli.close_session()
-		return err
+	// create sftp client
+	if sftpClient, err = sftp.NewClient(sshClient); err != nil {
+		return nil, err
 	}
-	cli.Session = session
-	return nil
-}
-func (cli *sshinfo) close_session() {
-	cli.Session.Close()
+
+	return sftpClient, nil
 }
 
-func main() {
+func download()  {
+	var (
+		err        error
+		sftpClient *sftp.Client
+	)
 
-	ssh := New_ssh(22, []string{"192.168.43.12", "root", "root"}...)
-	fmt.Println(ssh)
-	err := ssh.connect()
+	// 这里换成实际的 SSH 连接的 用户名，密码，主机名或IP，SSH端口
+	sftpClient, err = connect("root", "root", "192.168.43.12", 22)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//ssh.Session.Stdout=os.Stdout
-	//ssh.Session.Stderr=os.Stderr
-	//ssh.Session.Run("touch /root/1")
-	//ssh.Session.Run("ls /; ls /tmp")
-	//ssh.close_session() //todo session一次运行一次run
+	defer sftpClient.Close()
+	var remoteFilePath = "/root/Centos-7.repo"
+	var localDir = "c:/"
 
-	terminal_run(ssh.Session)
-	ssh.close_session()
-
-}
-
-func terminal_run(session *ssh.Session)  {
-
-	//fd := int(os.Stdin.Fd())
-	//oldState, err := terminal.MakeRaw(fd)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer terminal.Restore(fd, oldState)
-
-	// excute command
-	w, err := session.StdinPipe()
+	srcFile, err := sftpClient.Open(remoteFilePath)
 	if err != nil {
-		panic(err)
-	}
-	r, err := session.StdoutPipe()
-	if err != nil {
-		panic(err)
-	}
-	e, err := session.StderrPipe()
-	if err != nil {
-		panic(err)
-	}
-
-	//
-	//termWidth, termHeight, err := terminal.GetSize(fd)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	// Set up terminal modes
-	modes := ssh.TerminalModes{
-		ssh.ECHO:          0,     // disable echoing
-		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
-	}
-	// Request pseudo terminal
-	if err := session.RequestPty("xterm", 40, 80, modes); err != nil {
-		log.Fatal("request for pseudo terminal failed: ", err)
-	}
-	// Start remote shell
-	//if err := session.Shell(); err != nil {
-	//	log.Fatal("failed to start shell: ", err)
-	//}
-
-	in, out := MuxShell(w, r, e)
-	if err := session.Shell(); err != nil {
 		log.Fatal(err)
 	}
-	<-out //ignore the shell output
-	in <- "ls /"
-	in <- "ls /tmp"
+	defer srcFile.Close()
 
-	in <- "exit"
-	//in <- "exit"
-
-	fmt.Printf("%s\n%s\n", <-out, <-out)
-
-	_, _ = <-out, <-out
-	session.Wait()
-
-
-
-}
-
-func checkError(err error, info string) {
+	var localFileName = path.Base(remoteFilePath)
+	fmt.Printf("准备下载的文件%s\n",path.Join(localDir, localFileName))
+	dstFile, err := os.Create(path.Join(localDir, localFileName))
 	if err != nil {
-		fmt.Printf("%s. error: %s\n", info, err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
-}
+	defer dstFile.Close()
 
-func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {
-	in := make(chan string, 3)
-	out := make(chan string, 5)
-	var wg sync.WaitGroup
-	wg.Add(1) //for the shell itself
-	go func() {
-		for cmd := range in {
-			wg.Add(1)
-			w.Write([]byte(cmd + "\n"))
-			wg.Wait()
-		}
-	}()
+	if _, err = srcFile.WriteTo(dstFile); err != nil { //远程文件写入本地文件
+		log.Fatal(err)
+	}
 
-	go func() {
-		var (
-			buf [65 * 1024]byte
-			t   int
-		)
-		for {
-			n, err := r.Read(buf[t:])
-			if err != nil {
-				fmt.Println(err.Error())
-				close(in)
-				close(out)
-				return
-			}
-			t += n
-			result := string(buf[:t])
-			if strings.Contains(result, "Username:") ||
-				strings.Contains(result, "Password:") ||
-				strings.Contains(result, "#") {
-				out <- string(buf[:t])
-				t = 0
-				wg.Done()
-			}
-		}
-	}()
-	return in, out
+	fmt.Println("copy file from remote server finished!")
 }
