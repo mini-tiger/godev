@@ -202,7 +202,7 @@ func ips_business(v model.PortProcessEnv) (map[string]model.Route_link, error) {
 }
 
 func route_link(port int, ip string) model.Route_link {
-	cmd_string := fmt.Sprintf("tracert -d -h 15 -w 15 -4 %s", "www.baidu.com")
+	cmd_string := fmt.Sprintf("tracert -d -h 15 -w 15 -4 %s", ip)
 	fmt.Println("cmd", "/c", cmd_string)
 
 	cmd := exec.Command("cmd", "/c", cmd_string)
