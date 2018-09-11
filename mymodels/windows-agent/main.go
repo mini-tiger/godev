@@ -44,8 +44,8 @@ func main() {
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 
-	cron.LoadEnvironmentGridConfig()
-
+	cron.LoadEnvironmentGridConfig() // agent 删除尽量在web界面
+									// 直接删除库后， 再次运行Agent，不往graph库endpoint中插入,要删除graph/data/6070文件夹
 	extend_cron.Loadportporcess_taskConfig()
 	extend_cron.Updateportprocess_env_task()
 
