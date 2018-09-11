@@ -21,11 +21,16 @@ func reportAgentStatus(interval time.Duration) {
 		if err != nil {
 			hostname = fmt.Sprintf("error:%s", err.Error())
 		}
-
+		manufacturer, productName, version, serialNumber := g.GetHardware()
 		req := model.AgentReportRequest{
 			Hostname:     hostname,
 			IP:           g.IP(),
 			AgentVersion: g.VERSION,
+			PluginVersion: "",
+			Manufacturer:  manufacturer,
+			ProductName:   productName,
+			SystemVersion: version,
+			SerialNumber:  serialNumber,
 		}
 
 		var resp model.SimpleRpcResponse

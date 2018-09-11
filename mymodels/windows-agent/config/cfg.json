@@ -22,7 +22,7 @@
   },
   "heartbeat": {
     "enabled": true,
-    "addr": "192.168.43.11:6030",
+    "addr": "192.168.43.12:6030",
     "interval": 60,
     "timeout": 1000
   },

@@ -23,6 +23,10 @@ type AgentReportRequest struct {
 	IP            string
 	AgentVersion  string
 	PluginVersion string
+	Manufacturer  string
+	ProductName   string
+	SystemVersion string
+	SerialNumber  string
 }
 
 func (this *AgentReportRequest) String() string {

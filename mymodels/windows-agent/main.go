@@ -39,7 +39,7 @@ func main() {
 	//
 	go cron.InitDataHistory()
 	//
-	cron.ReportAgentStatus()
+	cron.ReportAgentStatus() // 传送硬件信息到数据库，windows版本不支持plugin
 	//
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
