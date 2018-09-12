@@ -1,36 +1,67 @@
 package main
 
 import (
-
-	"syscall"
-	"unsafe"
-	"log"
 	"fmt"
+	"os"
+	"encoding/json"
 )
 
+type ColorGroup struct {
+	ID     int
+	Name   string
+	Colors []string
+}
+
 func main() {
-	kernel32, err := syscall.LoadLibrary("Kernel32.dll")
-	if err != nil {
-		log.Panic(err)
+
+	group :=[]ColorGroup{{
+		ID:     1,
+		Name:   "Reds",
+		Colors: []string{"Crimson", "Red", "Ruby", "Maroon"}},
+		{
+		ID:     2,
+		Name:   "green",
+		Colors: []string{"Ab", "bc", "dd", "abbb"}},
 	}
-	defer syscall.FreeLibrary(kernel32)
-	GetDiskFreeSpaceEx, err := syscall.GetProcAddress(syscall.Handle(kernel32), "GetDiskFreeSpaceExW")
-
+	b, err := json.Marshal(group) //打包 json
 	if err != nil {
-		log.Panic(err)
+		fmt.Println("error:", err)
 	}
+	os.Stdout.Write(b)
+	fmt.Println()
+	var cc interface{}
+	json.Unmarshal(b, &cc) //解析JSON
+	fmt.Printf("%T,%+v\n", cc, cc)
 
-	lpFreeBytesAvailable := int64(0)
-	lpTotalNumberOfBytes := int64(0)
-	lpTotalNumberOfFreeBytes := int64(0)
-	r, a, b := syscall.Syscall6(uintptr(GetDiskFreeSpaceEx), 4,
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("C:"))),
-		uintptr(unsafe.Pointer(&lpFreeBytesAvailable)),
-		uintptr(unsafe.Pointer(&lpTotalNumberOfBytes)),
-		uintptr(unsafe.Pointer(&lpTotalNumberOfFreeBytes)), 0, 0)
-	fmt.Println(r,a,b)
-	log.Printf("Available  %dmb", lpFreeBytesAvailable/1024/1024.0)
-	log.Printf("Total      %dmb", lpTotalNumberOfBytes/1024/1024.0)
-	log.Printf("Free       %dmb", lpTotalNumberOfFreeBytes/1024/1024.0)
+	//json 元素类型转换
+	for _, v := range cc.([]interface{}) {
+		switch v.(type) {
+		case float64:
+			fmt.Println("float64")
+			v = v.(float64)
+			fmt.Printf("%v\n", v)
+		case string:
+			fmt.Println("string")
+			v = v.(string)
+			fmt.Printf("%v\n", v)
+		case []interface{}:
+			//fmt.Println(v)
 
+			strArray := make([]string, 0)
+			for _, arg := range v.([]interface{}) {
+				strArray = append(strArray, arg.(string))
+			}
+			fmt.Println(strArray)
+		case map[string]interface{}:
+			for k,vv:=range v.(map[string]interface{}){
+				fmt.Println(k,vv)
+			}
+
+		default:
+			fmt.Println("default")
+			fmt.Printf("%T\n", v)
+		}
+		//fmt.Println(k,v)
+
+	}
 }
