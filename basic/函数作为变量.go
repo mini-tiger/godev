@@ -16,5 +16,5 @@ func main()  {
 	}
 
 	fmt.Println(a1)
-	a1.b(22)
+	a1.b(22)//
 }
