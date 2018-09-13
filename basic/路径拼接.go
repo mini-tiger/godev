@@ -30,7 +30,7 @@ func main()  {
 	if os_type =="windows" {
 		//file:=filepath.Join("c:\\","work","go-dev","log.txt")
 		//file := filepath.Join("c:\\work", "go-dev", "log.txt")
-		file := filepath.Join("c:","go-dev","log.txt")
+		file := filepath.Join("c:",string(os.PathSeparator),"go-dev","log.txt")
 		file_info(file)
 
 	}
