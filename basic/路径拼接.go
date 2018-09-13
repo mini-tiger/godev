@@ -25,11 +25,12 @@ func main()  {
 	//
 	//fmt.Println(strings.Split(temp,":"))
 	////a:=filepath.VolumeName(file)
-	// todo  windows 路径拼接 开头盘符要加 \\
+	// todo  windows 路径拼接 开头盘符要加 或者 string(os.PathSeparator)
 	os_type:=runtime.GOOS
 	if os_type =="windows" {
 		//file:=filepath.Join("c:\\","work","go-dev","log.txt")
-		file := filepath.Join("c:\\work", "go-dev", "log.txt")
+		//file := filepath.Join("c:\\work", "go-dev", "log.txt")
+		file := filepath.Join("c:","go-dev","log.txt")
 		file_info(file)
 
 	}
@@ -40,7 +41,8 @@ func main()  {
 		//p:=os.Getenv("GOPATH")
 		//fmt.Println(p)
 		// todo linux 路径拼接 开头根目录要加 /
-		file := filepath.Join("/home/go", "src","godev", "bao.go")
+		//file := filepath.Join("/home/go", "src","godev", "bao.go")
+		file := filepath.Join("/home", "go","src","godev", "bao.go")
 		file_info(file)
 	}
 
