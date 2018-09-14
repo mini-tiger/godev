@@ -5,7 +5,10 @@ import (
 	"os"
 )
 
-func main()  {
+func main() {
+	//bytes.NewBuffer([]byte{99})
+	s := 2 % 2
+	fmt.Println(s)
 	fmt.Println(string(os.PathSeparator))
 
 }
