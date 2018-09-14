@@ -17,7 +17,7 @@ func main() {
 	log.SetLevel(log.DebugLevel) //级别
 	log.SetFormatter(&log.TextFormatter{
 		FullTimestamp: true})
-	//log.SetOutput()  todo 参考log 同时写入两个
+	//log.SetOutput()  todo 参考log 同时写入文件与OS.STDOUT
 	logcustom := log.WithFields(log.Fields{ //自定义格式
 		"event": "ne",
 		"topic": "title",
