@@ -6,7 +6,6 @@ import (
 	"godev/mymodels/windows-agent/funcs"
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/common/model"
-	"fmt"
 )
 
 func InitDataHistory() {
@@ -62,14 +61,16 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 				}
 			}
 		}
-		fmt.Println(mvs)
+
 		now := time.Now().Unix()
 		for j := 0; j < len(mvs); j++ {
 			mvs[j].Step = sec
 			mvs[j].Endpoint = hostname
 			mvs[j].Timestamp = now
 		}
-
+		if len(mvs) > 1{
+			g.Logger().Println("采集系统指标完成")
+		}
 		g.SendToTransfer(mvs)
 
 	}

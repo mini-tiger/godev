@@ -11,6 +11,7 @@ import (
 	"godev/mymodels/windows-agent/common/model"
 	"github.com/toolkits/net"
 	"github.com/toolkits/slice"
+	"fmt"
 )
 
 var (
@@ -26,13 +27,54 @@ func InitRootDir() {
 	}
 }
 
+type Log_m struct {
+	Log_file    string
+	Lock        sync.Mutex
+	Logfile_obj *os.File
+}
+
+func (l Log_m) Write(p []byte) (n int, err error) {
+	os.Stdout.Write(p)
+	//fmt.Printf("%c\n",p)
+
+	n, e := l.Write_file(p)
+	return n, e
+}
+
+//todo 如果不绑定指针，l变量在方法内 会被copy一份
+func (l *Log_m) Write_file(p []byte) (n int, err error) {
+	//p=append(p,'\n')
+	l.Lock.Lock()
+	n, e := l.Logfile_obj.Write(p)
+	defer l.Lock.Unlock()
+	return n, e
+}
+
+func (l *Log_m) Createlogfile() {
+	f, err := os.OpenFile(l.Log_file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+
+	if err != nil {
+		fmt.Errorf("err:%s\n", err)
+	}
+	l.Logfile_obj = f
+}
+
+var log1 *log.Logger
+var logfile_instance *Log_m
+
 func InitLog() {
 	fileName := Config().Logfile
-	logFile, err := os.Create(fileName)
-	if err != nil {
-		log.Fatalln("open file error !")
-	}
-	logger = log.New(logFile, "[Debug]", log.LstdFlags)
+	//logFile, err := os.Create(fileName)
+	//if err != nil {
+	//	log.Fatalln("open file error !")
+	//}
+
+	logfile_instance = &Log_m{Log_file: fileName}
+	logfile_instance.Createlogfile()
+	logger = log.New(*logfile_instance, "", log.Ldate|log.Ltime|log.Lshortfile)
+
+
+	//logger = log.New(logFile, "[Debug]", log.LstdFlags)
 	log.Println("logging on", fileName)
 }
 
