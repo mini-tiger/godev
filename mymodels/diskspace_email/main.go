@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"time"
 	"gopkg.in/gomail.v2"
+	_ "gitee.com/taojun319/godaemon"
 )
 
 //todo  win环境运行前注释 func linux_freesize
