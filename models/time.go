@@ -50,4 +50,9 @@ func main() {
 	fmt.Println(int(time.September))
 	fmt.Printf("过去了 :%s 秒\n",time.Since(time_start))
 
+
+	nTime := time.Now()
+	yesTime := nTime.AddDate(0,0,-1)
+	logDay := yesTime.Format("20060102")
+	fmt.Printf("%T,%v\n",logDay,logDay) // todo 昨天日期
 }
