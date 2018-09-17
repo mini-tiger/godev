@@ -7,15 +7,14 @@ import (
 	"net"
 	"os"
 	"strings"
-
 	"bytes"
 	"github.com/toolkits/file"
 	"godev/mymodels/windows-agent/common/model"
 	"io"
 	"io/ioutil"
-	"log"
 	"os/exec"
 )
+
 
 func mySplit(s string, ds string) []string {
 	var rs []string
@@ -111,8 +110,8 @@ func gethare_sub(sub_info string) string {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Println(err)
-		log.Printf("Error get hardinfo:%s,%s\n", sub_info, err)
+		logger.Println(err)
+		logger.Printf("Error get hardinfo:%s,%s\n", sub_info, err)
 		return temps
 	}
 	cmd.Start()
@@ -158,7 +157,7 @@ func EnvGrid() model.EnvGrid {
 	process2appsys = append(process2appsys, ProcessAppsysWorker(DefaultProcessAppsysWorker{"Ssh", "0", "and", []string{"ssh"}}))
 	/*/
 	//process2appsys = GetEnvGridConfig().Appsys
-	//log.Printf("%s",process2appsys,)
+	//logger.Printf("%s",process2appsys,)
 
 	//var appsys2pid map[string]AppsysProcess
 	//appsys2pid = make(map[string]AppsysProcess)
@@ -169,8 +168,8 @@ func EnvGrid() model.EnvGrid {
 	ipaddress := []string{}
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		fmt.Println(err)
-		log.Printf("net.interface err: %s\n", err)
+
+		logger.Printf("net.interface err: %s\n", err)
 	} else {
 		for _, address := range addrs {
 
@@ -185,7 +184,7 @@ func EnvGrid() model.EnvGrid {
 	}
 	hostname, _ := os.Hostname()
 	manufacturer, productName, version, serialNumber := GetHardware()
-	fmt.Println(manufacturer, productName, version, serialNumber)
+	//fmt.Println(manufacturer, productName, version, serialNumber)
 
 	var appsyss []model.Appsys
 	//for k,v := range appsys2pid {

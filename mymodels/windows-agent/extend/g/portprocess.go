@@ -6,10 +6,10 @@ import (
 	"godev/mymodels/windows-agent/common/model"
 	extned_funcs "godev/mymodels/windows-agent/extend/funcs"
 	"io"
-	"log"
 	"os/exec"
 	"strconv"
 	"strings"
+	"godev/mymodels/windows-agent/g"
 )
 
 //config
@@ -42,6 +42,11 @@ func NewPortProcessConfig() *EnvPortProcessConfig {
 //var Portprocess_search_env Portprocess_task_env
 
 var Cmdline []string
+var log *g.Log1
+
+func init()  {
+	log = g.Logger()
+}
 
 func create_cmdline_data() error {
 	cmd_string := fmt.Sprintf("netstat -ano")
@@ -94,7 +99,7 @@ func Getportprocess_data() model.Portprocess_result {
 		//
 		ips, err := ips_business(v)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		//fmt.Println(ips)
 

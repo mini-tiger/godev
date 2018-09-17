@@ -53,7 +53,6 @@ func _filemaxsqlit()  {
 			Log.Finest("Everything is created now (notice that I will not be printing to the file)")
 			Log.Info("%d. The time is now: %s", j, time.Now().Format("15:04:05 MST 2006/01/02"))
 			Log.Critical("Time to close out!")
-
 		}
 	}
 	rfw.Close()
@@ -91,12 +90,15 @@ func main() {
 func _days_split()  {
 	log.FileFlushDefault = 2 // 修改默认写入硬盘时间
 
+	 // todo 使用按天分割，不建议在设置.SetMaxSize()
 	rfw := log.NewRotateFileWriter(filepath.Join("c:\\work\\go-dev\\",filename)).SetDaily(true).SetMaxBackup(7)
-	ww := io.MultiWriter(os.Stdout, rfw) //todo 同时输出到
+	ww := io.MultiWriter(os.Stdout, rfw) //todo 同时输出到,
+	//todo  windows中在后台运行，不要输出到os.Stdout,否则不写日志, SetOutput(rfw)
+
 	// Get a new logger instance
 	// todo FINEST 级别最低
 	// todo %p prefix, %N 行号
-	Log = log.New(log.FINEST).SetOutput(ww).SetPattern("%P [%Y %T] [%L] (%s LineNo:%N) %M\n")
+	Log = log.New(log.FINEST).SetOutput(ww).SetPattern("%P [%Y %T] [%L] (%S LineNo:%N) %M\n")
 	Log.SetPrefix("11111")
 	Log.SetLevel(0)
 
@@ -106,7 +108,6 @@ func _days_split()  {
 			Log.Finest("Everything is created now (notice that I will not be printing to the file)")
 			Log.Info("%d. The time is now: %s", j, time.Now().Format("15:04:05 MST 2006/01/02"))
 			Log.Critical("Time to close out!")
-
 			time.Sleep(1*time.Second)
 		}
 	}

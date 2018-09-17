@@ -1,6 +1,7 @@
 {
   "debug": true,
   "logfile": "windows.log",
+  "daemon": true,
   "hostname": "",
   "ip": "",
   "iis":{

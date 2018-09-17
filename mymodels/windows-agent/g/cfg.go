@@ -50,6 +50,7 @@ type CollectorConfig struct {
 
 type GlobalConfig struct {
 	Debug         bool              `json:"debug"`
+	Daemon        bool   			`json:"daemon"`
 	Hostname      string            `json:"hostname"`
 	IP            string            `json:"ip"`
 	IIs           *IIsConfig        `json:"iis"`
@@ -84,6 +85,7 @@ func Hostname() (string, error) {
 	hostname, err := os.Hostname()
 	if err != nil {
 		logger.Println("ERROR: os.Hostname() fail", err)
+		//logger.Error("ERROR: os.Hostname() fail", err)
 	}
 	return hostname, err
 }

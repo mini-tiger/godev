@@ -7,17 +7,44 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+	nxlog "github.com/ccpaging/nxlog4go"
 	"godev/mymodels/windows-agent/common/model"
 	"github.com/toolkits/net"
 	"github.com/toolkits/slice"
-	"fmt"
+	"io"
 )
 
 var (
-	Root   string
-	logger *log.Logger
+	Root  string
+	logge *nxlog.Logger
 )
+
+type Log1 struct{}
+
+func (l *Log1) Println(m ...interface{}) {
+	logge.Info(m)
+}
+func (l *Log1) Printf(arg0 interface{}, args ...interface{}) {
+	//fmt.Printf("%T,%v\n", m, m)
+	//arg0 = arg0.(string)
+
+	//fmt.Printf("%T,%v\n",arg0,arg0)
+	arg0 = strings.Trim(arg0.(string),"\n") // todo 去掉换行
+	logge.Info(arg0, args...)
+}
+func (l *Log1) Error(m ...interface{}) {
+	logge.Error(m)
+}
+func (l *Log1) Fatalln(m ...interface{}) {
+	logge.Error(m)
+	os.Exit(1)
+}
+func (l *Log1) Fatalf(arg0 interface{}, args ...interface{}) {
+	logge.Error(arg0, args)
+	os.Exit(1)
+}
+
+var logger *Log1
 
 func InitRootDir() {
 	var err error
@@ -27,41 +54,6 @@ func InitRootDir() {
 	}
 }
 
-type Log_m struct {
-	Log_file    string
-	Lock        sync.Mutex
-	Logfile_obj *os.File
-}
-
-func (l Log_m) Write(p []byte) (n int, err error) {
-	os.Stdout.Write(p)
-	//fmt.Printf("%c\n",p)
-
-	n, e := l.Write_file(p)
-	return n, e
-}
-
-//todo 如果不绑定指针，l变量在方法内 会被copy一份
-func (l *Log_m) Write_file(p []byte) (n int, err error) {
-	//p=append(p,'\n')
-	l.Lock.Lock()
-	n, e := l.Logfile_obj.Write(p)
-	defer l.Lock.Unlock()
-	return n, e
-}
-
-func (l *Log_m) Createlogfile() {
-	f, err := os.OpenFile(l.Log_file, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-
-	if err != nil {
-		fmt.Errorf("err:%s\n", err)
-	}
-	l.Logfile_obj = f
-}
-
-var log1 *log.Logger
-var logfile_instance *Log_m
-
 func InitLog() {
 	fileName := Config().Logfile
 	//logFile, err := os.Create(fileName)
@@ -69,16 +61,41 @@ func InitLog() {
 	//	log.Fatalln("open file error !")
 	//}
 
-	logfile_instance = &Log_m{Log_file: fileName}
-	logfile_instance.Createlogfile()
-	logger = log.New(*logfile_instance, "", log.Ldate|log.Ltime|log.Lshortfile)
+	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
+	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发的位置
+	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(7)
 
+	var ww io.Writer
+	if Config().Daemon{
+		ww = io.MultiWriter(rfw) //todo 同时输出到
+	}else{
+		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到
+	}
+
+	// Get a new logger instance
+	// todo FINEST 级别最低
+	// todo %p prefix, %N 行号
+	logge = nxlog.New(nxlog.FINEST).SetOutput(ww).SetPattern("%P [%Y %T] [%L] (%S LineNo:%N) %M\n")
+	//Log.SetPrefix("11111")
+	logge.SetLevel(1)
+
+	// Log some experimental messages
+	//for j := 0; j < 15; j++ {
+	//	for i := 0; i < 400 / (j+1); i++ {
+	//		Log.Finest("Everything is created now (notice that I will not be printing to the file)")
+	//		Log.Info("%d. The time is now: %s", j, time.Now().Format("15:04:05 MST 2006/01/02"))
+	//		Log.Critical("Time to close out!")
+	//
+	//		time.Sleep(1*time.Second)
+	//	}
+	//}
+	//rfw.Close()
 
 	//logger = log.New(logFile, "[Debug]", log.LstdFlags)
 	log.Println("logging on", fileName)
 }
 
-func Logger() *log.Logger {
+func Logger() *Log1 {
 	lock.RLock()
 	defer lock.RUnlock()
 	return logger
@@ -90,7 +107,9 @@ func InitLocalIps() {
 	var err error
 	LocalIps, err = net.IntranetIP()
 	if err != nil {
-		logger.Fatalln("get intranet ip fail:", err)
+		//logger.Fatalln("get intranet ip fail:", err)
+		logger.Error("get intranet ip fail:", err)
+		os.Exit(1)
 	}
 }
 
@@ -140,6 +159,7 @@ func SendToTransfer(metrics []*model.MetricValue) {
 
 	if debug {
 		logger.Printf("=> <Total=%d> %v\n", len(metrics), metrics[0])
+		//logger.Debug("=> <Total=%d> %v\n", len(metrics), metrics[0])
 	}
 
 	var resp model.TransferResponse
@@ -147,6 +167,7 @@ func SendToTransfer(metrics []*model.MetricValue) {
 
 	if debug {
 		logger.Println("<=", &resp)
+		//logger.Debug("<=", &resp)
 	}
 }
 

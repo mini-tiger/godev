@@ -5,7 +5,6 @@ import (
 	"godev/mymodels/windows-agent/common/model"
 	"godev/mymodels/windows-agent/g"
 	extend_g "godev/mymodels/windows-agent/extend/g"
-	"fmt"
 )
 
 
@@ -78,7 +77,7 @@ func loadportporcessConfig(interval time.Duration) {
 			gp.DataInterval = resp.DataInterval
 
 
-			fmt.Println(resp.ConfigInterval,resp.DataInterval)
+			//fmt.Println(resp.ConfigInterval,resp.DataInterval)
 
 			g.Logger().Println("===============================")
 			g.Logger().Println(gp.JsonConfig.Portprocess_slice)
