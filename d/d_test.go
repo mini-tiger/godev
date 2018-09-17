@@ -1,8 +1,6 @@
-package main
+package d
 
 import (
-	"log"
-	"net/http"
 	_ "net/http/pprof"
 
 	"time"
@@ -33,12 +31,12 @@ func BenchmarkAdd(b *testing.B) {
 	}
 }
 
-func main() {
-	go func() {
-		for {
-			log.Println(Add("https://github.com/EDDYCJY"))
-		}
-	}()
-
-	http.ListenAndServe("0.0.0.0:6060", nil)
-}
+//func main() {
+//	go func() {
+//		for {
+//			log.Println(Add("https://github.com/EDDYCJY"))
+//		}
+//	}()
+//
+//	http.ListenAndServe("0.0.0.0:6060", nil)
+//}
