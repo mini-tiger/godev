@@ -80,7 +80,7 @@ func sendmessage(access, msg string) {
 		access)
 
 	log.Println(url, "post")
-	//方法二
+	//方法一
 	//req:=`{"touser": "",
 	//	"toparty": "2",
 	//	"totag": "",
@@ -90,13 +90,28 @@ func sendmessage(access, msg string) {
 	//		"content":"123456"}
 	//}`
 
-	req :=&msg_template{}
-	req.Toparty=""
-	req.Totag=""
-	req.Agentid="1"
-	req.Toparty="2"
-	req.Msgtype="text"
-	req.Text=map[string]string{"content":msg}
+	//方法二
+	//req :=&msg_template{}
+	//req.Touser=""
+	//req.Totag=""
+	//req.Agentid="1"
+	//req.Toparty="2"
+	//req.Msgtype="text"
+	//req.Text=map[string]string{"content":msg}
+	//jr,err:=json.Marshal(req)
+	//fmt.Println(string(jr))
+	//if err!=nil{
+	//	log.Fatalln(err)
+	//}
+
+	//方法三
+	req:=make(map[string]interface{})
+	req["toparty"]="2"
+	req["totag"]=""
+	req["agentid"]="1"
+	req["msgtype"]="text"
+	req["touser"]=""
+	req["text"]=map[string]string{"content":msg}
 	jr,err:=json.Marshal(req)
 	fmt.Println(string(jr))
 	if err!=nil{
@@ -104,7 +119,9 @@ func sendmessage(access, msg string) {
 	}
 
 	client := &http.Client{}
-	req_new := bytes.NewBuffer(jr) //方法二  []byte(req)
+	req_new := bytes.NewBuffer(jr) //方法二，三
+	//方法一  req_new := bytes.NewBuffer([]byte(req))
+
 	request, _ := http.NewRequest("POST", url, req_new)
 	request.Header.Set("Content-type", "application/json")
 	response, _ := client.Do(request)
