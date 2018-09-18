@@ -7,7 +7,7 @@ import (
 )
 
 // Product 商品信息
-type Jtest struct {
+type Jtest struct { //struct每项名字要首字母大写
 	Name        string                 `json:"name,omitempty"` //tag
 	Url         string                 `json:"url,omitempty"`  //omitempy，可以在序列化的时候忽略0值或者空值
 	Pages       int                    `json:"page"`           //tag  标签，json不序列化 此项

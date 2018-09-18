@@ -9,6 +9,8 @@ import (
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/http"
 	"os"
+	"log"
+	httpex"net/http"
 )
 
 func main() {
@@ -17,7 +19,9 @@ func main() {
 	check := flag.Bool("check", false, "check collector")
 
 	flag.Parse()
-
+	go func() {
+		log.Println(httpex.ListenAndServe("localhost:7777", nil))
+	}()
 	if *version {
 		fmt.Println(g.VERSION)
 		os.Exit(0)
