@@ -24,7 +24,7 @@ func trace(msg string) func() {
 
 func main() {
 	log.Println(bigSlowOperation())
-
+	fmt.Println(time.Now().UnixNano())
 	seconds := 10
 	fmt.Print(time.Duration(seconds)*time.Minute, "\n") // 打印 10m0s,单位time.Duration(seconds)
 	d, _ := time.ParseDuration("3m10s")// 合法的单位有"ns"、"us" /"µs"、"ms"、"s"、"m"、"h"。
