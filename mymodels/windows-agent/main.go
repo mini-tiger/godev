@@ -11,6 +11,9 @@ import (
 	"os"
 	"log"
 	httpex"net/http"
+	"net"
+	"time"
+	"strings"
 )
 
 func main() {
@@ -20,7 +23,15 @@ func main() {
 
 	flag.Parse()
 	go func() {
-		log.Println(httpex.ListenAndServe("localhost:7777", nil))
+		conn, err := net.DialTimeout("tcp", "www.baidu.com:80", 2 * time.Second)
+		if err != nil {
+			log.Println("net.DialTimeout Fail")
+			return
+		}
+		ip:=conn.LocalAddr().String()
+		ips:=strings.Split(ip,":")
+		log.Println(httpex.ListenAndServe(fmt.Sprintf("%s:7777",ips[0]), nil))
+		log.Println(ips[0],"7777 port listen sucess")
 	}()
 	if *version {
 		fmt.Println(g.VERSION)

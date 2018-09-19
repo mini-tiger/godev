@@ -62,8 +62,8 @@ func InitLog() {
 	//}
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
-	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发的位置
-	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(7)
+	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
+	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(2)
 
 	var ww io.Writer
 	if Config().Daemon{

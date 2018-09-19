@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"strconv"
 	"os"
-	"time"
 )
 
 //access token interface
@@ -31,7 +30,7 @@ type uploadresp struct {
 const (
 	corpid     = "wx0a5e0ea42d34d2e1"
 	corpsecret = "1YwqhYfsUKDoRYYJWjMRcCRPwk-oaEFNNOl7MhEX120"
-	Agentid    = 1             //报警监控
+	Agentid    = 1             //报警监控 应用ID
 	filename   = "c:\\111.png" //上传图片路径
 )
 
@@ -123,8 +122,7 @@ func uploadmedia(access, filename string) (mediaid string) {
 	//}
 
 	//
-	request.Header.Set("Content-type", fmt.Sprintf("multipart/form-data; boundary=-------------------------%d", time.Now().UnixNano()))
-	//request.Header.Set("Content-Length", strconv.FormatInt(fileinfo.Size(),10))
+	//request.Header.Set("Content-type", fmt.Sprintf("multipart/form-data; boundary=-------------------------%d", time.Now().UnixNano())) //不是必须
 	request.Header.Set("Content-Disposition", fmt.Sprintf("form-data; name=media;filename=%s; filelength=%s",
 		fileinfo.Name(), strconv.FormatInt(fileinfo.Size(), 10)))
 	request.Header.Set("Content-Type", " application/octet-stream")
