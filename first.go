@@ -1,20 +1,12 @@
 package main
 
-import (
-	"net"
-	"time"
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-func main()  {
-	conn, err := net.DialTimeout("tcp", "www.baidu.com:80", 2 * time.Second)
-	if err != nil {
-
+func main() {
+	for i := 1; i < 10; i++ {
+		for j := 1; j <= i; j++ {
+			fmt.Printf("%d * %d = %d \t", j, i, i*j)
+		}
+		fmt.Println()
 	}
-	fmt.Println(conn.LocalAddr())
-	ip:=conn.LocalAddr().String()
-	//fmt.Printf("%T\n",ip)
-	ips:=strings.Split(ip,":")
-	//fmt.Println(ips[0])
-	}
+}

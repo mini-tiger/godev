@@ -6,9 +6,17 @@ import (
 )
 
 func main() {
-	var l1 list.List //
+	var l1 *list.List = list.New()
 	l2 := list.New() //指针类型
-	print_info("l1", &l1)
+	fmt.Println((l1).Len())
+	a:=l1.PushBack("1")
+	fmt.Println(l1.Len())
+	l1.PushBack("2")
+	l1.Remove(a)
+	fmt.Println(l1.Len())
+	fmt.Println(l1.Back().Value,l1.Front().Value)
+
+	print_info("l1", l1)
 	print_info("l2", l2)
 
 	l1.PushFront("123") //插入开始位置
@@ -20,9 +28,9 @@ func main() {
 
 	l2.Remove(han) //删除元素
 
-	print_info("l1", &l1)
+	print_info("l1", l1)
 	print_info("l2", l2)
-	iteror(&l1)
+	iteror(l1)
 	iteror(l2)
 
 }
