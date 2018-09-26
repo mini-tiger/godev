@@ -76,13 +76,30 @@ func main() {
 	fmt.Println("==========================slice read write 通用python============================")
 	pythonwrite()
 	}
+func IntToByte(num int32) []byte {
+	var buffer bytes.Buffer
+	err := binary.Write(&buffer, binary.LittleEndian, num)
+	CheckErr(err)
+	return buffer.Bytes()
+}
 
+
+func CheckErr(err error) {
+	if err != nil {
+		fmt.Println("err occur: ", err)
+		os.Exit(1)
+	}
+}
+// python 与 git上 二进制文件夹中文件，是读取函数
 func pythonwrite()  {
 	buf := new(bytes.Buffer)
 	d := []byte{} // todo 要预先定义好写入的元素个数
 	d=append(d,[]byte("aa")...)
 	d=append(d,[]byte("bb")...)
-	d=append(d,[]byte("10")...)
+	d=append(d,[]byte("10" +
+		"")...)
+	d=append(d,IntToByte(12)...)
+	d=append(d,IntToByte(2)...)
 	for _, v := range d {
 		err := binary.Write(buf, binary.LittleEndian, v)
 		if err != nil {
