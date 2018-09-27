@@ -17,4 +17,5 @@ func main() {
 	b := rand.New(a)
 	fmt.Println(b.Int())
 
+	fmt.Println(rand.Intn(5)) // [0,5] 范围内选 一个
 }
