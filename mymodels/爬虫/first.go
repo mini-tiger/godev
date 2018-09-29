@@ -312,7 +312,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	go UnLinks()
 	ForumGet()
-	log.Printf("当前进程PID:%d\n",os.Getegid())
+	log.Printf("当前进程PID:%d\n",os.Getpid())
 	w.Wait()
 
 	downloadall()
