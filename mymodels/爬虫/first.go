@@ -25,8 +25,6 @@ const (
 	ExistCover = false //存在是否覆盖
 )
 
-var Tmpnow int
-
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
 var tmpChan chan struct{} = make(chan struct{}, 1)        //最后下载图片种子后 退出，通道
 var now = time.Now()
