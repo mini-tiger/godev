@@ -69,6 +69,6 @@ func main() {
 	cron.Collect()
 	//
 	go http.Start()
-
+	log.Printf("进程已启动, 当前进程PID:%d\n",os.Getpid())
 	select {}
 }
