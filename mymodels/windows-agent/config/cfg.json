@@ -1,6 +1,7 @@
 {
   "debug": true,
   "logfile": "windows.log",
+  "logMaxDays": 7,
   "daemon": true,
   "hostname": "",
   "ip": "",

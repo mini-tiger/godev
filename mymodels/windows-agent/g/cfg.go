@@ -2,12 +2,13 @@ package g
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"sync"
-
 	"github.com/toolkits/file"
+
+	"log"
 )
+
 
 type MsSQLConfig struct {
 	Enabled  bool     `json:"enabled"`
@@ -56,6 +57,7 @@ type GlobalConfig struct {
 	IIs           *IIsConfig        `json:"iis"`
 	MsSQL         *MsSQLConfig      `json:"mssql"`
 	Logfile       string            `json:"logfile"`
+	LogMaxDays    int				`json:"logMaxDays"`
 	Heartbeat     *HeartbeatConfig  `json:"heartbeat"`
 	Transfer      *TransferConfig   `json:"transfer"`
 	Http          *HttpConfig       `json:"http"`

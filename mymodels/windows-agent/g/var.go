@@ -12,6 +12,7 @@ import (
 	"github.com/toolkits/net"
 	"github.com/toolkits/slice"
 	"io"
+
 )
 
 var (
@@ -56,20 +57,22 @@ func InitRootDir() {
 
 func InitLog() {
 	fileName := Config().Logfile
+
 	//logFile, err := os.Create(fileName)
 	//if err != nil {
 	//	log.Fatalln("open file error !")
 	//}
+	log.Printf("日志文件最多保存%d天\n",Config().LogMaxDays)
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
-	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(2)
+	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(Config().LogMaxDays) //log保存最大天数
 
 	var ww io.Writer
 	if Config().Daemon{
-		ww = io.MultiWriter(rfw) //todo 同时输出到
+		ww = io.MultiWriter(rfw) //todo 输出到rfw定义
 	}else{
-		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到
+		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到rfw 与 系统输出
 	}
 
 	// Get a new logger instance
