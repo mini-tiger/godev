@@ -55,14 +55,14 @@ func InitRootDir() {
 	}
 }
 
-func InitLog() {
+func InitLog() *nxlog.Logger{
 	fileName := Config().Logfile
 
 	//logFile, err := os.Create(fileName)
 	//if err != nil {
 	//	log.Fatalln("open file error !")
 	//}
-	log.Printf("日志文件最多保存%d天\n",Config().LogMaxDays)
+
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
@@ -82,6 +82,11 @@ func InitLog() {
 	//Log.SetPrefix("11111")
 	logge.SetLevel(1)
 
+	logge.Info("read config file ,successfully") // 走到这里代表配置文件已经读取成功
+	logge.Info("日志文件最多保存%d天\n",Config().LogMaxDays)
+	logge.Info("logging on %s", fileName)
+	logge.Info("进程已启动, 当前进程PID:%d\n",os.Getpid())
+	return logge
 	// Log some experimental messages
 	//for j := 0; j < 15; j++ {
 	//	for i := 0; i < 400 / (j+1); i++ {
@@ -95,7 +100,7 @@ func InitLog() {
 	//rfw.Close()
 
 	//logger = log.New(logFile, "[Debug]", log.LstdFlags)
-	log.Println("logging on", fileName)
+
 }
 
 func Logger() *Log1 {
