@@ -83,9 +83,9 @@ func InitLog() *nxlog.Logger{
 	logge.SetLevel(1)
 
 	logge.Info("read config file ,successfully") // 走到这里代表配置文件已经读取成功
-	logge.Info("日志文件最多保存%d天\n",Config().LogMaxDays)
+	logge.Info("日志文件最多保存%d天",Config().LogMaxDays)
 	logge.Info("logging on %s", fileName)
-	logge.Info("进程已启动, 当前进程PID:%d\n",os.Getpid())
+	logge.Info("进程已启动, 当前进程PID:%d",os.Getpid())
 	return logge
 	// Log some experimental messages
 	//for j := 0; j < 15; j++ {
