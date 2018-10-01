@@ -7,21 +7,21 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"log"
-	"runtime"
-	"sync"
 	"math/rand"
-	"time"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
+	"time"
 )
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
 
 const (
 	MasterUrl  = "http://thzu.net/"
-	MasterDir  = "c:\\work\\image\\"
+	MasterDir  = "G:\\image\\"
 	PAGES      = 3     //最多看3页的数据，3
-	MaxOld     = 4     //最大几天前
+	MaxOld     = 7     //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
@@ -43,7 +43,7 @@ func checkTime(ts, baseFormat string) bool {
 	//base_format := "2006-01-02 15:04"
 	parseStrTime, _ := time.Parse(baseFormat, ts) // todo 字符串转时间
 	todayStrTime, _ := time.Parse("2006-1-2", fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()))
-	
+
 	if todayStrTime.Unix() < MaxOld*86400+parseStrTime.Unix() {
 		return true
 	} else {
@@ -51,7 +51,7 @@ func checkTime(ts, baseFormat string) bool {
 	}
 }
 
-func imagesUrl(url string) (tmpSlice []string,tmpSlice1 []string) {
+func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 	//tmpSlice := make([]string, 0)
 	//tmpSlice1 := make([]string, 0)
 
@@ -93,15 +93,16 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 			w.Done()
 		}
 	}()
+	//tmpImageUrl := make(map[string]string, 0)
 	t_tbody := dom.Find("table[summary]").Find("tbody")
 	//log.Printf("request url:%s, tbody math:%d 个",dom.Url,t_tbody.Length())
 	t_tbody.Each(func(i int, s *goquery.Selection) {
 		sa := s.Find("tr>td.by").First().Find("em").Children()
 		/*
-		一种是
-		<em><span><span title="2018-9-20">7&nbsp;天前</span></span></em>
-		一种是
-		<em><span>2018-9-13</span></em>
+			一种是
+			<em><span><span title="2018-9-20">7&nbsp;天前</span></span></em>
+			一种是
+			<em><span>2018-9-13</span></em>
 		*/
 		if v, b := sa.Find("span").Attr("title"); b { //需要两种判断日期的DOM结构，是否span 下是否有title
 			if checkTime(v, "2006-1-2") { //时间是否在范围内
@@ -110,7 +111,10 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 				url_string, _ := s.Find("tr>th>a.s.xst").Attr("href")
 				//fmt.Println(url_string)
 				w.Add(1)
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能可能会拒绝连接
+				log.Printf("开始解析url:%s 的图片和种子", url_string)
+				//tmpImageUrl[dir_string]=url_string
+				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
+
 			}
 		} else {
 			aa, _ := sa.Html()
@@ -120,11 +124,18 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 				url_string, _ := s.Find("tr>th>a.s.xst").Attr("href")
 				//fmt.Println(url_string)
 				w.Add(1)
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 否则可能会拒绝连接
+				log.Printf("开始解析url:%s 的图片和种子", url_string)
+				//tmpImageUrl[dir_string]=url_string
+				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 否则可能会503拒绝连接
 			}
 		}
 	})
-
+	//for dirString,urlString:=range tmpImageUrl{
+	//	w.Add(1)
+	//	go func() {
+	//		dirImageUrls[dirString], dirTorrentUrls[dirString] = imagesUrl(urlString)
+	//	}()
+	//}
 	w.Done()
 }
 
@@ -221,7 +232,7 @@ func UrlDomGet(url string) *goquery.Document {
 	//}
 }
 
-func DownFile(url, fp string) {
+func DownFile(url, fp string, c chan struct{}) {
 	log.Printf("download %s,url:%s", fp, url)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -244,6 +255,7 @@ func DownFile(url, fp string) {
 		return
 	}
 	fmt.Printf("Download: %+v\n", fp)
+	c <- struct{}{}
 }
 
 func makedir() {
@@ -270,49 +282,57 @@ func exist(file string) bool {
 }
 func downloadall() {
 	makedir()
-	for k, v := range dirImageUrls {
+	for k, v := range dirImageUrls { //一级目录
+		tmpC := make(chan struct{}, len(v)) //控制下载 并发，每个一级子目录 下的图片为一次并发
 		mDir := filepath.Join(filepath.Join(MasterDir, k))
 		for i := 0; i < len(v); i++ {
 			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
 			tmpFile := fmt.Sprintf("%d.jpg", i)
 
 			if exist(filepath.Join(mDir, tmpFile)) {
-				if ExistCover { //存在且常量定义为覆盖，覆盖
-					DownFile(v[i], filepath.Join(mDir, tmpFile))
+				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
+					go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
 					continue
 				}
 			} else {
-				DownFile(v[i], filepath.Join(mDir, tmpFile))
+				go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
 			}
+		}
+		for i := 0; i < len(v); i++ { //控制并发
+			<-tmpC
 		}
 	}
 	for k, v := range dirTorrentUrls {
+		tmpC := make(chan struct{}, len(v))
 		mDir := filepath.Join(filepath.Join(MasterDir, k))
 		for i := 0; i < len(v); i++ {
 			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
 			tmp_file := fmt.Sprintf("%d.torrent", i)
 			if exist(filepath.Join(mDir, tmp_file)) {
 				if ExistCover { //存在且常量定义为覆盖，覆盖
-					DownFile(v[i], filepath.Join(mDir, tmp_file))
+					go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
 					continue
 				}
 			} else {
-				DownFile(v[i], filepath.Join(mDir, tmp_file))
+				go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
 			}
+		}
+		for i := 0; i < len(v); i++ {
+			<-tmpC
 		}
 	}
 	tmpChan <- struct{}{}
 }
 func main() {
-
+	_now := time.Now().Unix()
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	go UnLinks()
 	ForumGet()
-	log.Printf("当前进程PID:%d\n",os.Getpid())
+	log.Printf("当前进程PID:%d\n", os.Getpid())
 	w.Wait()
 
 	downloadall()
@@ -326,4 +346,5 @@ func main() {
 	//	fmt.Println(k, len(v))
 	//}
 	//fmt.Println(len(dirTorrentUrls))
+	fmt.Printf("总共用时%d秒", time.Now().Unix()-_now)
 }
