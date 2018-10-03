@@ -21,7 +21,7 @@ const (
 	MasterUrl  = "http://thzu.net/"
 	MasterDir  = "G:\\image\\"
 	PAGES      = 3     //最多看3页的数据，3
-	MaxOld     = 7     //最大几天前
+	MaxOld     = 4     //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
@@ -294,6 +294,7 @@ func downloadall() {
 					go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
+					tmpC <- struct{}{}
 					continue
 				}
 			} else {
@@ -315,6 +316,7 @@ func downloadall() {
 					go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
+					tmpC <- struct{}{}
 					continue
 				}
 			} else {
