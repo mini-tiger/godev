@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"github.com/CodyGuo/win"
 	"io"
+	"log"
 	"os/exec"
 	"strings"
-	"time"
 )
 
 var (
@@ -24,14 +24,14 @@ var (
 )
 
 func main() {
-	//err := execRun("cmd /c start http://www.baidu.com")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	for {
-		fmt.Println(ExecOs())
-		time.Sleep(1 * time.Second)
+	err := execRun("cmd /c start http://www.baidu.com")
+	if err != nil {
+		log.Fatal(err)
 	}
+	//for {
+	//	fmt.Println(ExecOs())
+	//	time.Sleep(1 * time.Second)
+	//}
 
 }
 
@@ -65,6 +65,7 @@ func execRun(cmd string) error {
 	lpCmdLine := win.StringToBytePtr(cmd)
 	// http://baike.baidu.com/link?url=51sQomXsIt6OlYEAV74YZ0JkHDd2GbmzXcKj_4H1R4ILXvQNf3MXIscKnAkSR93e7Fyns4iTmSatDycEbHrXzq
 	ret := win.WinExec(lpCmdLine, win.SW_HIDE)
+
 	if ret <= 31 {
 		return errors.New(winExecError[ret])
 	}

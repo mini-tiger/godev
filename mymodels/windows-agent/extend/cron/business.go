@@ -1,17 +1,14 @@
 package cron
 
 import (
-	"time"
 	"godev/mymodels/windows-agent/common/model"
-	"godev/mymodels/windows-agent/g"
 	extend_g "godev/mymodels/windows-agent/extend/g"
+	"godev/mymodels/windows-agent/g"
+	"time"
 )
 
-
-
-
 func Updateportprocess_env_task() {
-	g.Logger().Println("start update portprocess_env  ",g.Config().Heartbeat.Enabled," -> ",g.Config().Heartbeat.Addr)
+	g.Logger().Println("start update portprocess_env  ", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
 	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
 		Updateportprocess_env(-1)
 		//go Updateportprocess_env(time.Duration(5)*time.Second)
@@ -19,22 +16,19 @@ func Updateportprocess_env_task() {
 	}
 }
 
-
-
-func Updateportprocess_env(interval time.Duration)  {
+func Updateportprocess_env(interval time.Duration) {
 	for {
-		g.Logger().Println("ready start update portprocess_env ",interval)
+		g.Logger().Println("ready start update portprocess_env ", interval)
 		req := extend_g.Getportprocess_data()
-		g.Logger().Println("collect start update portprocess_env ok:",req.Pr)
+		g.Logger().Println("collect start update portprocess_env ok:", req.Pr)
 
 		var resp model.SimpleRpcResponse
 
-
-		err := g.HbsClient.Call("Port.Updateportprocess_env", req, &resp)  //send portprocess -> hbs
+		err := g.HbsClient.Call("Port.Updateportprocess_env", req, &resp) //send portprocess -> hbs
 		if err != nil || resp.Code != 0 {
 			g.Logger().Println("call Port.Updateportprocess_env fail:", err, "Request:", req, "Response:", resp)
 		}
-		if err == nil && resp.Code == 0{
+		if err == nil && resp.Code == 0 {
 			g.Logger().Println("call Port.Updateportprocess_env Sucess:", err, "Request:", req, "Response:", resp)
 		}
 		if interval < 0 {
@@ -44,9 +38,6 @@ func Updateportprocess_env(interval time.Duration)  {
 	}
 
 }
-
-
-
 
 func Loadportporcess_taskConfig() {
 	g.Logger().Println("start load portprocess_env config", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
@@ -76,7 +67,6 @@ func loadportporcessConfig(interval time.Duration) {
 			gp.ConfigInterval = resp.ConfigInterval
 			gp.DataInterval = resp.DataInterval
 
-
 			//fmt.Println(resp.ConfigInterval,resp.DataInterval)
 
 			g.Logger().Println("===============================")
@@ -93,5 +83,3 @@ func loadportporcessConfig(interval time.Duration) {
 		time.Sleep(interval)
 	}
 }
-
-

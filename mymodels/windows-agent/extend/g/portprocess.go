@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"godev/mymodels/windows-agent/common/model"
 	extned_funcs "godev/mymodels/windows-agent/extend/funcs"
+	"godev/mymodels/windows-agent/g"
 	"io"
 	"os/exec"
 	"strconv"
 	"strings"
-	"godev/mymodels/windows-agent/g"
+	"syscall"
 )
 
 //config
@@ -44,7 +45,7 @@ func NewPortProcessConfig() *EnvPortProcessConfig {
 var Cmdline []string
 var log *g.Log1
 
-func init()  {
+func init() {
 	log = g.Logger()
 }
 
@@ -52,6 +53,8 @@ func create_cmdline_data() error {
 	cmd_string := fmt.Sprintf("netstat -ano")
 	//fmt.Println("cmd", "/c", cmd_string)
 	cmd := exec.Command("cmd", "/c", cmd_string)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
 	stdout, err := cmd.StdoutPipe()
 	cmd.Start()
@@ -83,7 +86,7 @@ func Getportprocess_data() model.Portprocess_result {
 
 	for _, v := range gp.JsonConfig.Portprocess_slice {
 
-		err := create_cmdline_data()  //除了路由以外，都使用netstat -ano为数据基础
+		err := create_cmdline_data() //除了路由以外，都使用netstat -ano为数据基础
 		//fmt.Println(Cmdline)
 		//fmt.Println("==================111111")
 		if err != nil {
@@ -211,6 +214,7 @@ func route_link(port int, ip string) model.Route_link {
 	fmt.Println("cmd", "/c", cmd_string)
 
 	cmd := exec.Command("cmd", "/c", cmd_string)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	route_links := model.Newroute_list()
 
 	stdout, err := cmd.CombinedOutput()

@@ -7,26 +7,26 @@ import (
 )
 
 func UploadEnvironmentGrid() {
-	g.Logger().Println("start environment grid ",g.Config().Heartbeat.Enabled," -> ",g.Config().Heartbeat.Addr)
+	g.Logger().Println("start environment grid ", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
 	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
 		loadEnvironmentGridConfig(-1)
-
+		//go uploadEnvironmentGrid(time.Duration(5)*time.Second)
 		go uploadEnvironmentGrid(time.Duration(g.GetEnvGridConfig().DataInterval) * time.Second)
 	}
 }
 
 func uploadEnvironmentGrid(interval time.Duration) {
 	for {
-		g.Logger().Println("ready collect environment grid",interval)
+		g.Logger().Println("ready collect environment grid", interval)
 		req := g.EnvGrid()
-		g.Logger().Println("collect environment grid ok:",req)
+		g.Logger().Println("collect environment grid ok:", req)
 
 		var resp model.SimpleRpcResponse
 		err := g.HbsClient.Call("Itma.UploadEnvironmentGrid", req, &resp)
 		if err != nil || resp.Code != 0 {
 			g.Logger().Println("call Itma.UploadEnvironmentGrid fail:", err, "Request:", req, "Response:", resp)
 		}
-		if err == nil && resp.Code == 0{
+		if err == nil && resp.Code == 0 {
 			g.Logger().Println("call Itma.UploadEnvironmentGrid Success:", err, "Request:", req, "Response:", resp)
 		}
 		if interval < 0 {
@@ -37,7 +37,7 @@ func uploadEnvironmentGrid(interval time.Duration) {
 }
 
 func LoadEnvironmentGridConfig() {
-	g.Logger().Println("start load environment grid config",g.Config().Heartbeat.Enabled," -> ",g.Config().Heartbeat.Addr)
+	g.Logger().Println("start load environment grid config", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
 	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
 		loadEnvironmentGridConfig(-1)
 
@@ -47,7 +47,7 @@ func LoadEnvironmentGridConfig() {
 
 func loadEnvironmentGridConfig(interval time.Duration) {
 	for {
-		g.Logger().Println("ready get environment grid config ",interval)
+		g.Logger().Println("ready get environment grid config ", interval)
 
 		var req model.NullRpcRequest
 		var resp model.EnvGridConfigResponse
@@ -72,4 +72,3 @@ func loadEnvironmentGridConfig(interval time.Duration) {
 		time.Sleep(interval)
 	}
 }
-

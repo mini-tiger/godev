@@ -2,19 +2,19 @@ package g
 
 import (
 	"bufio"
+	"bytes"
 	"container/list"
 	"fmt"
-	"net"
-	"os"
-	"strings"
-	"bytes"
 	"github.com/toolkits/file"
 	"godev/mymodels/windows-agent/common/model"
 	"io"
 	"io/ioutil"
+	"net"
+	"os"
 	"os/exec"
+	"strings"
+	"syscall"
 )
-
 
 func mySplit(s string, ds string) []string {
 	var rs []string
@@ -107,7 +107,7 @@ func gethare_sub(sub_info string) string {
 	temps := ""
 	cmd_string := fmt.Sprintf("wmic BaseBoard get %s", sub_info)
 	cmd := exec.Command("cmd", "/c", cmd_string)
-
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		logger.Println(err)
