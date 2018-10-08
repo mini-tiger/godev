@@ -1,74 +1,92 @@
 package main
 
 import (
-	"errors"
-)
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
-import (
-	"bufio"
 	"fmt"
-	"github.com/CodyGuo/win"
-	"io"
-	"log"
-	"os/exec"
-	"strings"
+	"reflect"
+	"time"
 )
 
-var (
-	winExecError = map[uint32]string{
-		0:  "The system is out of memory or resources.",
-		2:  "The .exe file is invalid.",
-		3:  "The specified file was not found.",
-		11: "The specified path was not found.",
+type Person struct {
+	Id_   bson.ObjectId `bson:"_id"`
+	Name  string
+	Phone string
+}
+
+func diffSlice(s1, s2 []Person) ([]Person, []Person) { //s1 源数据 s2 目标端数据
+	if reflect.DeepEqual(s1, s2) {
+		return []Person{}, []Person{}
 	}
-)
+	tmpMap1 := make(map[Person]struct{}, 0)
+	tmpMap2 := make(map[Person]struct{}, 0)
+
+	addSlice := make([]Person, 0)
+	delSlice := make([]Person, 0)
+	for _, v := range s2 {
+		tmpMap2[v] = struct{}{}
+	}
+
+	for _, v := range s1 {
+		tmpMap1[v] = struct{}{}
+	}
+
+	for _, v := range s1 {
+		if _, ok := tmpMap2[v]; ok { //源数据id在目标数据中有 应该比对其它字段
+			continue
+		} else {
+			addSlice = append(addSlice, v) //源数据有,目标没有，应该添加到 目标
+		}
+	}
+
+	for _, v := range s2 {
+		if _, ok := tmpMap1[v]; ok { //目标id有，源数据中有 应该比对其它字段。上面或者本循环检验
+			continue
+		} else {
+			delSlice = append(delSlice, v) //目录有,源没有，应该从目标 删除
+		}
+	}
+	return addSlice, delSlice
+
+}
 
 func main() {
-	err := execRun("cmd /c start http://www.baidu.com")
+	session, err := mgo.Dial("1.119.132.143:27017")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	//for {
-	//	fmt.Println(ExecOs())
-	//	time.Sleep(1 * time.Second)
+	defer session.Close()
+
+	// Optional. Switch the session to a monotonic behavior.
+	session.SetMode(mgo.Monotonic, true)
+
+	p := Person{bson.ObjectIdHex(fmt.Sprintf("5bbb4d89159dd36a165b240%d", 1)), "superWang", "13478808311"}
+	for k, v := range p {
+		fmt.Println(k, v)
+	}
+	//cc,err:=session.DB("test").CollectionNames()
+	//if err!=nil{
+	//	log.Fatalln(err)
 	//}
-
-}
-
-func ExecOs() string {
-	temps := ""
-	cmd_string := fmt.Sprintf("wmic BaseBoard get %s", "manufacturer")
-	cmd := exec.Command("cmd", "/c", cmd_string)
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		fmt.Println(err)
-	}
-	cmd.Start()
-	reader := bufio.NewReader(stdout)
-	for {
-		line, err := reader.ReadBytes('\n')
-		if err != nil || err == io.EOF {
-			break
-		}
-		if strings.Contains(strings.ToLower(string(line)), "manufacturer") {
-			continue
-		}
-		temps = strings.TrimSpace(string(line))
-		temps = strings.Trim(temps, "\n")
-		break
-	}
-	return temps
-}
-
-func execRun(cmd string) error {
-	lpCmdLine := win.StringToBytePtr(cmd)
-	// http://baike.baidu.com/link?url=51sQomXsIt6OlYEAV74YZ0JkHDd2GbmzXcKj_4H1R4ILXvQNf3MXIscKnAkSR93e7Fyns4iTmSatDycEbHrXzq
-	ret := win.WinExec(lpCmdLine, win.SW_HIDE)
-
-	if ret <= 31 {
-		return errors.New(winExecError[ret])
+	//fmt.Println(cc)
+	c := session.DB("test").C("people")
+	for i := 0; i < 10; i++ {
+		err = c.Insert(&Person{bson.ObjectIdHex(fmt.Sprintf("5bbb4d89159dd36a165b240%d", i)), "superWang", "13478808311"})
+		time.Sleep(2 * time.Second)
 	}
 
-	return nil
+	//	&Person{"David", "15040268074"})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//result := Person{}
+	//err = c.Find(bson.M{"name": "superWang"}).One(&result)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//fmt.Println("Name:", result.Name)
+	//fmt.Println("Phone:", result.Phone)
 }
