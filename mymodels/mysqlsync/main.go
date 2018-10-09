@@ -1,13 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"database/sql"
-	"log"
+	"fmt"
+	_ "gitee.com/taojun319/godaemon"
+	log "github.com/ccpaging/nxlog4go"
 	_ "github.com/go-sql-driver/mysql"
+	"godev/mymodels/mysqlsync/bussiness"
 	"strconv"
 	"strings"
+	"time"
 )
+
+var Log *log.Logger
+
+func init() {
+	Log = bussiness.Returnlog() // log
+}
 
 type Col struct {
 	id                          int
@@ -23,7 +32,7 @@ func mulitGet(db *sql.DB, sql string) []*Col {
 	tmp := make([]*Col, 0)
 	rows, err := db.Query(sql)
 	if err != nil {
-		log.Fatal(err)
+		Log.Error("sql err:%s", sql)
 	}
 	defer rows.Close()
 
@@ -31,15 +40,15 @@ func mulitGet(db *sql.DB, sql string) []*Col {
 		tmpRow := &Col{}
 		err := rows.Scan(&tmpRow.id, &tmpRow.begin_time, &tmpRow.status, &tmpRow.comment, &tmpRow.alarm_type) //这里顺序要与上面 SQL中获取字段顺序一样
 		if err != nil {
-			log.Fatal(err)
+			Log.Error("sql scan err:%s", sql)
 		}
 		//log.Println(tmpRow)
 		tmp = append(tmp, tmpRow)
 	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+	//err = rows.Err()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	return tmp
 
 }
@@ -61,6 +70,7 @@ func oneGet(db *sql.DB, sql string) int64 {
 
 	err := rows.Scan(&tmp)
 	if err != nil {
+		Log.Error("sql err:%s sql:%s", err, sql)
 		return int64(0) //空值
 	}
 	t, err := strconv.ParseInt(tmp, 10, 64)
@@ -105,27 +115,35 @@ func oneGet(db *sql.DB, sql string) int64 {
 	//}
 }
 
+func subInsert(tx *sql.Tx, data []*Col, sql string) {
+	for _, d := range data {
+		_, err := tx.Exec(sql, d.id, d.begin_time, d.status, d.comment, d.alarm_type)
+		if err != nil {
+			Log.Error("sql db.Exec %s err %s", sql, err)
+			tx.Rollback()
+			return
+		}
+	}
+	err := tx.Commit()
+
+	if err != nil {
+		Log.Error("sql db.commit err %s", sql)
+	}
+}
+
 // 插入数据
 func Insert(db *sql.DB, data []*Col, sql string) {
 	tx, err := db.Begin()
 	if err != nil {
-		log.Fatal(err)
+		Log.Error("sql db.Begin err")
 	}
-	defer tx.Rollback()
-	stmt, err := db.Prepare(sql)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close() // danger!
-	for _, d := range data {
-		_, err := tx.Stmt(stmt).Exec(d.id, d.begin_time, d.status, d.comment, d.alarm_type)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	err = tx.Commit()
-	if err != nil {
-		log.Fatal(err)
+	//fmt.Println(sql)
+	if len(data) > 100 {
+		l := len(data)
+		subInsert(tx, data[0:l/2], sql)
+		subInsert(tx, data[l/2:l-1], sql)
+	} else {
+		subInsert(tx, data, sql)
 	}
 
 	//res, err := stmt.Exec("python", 19)
@@ -179,43 +197,60 @@ func Insert(db *sql.DB, data []*Col, sql string) {
 //	fmt.Printf("ID=%d, affected=%d\n", lastId, rowCnt)
 //}
 
-func main() {
-	// username: root; password: 123456; database: test
-	srcdb, err := sql.Open("mysql", "root:W3b5Ev!c3@tcp(192.168.130.17:3306)/bkdata_monitor_alert?charset=utf8")
-	srcdb.SetMaxIdleConns(5)
-	srcdb.SetMaxOpenConns(5)
-
-	dstdb, err := sql.Open("mysql", "root:W3b5Ev!c3@tcp(192.168.130.17:3306)/test?charset=utf8")
-	dstdb.SetMaxIdleConns(5)
-	dstdb.SetMaxOpenConns(5)
+func createDb(user, passwd, ip, dbname string) *sql.DB {
+	db := &sql.DB{}
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", user, passwd, ip, dbname)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Println("Can't connect to database")
+		return db
 	} else {
-		err = srcdb.Ping()
+		err = db.Ping()
 		if err != nil {
-			fmt.Println("db.Ping failed:", err)
+			fmt.Println("db.Ping %s failed:", ip)
+			return db
 		}
 	}
-	defer srcdb.Close()
-	// Insert(db)
-	// Update(db)
-	// Delete(db)
-	//查找 源库与目标库最新 UNIX时间
-	var sql string
+	//db.SetMaxIdleConns(5)
+	//db.SetMaxOpenConns(5)
+	return db
+}
 
-	sql = "SELECT UNIX_TIMESTAMP(e.begin_time) from ja_alarm_alarminstance as e ORDER BY begin_time desc limit 1;"
-	srcDate := oneGet(srcdb, sql)
-	dstDate := oneGet(dstdb, sql)
-	fmt.Println(srcDate)
-	fmt.Println(dstDate)
-	if srcDate == int64(0) { //源库最新是0 ，代表被清空
-		return //结束本次循环
-	}
-	//INSERT INTO ja_alarm_alarminstance(id,begin_time,status,comment,alarm_type) VALUES(1,'2017-03-02 15:22:22',3,4,5);
-	if srcDate > dstDate {
-		sql = fmt.Sprintf("select %s from ja_alarm_alarminstance as e where UNIX_TIMESTAMP(e.begin_time) > %d", NeedCol, dstDate)
-		insertData := mulitGet(srcdb, sql) //查找大于目标库时间戳的数据
-		sql = fmt.Sprintf("//INSERT INTO ja_alarm_alarminstance(id,begin_time,status,comment,alarm_type) VALUES(?,?,?,?,?);")
-		Insert(dstdb, insertData, sql)
+func closeDb(db *sql.DB) {
+	db.Close()
+}
+
+//10.240.grant all on *.* to 'sync'@'%' identified by 'sync@!123';
+func main() {
+	for {
+		srcdb := createDb("sync", "sync@!123", "10.240.81.84:3306", "bkdata_monitor_alert")
+
+		dstdb := createDb("root", "W3b5Ev!c3", "1.119.132.143:3306", "test")
+
+		var sql string
+		//查找 源库与目标库最新 UNIX时间
+
+		sql = "SELECT UNIX_TIMESTAMP(e.begin_time) from ja_alarm_alarminstance as e ORDER BY begin_time desc limit 1;"
+		srcDate := oneGet(srcdb, sql) //取 源库 目标库 最新的时间戳
+		dstDate := oneGet(dstdb, sql)
+		Log.Info("srcDb New Datadate: %s, dstDb New Datadate: %s",
+			time.Unix(srcDate, 0).Format("2006-01-02 15:04:05"),
+			time.Unix(dstDate, 0).Format("2006-01-02 15:04:05"))
+
+		if srcDate == int64(0) { //源库最新是0 ，代表被清空
+			Log.Info("srcDb no data")
+			continue //结束本次循环
+		}
+		//INSERT INTO ja_alarm_alarminstance(id,begin_time,status,comment,alarm_type) VALUES(1,'2017-03-02 15:22:22',3,4,5);
+		if srcDate > dstDate { //源数据库中数据 有比 目标库中新的数据
+			sql = fmt.Sprintf("select %s from ja_alarm_alarminstance as e where UNIX_TIMESTAMP(e.begin_time) > %d", NeedCol, dstDate)
+			insertData := mulitGet(srcdb, sql) //查找大于目标库时间戳的数据
+			Log.Info("Need insertData Len:%d", len(insertData))
+			sql = fmt.Sprintf("INSERT INTO ja_alarm_alarminstance(id,begin_time,status,comment,alarm_type) VALUES(?,?,?,?,?);")
+			Insert(dstdb, insertData, sql)
+		}
+		closeDb(srcdb)
+		closeDb(dstdb)
+		time.Sleep(10 * time.Second)
 	}
 }
