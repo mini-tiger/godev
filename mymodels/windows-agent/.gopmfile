@@ -1,0 +1,12 @@
+[deps]
+github.com/StackExchange/wmi = 
+github.com/ccpaging/nxlog4go = 
+github.com/denisenkom/go-mssqldb = 
+github.com/open-falcon/falcon-plus = 
+github.com/shirou/gopsutil = 
+github.com/toolkits/file = 
+github.com/toolkits/net = 
+github.com/toolkits/slice = 
+github.com/toolkits/time = 
+golang.org/x/text = 
+
