@@ -37,9 +37,9 @@ func mulitGet(db *sql.DB, sql string) []*Col {
 	if err != nil {
 		Log.Error("sql err:%s", sql)
 	}
-	defer rows.Close()
+	defer rows.Close() // 必要
 
-	for rows.Next() {
+	for rows.Next() { //如果在rows 没有循环完之前就退出，rows不会关闭，链接还是打开状态，要rows.Close()
 		tmpRow := &Col{}
 		err := rows.Scan(&tmpRow.id, &tmpRow.begin_time, &tmpRow.status, &tmpRow.comment, &tmpRow.alarm_type) //这里顺序要与上面 SQL中获取字段顺序一样
 		if err != nil {
