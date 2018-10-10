@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+const  (
+	INTERVAL = 10
+)
 var Log *log.Logger
 
 func init() {
@@ -202,12 +205,12 @@ func createDb(user, passwd, ip, dbname string) *sql.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8", user, passwd, ip, dbname)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Println("Can't connect to database")
+		Log.Info("Can't connect to database")
 		return db
 	} else {
 		err = db.Ping()
 		if err != nil {
-			fmt.Println("db.Ping %s failed:", ip)
+			Log.Info("db.Ping %s failed:", ip)
 			return db
 		}
 	}
@@ -226,6 +229,12 @@ func main() {
 		srcdb := createDb("sync", "sync@!123", "10.240.81.84:3306", "bkdata_monitor_alert")
 
 		dstdb := createDb("root", "W3b5Ev!c3", "1.119.132.143:3306", "test")
+		if dstdb.Stats().OpenConnections == 0 || srcdb.Stats().OpenConnections ==0 { //目标库与源库 如果某一个连接不上，进入下一次循环
+			srcdb.Close()
+			dstdb.Close()
+			time.Sleep(INTERVAL*time.Second)
+			continue
+		}
 
 		var sql string
 		//查找 源库与目标库最新 UNIX时间
@@ -251,6 +260,7 @@ func main() {
 		}
 		closeDb(srcdb)
 		closeDb(dstdb)
-		time.Sleep(10 * time.Second)
+
+		time.Sleep(INTERVAL * time.Second)
 	}
 }
