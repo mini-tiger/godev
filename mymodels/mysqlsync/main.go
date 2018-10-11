@@ -124,7 +124,6 @@ func subInsert(tx *sql.Tx, data []*Col, sql string) {
 		if err != nil {
 			Log.Error("sql db.Exec %s err %s", sql, err)
 			tx.Rollback()
-			return
 		}
 	}
 	err := tx.Commit()
@@ -136,32 +135,48 @@ func subInsert(tx *sql.Tx, data []*Col, sql string) {
 
 // 插入数据
 func Insert(db *sql.DB, data []*Col, sql string) {
-	tx, err := db.Begin()
-	if err != nil {
-		Log.Error("sql db.Begin err")
-	}
-	//fmt.Println(sql)
-	if len(data) > 100 {
-		l := len(data)
-		subInsert(tx, data[0:l/2], sql)
-		subInsert(tx, data[l/2:l-1], sql)
-	} else {
-		subInsert(tx, data, sql)
-	}
+	//使用同一个事务，不用重复发起链接，使用同一个链接循环插入数据  2m39s
+	//tx, err := db.Begin()     //
+	//if err != nil {
+	//	Log.Error("sql db.Begin err")
+	//}
+	//subInsert(tx, data, sql)
 
-	//res, err := stmt.Exec("python", 19)
+	//使用同一个stmt链接，不用重复发起链接,使用同一个链接循环插入数据  1m22s
+	//sql="INSERT INTO ja_alarm_alarminstance(begin_time,status,comment,alarm_type) VALUES(?,?,?,?);"   //
+	////var sqldata string
+	//stm,_:=db.Prepare(sql)
+	//for _,d:=range data {
+	//	stm.Exec(d.begin_time,d.status,d.comment,d.alarm_type)
+	//}
+	//stm.Close()
+
+	//同一个insert语句插入多条语句，同一个链接 //10s  todo 网速不好的，这种性能最好
+	var sqldata string
+	sql="INSERT INTO ja_alarm_alarminstance(begin_time,status,comment,alarm_type) VALUES"
+	l:=len(data)
+	for i,d:=range data{
+		onedata := fmt.Sprintf("( '%s','%s','%s','%s'),",d.begin_time,d.status,d.comment,d.alarm_type)
+		sqldata = sqldata + onedata
+		if i==l-1{ // 最后 不能是，结尾 要是;
+			onedata := fmt.Sprintf("( '%s','%s','%s','%s');",d.begin_time,d.status,d.comment,d.alarm_type)
+			sqldata = sqldata + onedata
+		}
+	}
+	res,err:=db.Exec(sql + sqldata)
+	if err!=nil{
+		Log.Info("sql : %s err",sql)
+		return
+	}
+	lastId, err := res.LastInsertId() // 首先插入的ID
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//lastId, err := res.LastInsertId() // 最后插入的ID
+	rowCnt, err := res.RowsAffected() //本次影响的行数
 	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//rowCnt, err := res.RowsAffected() //本次影响的行数
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Printf("ID=%d, affected=%d\n", lastId, rowCnt)
+	Log.Info("起始插入的ID:%d, 本次影响的行数:%d", lastId, rowCnt)
 }
 
 // 删除数据
