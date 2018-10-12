@@ -2,17 +2,18 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
-	_ "gitee.com/taojun319/godaemon"
 	log "github.com/ccpaging/nxlog4go"
 	_ "github.com/go-sql-driver/mysql"
-	slog "log"
+	"github.com/toolkits/file"
 	"godev/mymodels/mysqlsync/bussiness"
+	_ "godev/mymodels/mysqlsync/daemon"
+	slog "log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"os"
-	"github.com/toolkits/file"
 )
 
 //const (
@@ -202,14 +203,15 @@ func closeDb(db *sql.DB) {
 
 //10.240.grant all on *.* to 'sync'@'%' identified by 'sync@!123';
 func main() {
-	fmt.Println(os.Args)
-	bussiness.Cfg=os.Args[3]
+
+	cfgfile := flag.String("s", "cfg.json", "configuration file")
+	bussiness.Cfg = *cfgfile
 
 	f, _ := os.OpenFile("mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666) //加载日志前用
-	logger := slog.New(f, "",slog.Llongfile)
+	logger := slog.New(f, "", slog.Ltime|slog.Ldate)
 
-	if !file.IsExist(os.Args[3]) {
-		logger.Printf("arg -c config file: %s,is not existent. use default cfg.json\n",os.Args[3])
+	if !file.IsExist(*cfgfile) {
+		logger.Printf("arg -c config file: %s,is not existent. use default cfg.json\n", flag.Lookup("s").Value)
 		//*cfgfile = "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json"
 	}
 	f.Close()
@@ -219,7 +221,7 @@ func main() {
 	NeedCol = strings.Join(cfg.SrcDb.NeedCol, ",")
 	// init log
 	bussiness.Initlog()
-	Log=bussiness.Returnlog()
+	Log = bussiness.Returnlog()
 
 	for {
 		srcdb := createDb(cfg.SrcDb.DbUser, cfg.SrcDb.DbPass, cfg.SrcDb.Ip, cfg.SrcDb.DbName)
