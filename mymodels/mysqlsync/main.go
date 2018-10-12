@@ -2,14 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"fmt"
 	log "github.com/ccpaging/nxlog4go"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/toolkits/file"
 	"godev/mymodels/mysqlsync/bussiness"
 	_ "godev/mymodels/mysqlsync/daemon"
-	slog "log"
+
 	"os"
 	"strconv"
 	"strings"
@@ -204,17 +202,25 @@ func closeDb(db *sql.DB) {
 //10.240.grant all on *.* to 'sync'@'%' identified by 'sync@!123';
 func main() {
 
-	cfgfile := flag.String("s", "cfg.json", "configuration file")
-	bussiness.Cfg = *cfgfile
-
-	f, _ := os.OpenFile("mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666) //加载日志前用
-	logger := slog.New(f, "", slog.Ltime|slog.Ldate)
-
-	if !file.IsExist(*cfgfile) {
-		logger.Printf("arg -c config file: %s,is not existent. use default cfg.json\n", flag.Lookup("s").Value)
-		//*cfgfile = "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json"
+	var cfgfile string
+	if len(os.Args) == 1 { //daemon没有传入任何参数， 执行文件直接运行dd.exe
+		cfgfile = "cfg.json"
+	} else {
+		cfgfile = os.Args[1]
 	}
-	f.Close()
+
+	//cfgfile := flag.String("c", "cfg.json", "configuration file")
+	bussiness.Cfg = cfgfile
+
+	//f, _ := os.OpenFile("mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666) //加载日志前用
+	//logger := slog.New(f, "", slog.Ltime|slog.Ldate)
+	//
+	//if !file.IsExist(cfgfile) {
+	//	fmt.Printf("arg -c config file: %s,is not existent. \n", cfgfile)
+	//	logger.Fatalf("arg -c config file: %s,is not existent. \n", cfgfile)
+	//	//*cfgfile = "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json"
+	//}
+	//f.Close()
 	// 读取配置文件
 	bussiness.InitConfig()
 	cfg := bussiness.Config
