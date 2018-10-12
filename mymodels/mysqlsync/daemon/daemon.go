@@ -13,7 +13,7 @@ import (
 //var godaemon = flag.Bool("d", false, "run app as a daemon with -d=true or -d true.")
 var godaemon = flag.String("d", "false", "run app as a daemon with -d true or -d false.")
 
-//var cfgfile = flag.String("c", "cfg.json", "configuration file")
+var cfgfile = flag.String("c", "cfg.json", "configuration file")
 
 func cfgExist(cfgfile string) {
 	f, _ := os.OpenFile("mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666) //加载日志前用
@@ -32,22 +32,21 @@ func init() {
 		flag.Parse()
 	}
 
-	fmt.Println(flag.NArg())
+	//if flag.NArg() == 1 { // flag 以外的参数  有1个代表加了 配置文件路径
+	//	cmd = exec.Command(os.Args[0])
+	//	cmd.Args = append(cmd.Args, flag.Args()...)
+	//	cfgExist(flag.Args()[0])
+	//}
+	//if flag.NArg() == 0 { // flag 以外的参数 没有 使用默认 cfg.json
+	//	cmd = exec.Command(os.Args[0])
+	//	cmd.Args = append(cmd.Args, "cfg.json")
+	//	cfgExist("cfg.json")
+	//}
 
-	cmd := exec.Command(os.Args[0])
-
-	if flag.NArg() == 1 { // flag 以外的参数  有1个代表加了 配置文件路径
-		cmd = exec.Command(os.Args[0])
-		cmd.Args = append(cmd.Args, flag.Args()...)
-		cfgExist(flag.Args()[0])
-	}
-	if flag.NArg() == 0 { // flag 以外的参数 没有 使用默认 cfg.json
-		cmd = exec.Command(os.Args[0])
-		cmd.Args = append(cmd.Args, "cfg.json")
-		cfgExist("cfg.json")
-	}
-
+	cfgExist(*cfgfile)
 	if strings.Contains(*godaemon, "true") {
+		cmd := exec.Command(os.Args[0])
+		cmd.Args = append(cmd.Args, *cfgfile)
 		cmd.Start()
 		fmt.Printf("%s [PID] %d running...\n", os.Args[0], cmd.Process.Pid)
 		*godaemon = "false"

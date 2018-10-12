@@ -201,12 +201,18 @@ func closeDb(db *sql.DB) {
 
 //10.240.grant all on *.* to 'sync'@'%' identified by 'sync@!123';
 func main() {
-
+	//不能添加 -d false，不后台 就不加-d
 	var cfgfile string
-	if len(os.Args) == 1 { //daemon没有传入任何参数， 执行文件直接运行dd.exe
+
+	if len(os.Args) == 1 { //daemon没有传入任何参数， 通过执行文件直接运行dd.exe
 		cfgfile = "cfg.json"
 	} else {
-		cfgfile = os.Args[1]
+
+		if os.Args[1] == "-c" { //dd.exe -c  cfgfile
+			cfgfile = os.Args[2]
+		} else { // dd.exe -d true or -d true -c cfgfile
+			cfgfile = "cfg.json"
+		}
 	}
 
 	//cfgfile := flag.String("c", "cfg.json", "configuration file")
