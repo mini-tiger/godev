@@ -8,9 +8,9 @@ import (
 
 func main() {
 	fmt.Println("begin TestLog ...")
-	file, err := os.Create("c:\\test.log")
+	file, err := os.OpenFile("C:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Fatalln("fail to create test.log file!")
+		log.Fatalln("fail to create test.log file!",err)
 	}
 	logger := log.New(file, "",log.Llongfile)
 	//log.Println("1.Println log with log.LstdFlags ...")

@@ -37,22 +37,22 @@ type GlobalConfig struct {
 }
 
 var Config *GlobalConfig
-
-func InitConfig(cfg string) {
+var Cfg string
+func InitConfig() {
 	//if cfg == "" {
 	//	log.Fatalln("没有传递配置文件参数")
 	//}
 
-	b, err := ioutil.ReadFile(cfg)
+	b, err := ioutil.ReadFile(Cfg)
 	if err != nil {
-		log.Fatalf("Configfile: [%s], Load err:%s", cfg, err)
+		log.Fatalf("Configfile: [%s], Load err:%s", Cfg, err)
 	}
 	configContent := strings.TrimSpace(string(b))
 
 	var c GlobalConfig
 	err = json.Unmarshal([]byte(configContent), &c)
 	if err != nil {
-		log.Fatalln("parse config file:", cfg, "fail:", err)
+		log.Fatalln("parse config file:", Cfg, "fail:", err)
 	}
 	Config = &c
 }
