@@ -2,7 +2,14 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 )
+
+type A struct {
+	B int
+}
+
 
 func main() {
 	//cpumhz,err:=nux.CpuMHz()
@@ -16,7 +23,21 @@ func main() {
 	//buf, _ := cmd.CombinedOutput()
 	//cmd.Run()
 	//fmt.Println(string(buf)) // todo 统一返回
-	m:=make(map[string]interface{},1)
-	m["1"]=1
-	fmt.Println(len(m))
+	aa:=1
+	bb:=1
+	a1:=A{}
+	a1.B=aa
+	a2:=A{}
+	a2.B=bb
+	//fmt.Println(*a1==*a2)
+	bbbccc(&a1,&a2)
+	string1:="1"
+	s:=strings.Split(string1,".")
+	int, err := strconv.Atoi(s[0])
+	fmt.Println(int,err)
 	}
+
+
+func bbbccc(a,b *A)  {
+	fmt.Println(a==b)
+}
