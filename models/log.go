@@ -8,16 +8,19 @@ import (
 
 func main() {
 	fmt.Println("begin TestLog ...")
-	file, err := os.OpenFile("C:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	file, err := os.OpenFile("d:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
-		log.Fatalln("fail to create test.log file!",err)
+		log.Fatalln("fail to create test.log file!", err)
 	}
-	logger := log.New(file, "",log.Llongfile)
+	logger := log.New(file, "", log.Ltime|log.Ldate)
 	//log.Println("1.Println log with log.LstdFlags ...")
 	logger.Println("1.Println log with log.LstdFlags ...")
 
-	logger.SetFlags(0)
-
+	//logger.SetFlags(0)
+	//for   {
+	logger.Println("2.Println log without log.LstdFlags ...")
+	//time.Sleep(2*time.Second)
+	//}
 	//log.Println("2.Println log without log.LstdFlags ...")
 	logger.Println("2.Println log without log.LstdFlags ...")
 

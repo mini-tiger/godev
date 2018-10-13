@@ -23,7 +23,7 @@ func (p *program) Start(s service.Service) error {
 	go p.run()
 	return nil
 }
-func (p *program) run() {
+func (p *program) run() { // todo 可以使用exec.command() 加入写过的程序
 	file, err := os.OpenFile("d:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatalln("fail to create test.log file!", err)

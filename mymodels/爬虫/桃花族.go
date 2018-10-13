@@ -20,8 +20,8 @@ import (
 const (
 	MasterUrl  = "http://thzu.net/"
 	MasterDir  = "G:\\image\\"
-	PAGES      = 3     //最多看3页的数据，3
-	MaxOld     = 4     //最大几天前
+	PAGES      = 4     //最多看3页的数据，3
+	MaxOld     = 15    //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
@@ -234,16 +234,54 @@ func UrlDomGet(url string) *goquery.Document {
 
 func DownFile(url, fp string, c chan struct{}) {
 	log.Printf("download %s,url:%s", fp, url)
-	resp, err := http.Get(url)
+	//resp, err := http.Get(url)
+	//if err != nil {
+	//	fmt.Printf("%v\n", err.Error())
+	//	return
+	//}
+	//defer resp.Body.Close()
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	request, _ := http.NewRequest("GET", url, nil)
+
+	//request.Header.Set("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	//request.Header.Set("Accept-Charset","GBK,utf-8;q=0.7,*;q=0.3")
+	//request.Header.Set("Accept-Encoding","gzip,deflate,sdch")
+	//request.Header.Set("Accept-Language","zh-CN,zh;q=0.8")
+	//request.Header.Set("Cache-Control","max-age=0")
+	request.Header.Set("Connection", "keep-alive")
+	request.Header.Set("User-Agent", userAgentSlice[rand.Intn(len(userAgentSlice))])
+
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		log.Printf("跳过url:%s,err:%s \n", err, url)
+	//		c <- struct{}{}
+	//		//panic(fmt.Sprintf("err:%s\n",url))
+	//
+	//	}
+	//}()
+
+	response, err := client.Do(request)
 	if err != nil {
-		fmt.Printf("%v\n", err.Error())
+		log.Printf("[Error]:%s, url:%s", err, url)
+		c <- struct{}{}
 		return
 	}
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	if response.StatusCode != 200 {
+		//log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		log.Printf("status code error: %d %s", response.StatusCode, response.Status)
+		c <- struct{}{}
+		return
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("%v\n", err.Error())
+		c <- struct{}{}
 		return
 	}
 
@@ -252,6 +290,7 @@ func DownFile(url, fp string, c chan struct{}) {
 	err = ioutil.WriteFile(fp, body, 0777)
 	if err != nil {
 		fmt.Printf("%v fp:[%v]\n", err.Error(), fp)
+		c <- struct{}{}
 		return
 	}
 	fmt.Printf("Download: %+v\n", fp)
