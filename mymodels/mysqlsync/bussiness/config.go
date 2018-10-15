@@ -42,7 +42,7 @@ func InitConfig() {
 	//if cfg == "" {
 	//	log.Fatalln("没有传递配置文件参数")
 	//}
-
+	//fmt.Println(Cfg)
 	b, err := ioutil.ReadFile(Cfg)
 	if err != nil {
 		log.Fatalf("Configfile: [%s], Load err:%s", Cfg, err)

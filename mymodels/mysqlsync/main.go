@@ -96,33 +96,19 @@ func subInsert(tx *sql.Tx, data []*Col, sql string) {
 
 // 插入数据
 func Insert(db *sql.DB, data []*Col, sql string) {
-	//使用同一个事务，不用重复发起链接，使用同一个链接循环插入数据  2m39s
-	//tx, err := db.Begin()     //
-	//if err != nil {
-	//	Log.Error("sql db.Begin err")
-	//}
-	//subInsert(tx, data, sql)
-
-	//使用同一个stmt链接，不用重复发起链接,使用同一个链接循环插入数据  1m22s
-	//sql="INSERT INTO ja_alarm_alarminstance(begin_time,status,comment,alarm_type) VALUES(?,?,?,?);"   //
-	////var sqldata string
-	//stm,_:=db.Prepare(sql)
-	//for _,d:=range data {
-	//	stm.Exec(d.begin_time,d.status,d.comment,d.alarm_type)
-	//}
-	//stm.Close()
 
 	//同一个insert语句插入多条语句，同一个链接 //10s  todo 网速不好的，这种性能最好
 	var sqldata string
-	sql = "INSERT INTO ja_alarm_alarminstance(begin_time,status,comment,alarm_type) VALUES"
+
 	l := len(data)
 	for i, d := range data {
-		tmpData := fmt.Sprintf("( '%s','%s','%s','%s'),", d.begin_time, d.status, d.comment, d.alarm_type)
-		sqldata = sqldata + tmpData
 		if i == l-1 { // 最后 不能是，结尾 要是;
 			tmpData := fmt.Sprintf("( '%s','%s','%s','%s');", d.begin_time, d.status, d.comment, d.alarm_type)
 			sqldata = sqldata + tmpData
+			break
 		}
+		tmpData := fmt.Sprintf("( '%s','%s','%s','%s'),", d.begin_time, d.status, d.comment, d.alarm_type)
+		sqldata = sqldata + tmpData
 	}
 	res, err := db.Exec(sql + sqldata)
 	if err != nil {
@@ -205,7 +191,7 @@ func main() {
 	var cfgfile string
 
 	if len(os.Args) == 1 { //daemon没有传入任何参数， 通过执行文件直接运行dd.exe
-		cfgfile = "cfg.json"
+		cfgfile = "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json"
 	} else {
 
 		if os.Args[1] == "-c" { //dd.exe -c  cfgfile
@@ -267,7 +253,7 @@ func main() {
 			sql = fmt.Sprintf("select %s from ja_alarm_alarminstance as e where UNIX_TIMESTAMP(e.begin_time) > %d", NeedCol, dstDate)
 			insertData := mulitGet(srcdb, sql) //查找大于目标库时间戳的数据
 			Log.Info("Need insertData Len:%d", len(insertData))
-			sql = fmt.Sprintf("INSERT INTO ja_alarm_alarminstance(id,begin_time,status,comment,alarm_type) VALUES(?,?,?,?,?);")
+			sql = "INSERT INTO ja_alarm_alarminstance(begin_time,status,comment,alarm_type) VALUES"
 			Insert(dstdb, insertData, sql)
 		}
 		closeDb(srcdb)
