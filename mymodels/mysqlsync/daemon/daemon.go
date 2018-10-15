@@ -13,6 +13,7 @@ import (
 //var godaemon = flag.Bool("d", false, "run app as a daemon with -d=true or -d true.")
 var godaemon = flag.String("d", "false", "run app as a daemon with -d true or -d false.")
 
+//var cfgfile = flag.String("c", "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json", "configuration file")
 var cfgfile = flag.String("c", "cfg.json", "configuration file")
 
 func cfgExist(cfgfile string) {

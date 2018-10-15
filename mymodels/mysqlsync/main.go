@@ -191,7 +191,7 @@ func main() {
 	var cfgfile string
 
 	if len(os.Args) == 1 { //daemon没有传入任何参数， 通过执行文件直接运行dd.exe
-		cfgfile = "C:\\work\\go-dev\\src\\godev\\mymodels\\mysqlsync\\cfg.json"
+		cfgfile = "cfg.json"
 	} else {
 
 		if os.Args[1] == "-c" { //dd.exe -c  cfgfile
