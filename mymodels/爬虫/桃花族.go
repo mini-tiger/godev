@@ -21,7 +21,7 @@ const (
 	MasterUrl  = "http://thzu.net/"
 	MasterDir  = "G:\\image\\"
 	PAGES      = 4     //最多看3页的数据，3
-	MaxOld     = 15    //最大几天前
+	MaxOld     = 2    //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
