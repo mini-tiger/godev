@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"syscall"
 )
 
 const (
@@ -30,6 +31,7 @@ var os_type string = runtime.GOOS
 func win_run() {
 	pf = make(map[pan]uint64, 0)
 	cmd := exec.Command("cmd", "/c", "wmic LOGICALDISK get name,size,freespace")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	o, err := cmd.Output()
 	if err != nil {
 		log.Printf("err:%s\n", err)
