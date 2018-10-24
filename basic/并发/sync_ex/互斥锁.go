@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	mu      sync.Mutex // guards balance
+	mu      *sync.Mutex =new(sync.Mutex) // guards balance
 	balance int
 )
 

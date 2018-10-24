@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-var waitgroup sync.WaitGroup
+var waitgroup *sync.WaitGroup = new(sync.WaitGroup)
 
 func test(shownum int) {
 	fmt.Println(shownum)

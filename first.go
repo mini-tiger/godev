@@ -1,45 +1,40 @@
 package main
 
 import (
+	"sync"
 	"fmt"
-	"container/list"
+	"time"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
-type M int
-type N string
-
-type I interface {
-	S() string
-}
-
-func (self *M) S() string  {
-	return fmt.Sprintf("int %d",*self)
-}
-func (self *N) S() string  {
-	return fmt.Sprintf("string %s",*self)
-}
+var sy *sync.WaitGroup = new(sync.WaitGroup)
 
 func main()  {
+	//fmt.Println(sy)
+	sy.Add(1)
+	go func() {
+		for {
+			sy.Add(1)
+			//fmt.Println("this is 1")
+			//time.Sleep(time.Duration(1)*time.Second)
+			}
+	}()
 
-	l:=list.New()
-	m:=M(1)
-	i:=I(&m)
-	l.PushFront(i)
-	//n:=N("1")
-	//i=I(&n)
-
-	//l.PushFront(i)
-
-	l.PushFront([]int{1,2})
-	l.PushFront(map[int]struct{}{1: struct{}{}})
-	for e:=l.Front();e!=nil;e=e.Next(){
-		ee:=e.Value
-		fmt.Println(ee)
-
-	}
-	abc([]int{1,2}...)
-}
-
-func abc(a ...int)  {
-	fmt.Println(a)
+	go func() {
+		for  {
+			fmt.Println("this is 2")
+			sy.Done()
+			time.Sleep(time.Duration(1)*time.Second)
+		}
+	}()
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		fmt.Println()
+		os.Exit(0)
+	}()
+	sy.Wait()
 }

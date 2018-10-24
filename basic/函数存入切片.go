@@ -2,35 +2,62 @@ package main
 
 import "fmt"
 
-type test struct {
-	A []func()  int
+type fff struct {
+	f1 []func(int) int
+	interval int
 }
 
-var tt []test
+var F []fff
 
-func t1() int  {
-	return 1
+func test1(a int) int {
+	return a
 }
-func t2() int {
-	return 2
+func test2(aa int) int  {
+	return aa
 }
-func t3() string {
-	return "3"
+
+func initFunc()  {
+	F=[]fff{
+		{
+			f1: []func(int) int{
+				test1,
+			},
+			interval: 1,
+		},
+		{
+			f1:[]func(int) int{
+				test2,
+			},
+		},
+
+	}
+}
+func runFunc()  {
+	for _,v :=range F{
+		for i,vv:=range v.f1 {
+			fmt.Println(vv(i),v.interval)
+		}
+	}
 }
 func main()  {
-	tt = []test{
-		{A: []func() int{
-			t1,
-			t2,
-		},
-		},
-	}
-	fmt.Printf("%T\n",tt)
-	for _,v:=range tt {
-		for _,vv:=range v.A  {
-			fmt.Printf("%T,%+v\n",vv,vv(  ))
-		}
+	// 函数存入切片中的结构体
+	initFunc()
+	runFunc()
+	fmt.Println("=================================================")
+	// 函数存入切片
+	initFS()
+	runFS()
 
+}
+var FS []func(int) int
+func initFS()  {
+	FS=[]func(int)int{
+		test1,
+		test2,
 	}
 }
-
+func runFS()  {
+	for i,v := range FS{
+		fmt.Println(v(i))
+	}
+}

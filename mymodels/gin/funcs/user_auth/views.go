@@ -13,6 +13,7 @@ func Login(c *gin.Context)  {
 	inputs := APILoginInput{}
 	if err := c.Bind(&inputs); err != nil {
 		//h.JSONR(c, badstatus, "name or password is blank") 可以写成统一返回错误的方法
+		c.String(http.StatusOK, "Hello World")
 		return
 	}
 	name := inputs.Username

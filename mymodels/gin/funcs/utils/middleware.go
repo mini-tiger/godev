@@ -6,7 +6,7 @@ import (
 )
 
 func Test_midddle(c *gin.Context)  {
-	fmt.Println("this is")
+	fmt.Println("this is Test_middle")
 }
 func CORS() gin.HandlerFunc {
 	return func(context *gin.Context) {
