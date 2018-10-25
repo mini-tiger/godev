@@ -1,74 +1,73 @@
 package main
 
 import (
-	"os/exec"
-
+	"encoding/json"
 	"fmt"
-	"golang.org/x/text/encoding/simplifiedchinese"
-
-
+	"reflect"
+	"github.com/tidwall/gjson"
 )
 
-type Charset string
-
-const (
-	UTF8    = Charset("UTF-8")
-	GB18030 = Charset("GB18030")
-)
-
-func ConvertByte2String(sb interface{}, charset Charset) string {
-
-	var str string
-	switch charset {
-	case GB18030:
-		switch sb.(type) {
-		case string:
-			sb1:=sb.(string)
-			str,_=simplifiedchinese.GB18030.NewDecoder().String(sb1)
-		case []byte:
-			sb1:=sb.([]byte)
-			var decodeBytes, _ = simplifiedchinese.GB18030.NewDecoder().Bytes(sb1)
-			str = string(decodeBytes)
-		}
-
-			// todo simplifiedchinese.GB18030.NewDecoder().Reader()
-	case UTF8:
-		fallthrough
-	default:
-		str = ""
-	}
-
-	return str
+type s struct {
+	A int               `json:"a"`
+	B string            `json:"b"`
+	S []string          `json:"s"`
+	M map[string]string `json:"m"`
 }
 
+func main() {
+	ss := s{1, "1", []string{"1", "2"}, map[string]string{"a": "b"}}
+	jsondata, err := json.Marshal(ss)
+	fmt.Println(string(jsondata))
+	fmt.Println(err)
+	var cc interface{}
+	//ss1:=&s{}
+	json.Unmarshal(jsondata, &cc)
+	//jiexi(cc)
 
-func main()  {
-	cmd:=exec.Command("ipconfig")
-	//ss:=make([]byte,0)
-	//buf:=bytes.NewBuffer(ss)
-	//buf:=new(bytes.Buffer)
-	//cmd.Stdout=buf
-	//cmd.Run()
-	//
-	//r,_:=buf.ReadBytes('\n')
-	//for _,v:=range r{
-	//	fmt.Println(string(v))
-	//}
-	buf,_:=cmd.CombinedOutput()
-	fmt.Println(ConvertByte2String(buf,GB18030))
-	//aa:=bytes.NewBuffer(buf)
-	//for   {
-	//	line,err:=aa.ReadString('\n')
-	//	//fmt.Println(line)
-	//	if ok,_:=regexp.MatchString("^\r\n$",line);ok{  // todo 跳过只有换行符的 空行
-	//		continue
-	//	}
-	//	line=strings.Split(line,"\r")[0] // 命令返回每行 结尾是\r\n,去掉其中一个
-	//	//line=ss[0]
-	//	if err!=nil || err==io.EOF{
-	//		break
-	//	}
-	//	fmt.Println(ConvertByte2String(line,GB18030))
-	//	}
+	//r:=gjson.Get(string(jsondata),"m")
+	//fmt.Println(r.Index,r.Num,r.Raw,r.Type,r.Str)
+	r:=gjson.ParseBytes(jsondata).Get("m")
+	fmt.Println(r)
+}
+func jiexi1(v interface{}) {
 
+		vk := reflect.ValueOf(v)
+		switch vk.Kind() {
+		case reflect.String:
+			v1 := v.(string)
+			fmt.Printf("string %s",v1)
+		case reflect.Int:
+			v1 := v.(int)
+			fmt.Println(v1)
+		case reflect.Slice:
+			v1 := v.([]interface{})
+			for _, v2 := range v1 {
+				fmt.Println(v2)
+			}
+		case reflect.Map:
+			v1 := v.(map[string]interface{})
+			fmt.Println(v1)
+		}
+
+}
+func jiexi(v interface{}) {
+	for _, vv := range v.(map[string]interface{}) {
+		vk := reflect.ValueOf(vv)
+		switch vk.Kind() {
+		case reflect.String:
+			v1 := vv.(string)
+			fmt.Println(v1)
+		case reflect.Int:
+			v1 := vv.(int)
+			fmt.Println(v1)
+		case reflect.Slice:
+			v1 := vv.([]interface{})
+			for _, v2 := range v1 {
+				fmt.Println(v2)
+			}
+		case reflect.Map:
+			v1 := vv.(map[string]interface{})
+			fmt.Println(v1)
+		}
+	}
 }

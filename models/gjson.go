@@ -68,7 +68,7 @@ func unslice_json()  {
 	value:=gjson.Get(string(b1),"Name")
 	value1:=gjson.Get(string(b1),"Colors")
 	fmt.Printf("%T,%v\n",value.String(),value.String())
-	fmt.Printf("%T,%v\n",value1.Array(),value1.Array())
+	fmt.Printf("%T,%v\n",value1.Array(),value1.Array()) // todo 将提取的结果 转化为 数组，还可以MAP，
 	for _,v := range value1.Array(){
 		fmt.Printf("%T,%v\n",v.String(),v.String())
 	}
