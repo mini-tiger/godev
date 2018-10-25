@@ -19,7 +19,7 @@ import (
 
 const (
 	MasterUrl  = "http://thzu.net/"
-	MasterDir  = "G:\\image\\"
+	MasterDir  = "c:\\image\\"
 	PAGES      = 4     //最多看3页的数据，3
 	MaxOld     = 2     //最大几天前
 	ExistCover = false //存在是否覆盖
@@ -28,7 +28,7 @@ const (
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
 var tmpChan chan struct{} = make(chan struct{}, 1)        //最后下载图片种子后 退出，通道
 var now = time.Now()
-var w sync.WaitGroup
+var w *sync.WaitGroup = new(sync.WaitGroup)
 var masterChan chan *goquery.Document = make(chan *goquery.Document, PAGES)
 var userAgentSlice = []string{
 	"chrome 67",
@@ -370,7 +370,7 @@ func downloadall() {
 }
 func main() {
 	_now := time.Now().Unix()
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(1)
 	go UnLinks()
 	ForumGet()
 	log.Printf("当前进程PID:%d\n", os.Getpid())
