@@ -57,8 +57,8 @@ func main() {
 	ss1 := strings.Split(ss, s_sub)
 
 	ss2 := strings.Split(ss1[1], "跟踪完成。")
-	ss = strings.Trim(ss2[0], "\n")
-	ss = strings.Trim(ss2[0], "\r")
+	//ss = strings.Trim(ss2[0], "\n")
+	//ss = strings.Trim(ss2[0], "\r")
 	ss = strings.TrimSpace(ss2[0])
 
 	ss3 := strings.Split(ss, "\r\n")
