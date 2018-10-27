@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
@@ -19,9 +20,9 @@ import (
 
 const (
 	MasterUrl  = "http://thzu.net/"
-	MasterDir  = "c:\\image\\"
+	MasterDir  = "g:\\image\\"
 	PAGES      = 4     //最多看3页的数据，3
-	MaxOld     = 2     //最大几天前
+	MaxOld     = 8     //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
@@ -184,13 +185,12 @@ func UrlDomGet(url string) *goquery.Document {
 	request.Header.Set("Connection", "keep-alive")
 	request.Header.Set("User-Agent", userAgentSlice[rand.Intn(len(userAgentSlice))])
 
-	defer func() {
-		if err := recover(); err != nil {
-			log.Printf("跳过url:%s,err:%s \n", err, url)
-			//panic(fmt.Sprintf("err:%s\n",url))
-
-		}
-	}()
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		log.Printf("跳过url:%s,err:%s \n", err, url)
+	//		//panic(fmt.Sprintf("err:%s\n",url))
+	//	}
+	//}()
 
 	response, err := client.Do(request)
 	if err != nil {
@@ -266,7 +266,13 @@ func DownFile(url, fp string, c chan struct{}) {
 
 	response, err := client.Do(request)
 	if err != nil {
-		log.Printf("[Error]:%s, url:%s", err, url)
+		if strings.Contains(fp, "torrent") {
+			log.Printf("[Error]:种子请求失败%s, url:%s", err, url)
+		}
+		if strings.Contains(fp, "jpg") {
+			log.Printf("[Error]:图片请求失败%s, url:%s", err, url)
+		}
+
 		c <- struct{}{}
 		return
 	}
