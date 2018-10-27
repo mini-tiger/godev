@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -16,7 +17,9 @@ func main() {
 	//buf, _ := cmd.CombinedOutput()
 	//cmd.Run()
 	//fmt.Println(string(buf)) // todo 统一返回
-	m:=make(map[string]interface{},1)
-	m["1"]=1
+	m := make(map[string]interface{}, 1)
+	m["1"] = 1
 	fmt.Println(len(m))
-	}
+	t1 := time.Now()
+	fmt.Println(t1.Format("2006 01-02 15:04:05"))
+}
