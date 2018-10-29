@@ -1,88 +1,101 @@
 package main
 
 import (
-	"fmt"
+	"github.com/pkg/sftp"
+	"time"
 	"log"
+	"io/ioutil"
+	"golang.org/x/crypto/ssh"
+	"fmt"
 	"os"
 	"path"
-	"github.com/pkg/sftp"
-
-	"time"
-	"golang.org/x/crypto/ssh"
 )
+
+
 
 func main() {
 	var (
 		err        error
 		sftpClient *sftp.Client
 	)
-
-	// 这里换成实际的 SSH 连接的 用户名，密码，主机名或IP，SSH端口
-	sftpClient, err = connect("root", "root", "192.168.43.11", 22)
+	//start := time.Now()
+	sftpClient, err = connect("root","root","192.168.43.11",22)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer sftpClient.Close()
 
-	// 用来测试的本地文件路径 和 远程机器上的文件夹
-	var localFilePath = "c:\\1.log"
-	var remoteDir = "/root/"
-	srcFile, err := os.Open(localFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer srcFile.Close()
-
-	var remoteFileName = path.Base(localFilePath)
-	dstFile, err := sftpClient.Create(path.Join(remoteDir, remoteFileName))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer dstFile.Close()
-
-	buf := make([]byte, 1024)
-	for {
-		n, _ := srcFile.Read(buf)
-		if n == 0 {
-			break
-		}
-		dstFile.Write(buf)
+	_, errStat := sftpClient.Stat("/root/")
+	if errStat != nil {
+		log.Fatal("/root/" + " remote path not exists!")
 	}
 
-	fmt.Println("copy file to remote server finished!")
+	//backupDirs, err := ioutil.ReadDir("c:\\1.log")
+	//if err != nil {
+	//	log.Fatal("c:\\1.log  local path not exists!")
+	//}
+	uploadFile(sftpClient,"C:\\1.log","/root/1.log")
 }
-
-
 func connect(user, password, host string, port int) (*sftp.Client, error) {
 	var (
-		auth         []ssh.AuthMethod
-		addr         string
-		clientConfig *ssh.ClientConfig
-		sshClient    *ssh.Client
-		sftpClient   *sftp.Client
-		err          error
+	auth         []ssh.AuthMethod
+	addr         string
+	clientConfig *ssh.ClientConfig
+	sshClient    *ssh.Client
+	sftpClient   *sftp.Client
+	err          error
 	)
 	// get auth method
 	auth = make([]ssh.AuthMethod, 0)
 	auth = append(auth, ssh.Password(password))
 
 	clientConfig = &ssh.ClientConfig{
-		User:    user,
-		Auth:    auth,
-		Timeout: 30 * time.Second,
+	User:            user,
+	Auth:            auth,
+	Timeout:         30 * time.Second,
+	HostKeyCallback: ssh.InsecureIgnoreHostKey(), //ssh.FixedHostKey(hostKey),
 	}
 
 	// connet to ssh
 	addr = fmt.Sprintf("%s:%d", host, port)
-
 	if sshClient, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
-		return nil, err
+	return nil, err
 	}
 
 	// create sftp client
 	if sftpClient, err = sftp.NewClient(sshClient); err != nil {
-		return nil, err
+	return nil, err
+	}
+	return sftpClient, nil
 	}
 
-	return sftpClient, nil
+
+func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string) {
+	srcFile, err := os.Open(localFilePath)
+	if err != nil {
+		fmt.Println("os.Open error : ", localFilePath)
+		log.Fatal(err)
+
+	}
+	defer srcFile.Close()
+
+	//var remoteFileName = path.Base(localFilePath)
+
+	dstFile, err := sftpClient.Create(path.Join("/root/", "1.log"))
+	if err != nil {
+		fmt.Println("sftpClient.Create error : ", path.Join("/root/", "1.log"))
+		log.Fatal(err)
+
+	}
+	defer dstFile.Close()
+
+	ff, err := ioutil.ReadAll(srcFile)
+	if err != nil {
+		fmt.Println("ReadAll error : ", localFilePath)
+		log.Fatal(err)
+
+	}
+	dstFile.Write(ff)
+	fmt.Println(localFilePath + "  copy file to remote server finished!")
 }
+
