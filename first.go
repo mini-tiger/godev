@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"math"
+	"runtime"
 )
 
 type A struct {
@@ -35,6 +37,9 @@ func main() {
 	s:=strings.Split(string1,".")
 	int, err := strconv.Atoi(s[0])
 	fmt.Println(int,err)
+	fmt.Printf("%f,%T\n",math.Floor(float64(100)/5/5),math.Floor(float64(100)/5/5))
+	fmt.Println(int64(math.Floor(float64(100)/5/5)))
+	fmt.Println(runtime)
 	}
 
 
