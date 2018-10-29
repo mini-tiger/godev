@@ -8,7 +8,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"fmt"
 	"os"
-	"path"
 )
 
 
@@ -19,13 +18,13 @@ func main() {
 		sftpClient *sftp.Client
 	)
 	//start := time.Now()
-	sftpClient, err = connect("root","root","192.168.43.11",22)
+	sftpClient, err = connect("root","root","192.168.43.11",22)  //远程链接打开
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer sftpClient.Close()
 
-	_, errStat := sftpClient.Stat("/root/")
+	_, errStat := sftpClient.Stat("/root/")   //远程目录确认状态是否存在
 	if errStat != nil {
 		log.Fatal("/root/" + " remote path not exists!")
 	}
@@ -71,7 +70,7 @@ func connect(user, password, host string, port int) (*sftp.Client, error) {
 
 
 func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string) {
-	srcFile, err := os.Open(localFilePath)
+	srcFile, err := os.Open(localFilePath) //打开需要上传的本地文件
 	if err != nil {
 		fmt.Println("os.Open error : ", localFilePath)
 		log.Fatal(err)
@@ -81,21 +80,21 @@ func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string
 
 	//var remoteFileName = path.Base(localFilePath)
 
-	dstFile, err := sftpClient.Create(path.Join("/root/", "1.log"))
+	dstFile, err := sftpClient.Create(remotePath) //创建远程文件
 	if err != nil {
-		fmt.Println("sftpClient.Create error : ", path.Join("/root/", "1.log"))
+		fmt.Println("sftpClient.Create error : ", remotePath)
 		log.Fatal(err)
 
 	}
 	defer dstFile.Close()
 
-	ff, err := ioutil.ReadAll(srcFile)
+	ff, err := ioutil.ReadAll(srcFile) // 本地文件内容数据
 	if err != nil {
 		fmt.Println("ReadAll error : ", localFilePath)
 		log.Fatal(err)
 
 	}
-	dstFile.Write(ff)
+	dstFile.Write(ff)  //远程文件 写入 本地文件内容
 	fmt.Println(localFilePath + "  copy file to remote server finished!")
 }
 
