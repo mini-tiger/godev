@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"math"
-	"runtime"
 )
 
 type A struct {
@@ -39,7 +38,7 @@ func main() {
 	fmt.Println(int,err)
 	fmt.Printf("%f,%T\n",math.Floor(float64(100)/5/5),math.Floor(float64(100)/5/5))
 	fmt.Println(int64(math.Floor(float64(100)/5/5)))
-	fmt.Println(runtime)
+
 	}
 
 

@@ -17,9 +17,32 @@ type DBpool struct {
 	Graph    *gorm.DB
 	//测试MAP
 	Dbs map[string]*gorm.DB
+	Nodeman  *gorm.DB
 }
 
 var dbp DBpool
+
+
+
+func Init_db_mulit() (err error)  {
+	dbsp := DBpool{Dbs: make(map[string]*gorm.DB)}
+
+	var h *sql.DB
+	host, err := gorm.Open("mysql", "falcon:123456@tcp(192.168.43.11:3306)/nodeman?charset=utf8&parseTime=True&loc=Local")
+
+	if err != nil {
+		return fmt.Errorf("connect to falcon_portal: %s", err.Error())
+	}
+
+	host.LogMode(true) //打开日志
+	host.Dialect().SetDB(h)
+	host.SingularTable(true)
+	//// 全局禁用表名复数
+	//db.SingularTable(true) // 如果设置为true,`User`的默认表名为`user`,否则是users 使用`TableName`设置的表名不受影响
+	dbp.Nodeman = host
+	dbsp.Dbs["nodeman"] = host
+	return
+}
 
 func Init_db() (err error) {
 	dbsp := DBpool{Dbs: make(map[string]*gorm.DB)}

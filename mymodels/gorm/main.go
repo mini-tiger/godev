@@ -1,11 +1,11 @@
 package main
 
 import (
+	"time"
 	"godev/mymodels/gorm/utils"
 	"godev/mymodels/gorm/models"
 	"fmt"
 	"strings"
-	"time"
 )
 
 type EndpointCounter struct {
@@ -28,7 +28,7 @@ type Endpoint struct {
 	EndpointCounters []EndpointCounter `gorm:"ForeignKey:EndpointIDE"`
 }
 
-func main() {
+func falcon() {
 	utils.Init_db()
 	db := utils.Conn().Uic
 
@@ -110,10 +110,56 @@ func main() {
 	//fmt.Println(e)
 	id := e.ID //将结果e中主键ID 提取
 	//fmt.Println(id)
-	update_data := map[string]interface{}{//需要修改的字段，不写字段不修改
+	update_data := map[string]interface{}{ //需要修改的字段，不写字段不修改
 		"endpoint": "test2",
-		"ts":       333,
+		"ts": 333,
 	}
 	dt = db.Model(&e).Where("id = ?", id).Update(update_data) //这里不用commit
 	fmt.Println(dt.RowsAffected)
+}
+
+func main() {
+	//falcon()
+
+
+	//一对多
+	utils.Init_db_mulit()
+	db := utils.Conn().Nodeman
+
+	var hi models.Hostinfo
+	//var hrun []models.Hostrun
+	db.Where("id=?", "1").Find(&hi)
+	fmt.Println(hi)
+
+
+	a:=db.Model(&hi).Association("Run").Count()
+	fmt.Println(hi)
+	fmt.Println(a)
+
+	var hrun []models.Hostrun
+
+	hi1 := models.Hostinfo{ID:1} // ID为1的hostinfo 对应多条数据
+	db.Model(&hi1).Association("Run").Find(&hrun)  // 一个查找多个
+	fmt.Println(hrun)
+
+
+	var hr []models.Hostrun
+	db.Table("hostrun").Find(&hr) // 查找hostrun 表里所有记录
+	for _,v:=range hr{					//通过多这边  找到对应一那边
+		tmp:=models.Hostinfo{ID:v.Host_id}
+		db.Table("hostinfo").Find(&tmp)
+		fmt.Printf("当前hostrun 对应的HOSTID：%d\n",v.Host_id)
+		fmt.Printf("对应的hostinfo %+v\n",tmp)
+
 	}
+
+	//fmt.Println(hi11)
+	//
+	//aa:=db.Model(&hi).Where("id=?", "1")
+	//hostid:=aa.Value
+	//fmt.Println(hostid)
+	//db.Where("host_id=?",).Find(&hrun)
+	//fmt.Println(hrun)
+
+
+}
