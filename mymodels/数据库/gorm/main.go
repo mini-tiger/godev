@@ -2,8 +2,8 @@ package main
 
 import (
 	"time"
-	"godev/mymodels/gorm/utils"
-	"godev/mymodels/gorm/models"
+	"godev/mymodels/数据库/gormgorm/utils"
+	"godev/mymodels/数据库/gormgorm/models"
 	"fmt"
 	"strings"
 )
