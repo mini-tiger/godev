@@ -2,7 +2,7 @@
     "debug": true,
     "hostname": "",
     "logfile": "run.log",
-    "uuid":"{{.UUID}}",
+    "uuid":"ec6c429e-8c7c-4a11-9ac4-98b1986ba2bd",
     "biz":3,
     "logMaxDays": 7,
     "daemon": true,
@@ -15,7 +15,7 @@
     },
     "heartbeat": {
         "enabled": true,
-        "addr": "192.168.1.105:6030",
+        "addr": "192.168.43.26:6030",
         "interval": 60,
         "timeout": 1000
     },
