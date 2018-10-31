@@ -74,6 +74,7 @@ func Any(value interface{}) string {
 func formatAtom(v reflect.Value) string {
 	fmt.Println(v.Kind())
 	switch v.Kind() {
+
 	case reflect.Invalid:
 		return "invalid"
 	case reflect.Int, reflect.Int8, reflect.Int16,

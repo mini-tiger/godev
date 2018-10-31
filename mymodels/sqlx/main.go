@@ -36,7 +36,7 @@ func init() {
 
 func main() {
 
-	s := selectEx("hostinfo")
+	s := selectEx("hostinfo")  //todo 不同表统一返回
 	fmt.Printf("%T,%+v\n", s, s)
 }
 
