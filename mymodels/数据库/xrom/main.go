@@ -63,10 +63,10 @@ func main() {
 		println(err.Error())
 		return
 	}
-	log:=xorm.NewSimpleLogger(f)
+	log1:=xorm.NewSimpleLogger(f) //todo 将SQL语句写到日志
 	engine.ShowSQL(true)
 	engine.SetMaxIdleConns(5)
-	log.Debug("111111")
+	log1.Debug("111111")
 	//results, err := engine.Query("select * from hostinfo")
 
 	//todo insert
@@ -100,7 +100,7 @@ func main() {
 	// 多条数据
 	fmt.Println("=====================================")
 	h12 := make([]Hostinfo, 0)
-	err = engine.Where("port = ? or id = ?", 22, 0).Limit(20, 0).Desc("id").Cols("uuid").Find(&h12)
+	err = engine.Where("port = ? or id = ?", 22, 0).Limit(20, 0).Desc("id").Find(&h12)
 	fmt.Println(h12)
 	SimplePanic(err)
 
