@@ -86,4 +86,26 @@ func main() {
 		log.Fatal(err)
 
 	}
+
+	// todo 标准输入输出  一起
+	cmd = exec.Command("/bin/bash", "-c", "grep -i 'model name' /proc/cpuino |uniq|cut -d ':' -f 2")
+	buf, _ := cmd.CombinedOutput()
+	cmd.Run()
+	//fmt.Println(string(buf))
+	cm:=strings.Trim(string(buf)," ") // todo 统一返回
+	cm=strings.Trim(cm,"\n\r")
+	fmt.Println(cm)
+
+	// todo 标准输入输出  分开
+	cmd = exec.Command("/bin/bash", "-c", "grep -i 'model name' /proc/cpuino |uniq|cut -d ':' -f 2")
+
+	var out1 bytes.Buffer
+	cmd.Stdout = &out1
+	var e bytes.Buffer
+	cmd.Stderr =&e
+	//cmd.Start()
+	//buf, _ := cmd.CombinedOutput()
+	cmd.Run()
+	fmt.Println(e.String())
+	fmt.Println(out.String())
 }
