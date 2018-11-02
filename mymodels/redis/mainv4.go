@@ -6,6 +6,7 @@ import (
 	"time"
 	"sync"
 	"log"
+	"encoding/json"
 )
 
 type redisStruct struct {
@@ -14,10 +15,16 @@ type redisStruct struct {
 }
 var Redis1 redisStruct
 
+type inputjson struct {
+	S string
+	I int64
+}
+
 func initclient()  {
 	client1:=createClient()
 	//defer client.Close()
 	Redis1.Conn=client1
+	Redis1.stingJson()
 
 	Redis1.stringOperation()
 	fmt.Println("===============================")
@@ -26,11 +33,13 @@ func initclient()  {
 	Redis1.listOperation()
 	fmt.Println("===============================")
 	Redis1.pubsub1() // 订阅 消息分发
+
+
 	//setOperation(client)
 	//hashOperation(client)
 	//
 	//connectPool(client)
-	select{}
+	//select{}
 }
 func main() {
 
@@ -105,6 +114,38 @@ func (c redisStruct)stringExists(key string){
 
 	bool1 := client.Exists(key)
 	fmt.Println(bool1)
+}
+
+func (c *redisStruct)stingJson() {
+	client:=c.Conn
+
+	var ss inputjson
+	ss.S="a"
+	ss.I=1
+	b,_:=json.Marshal(ss)
+	//fmt.Println(b,e)
+	//fmt.Println(string(b))
+
+	c.Lock()
+	defer c.Unlock()
+
+	err := client.Set("j",b , 0).Err()
+	if err != nil {
+		panic(err)
+	}
+
+	val, err := client.Get("j").Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("key: j value type %T, data:%s\n",val, val)
+
+	var sss inputjson
+	json.Unmarshal([]byte(val),&sss)
+	fmt.Printf("key: j value type %T, data:%+v\n",sss,sss)
+
+
+
 }
 
 
