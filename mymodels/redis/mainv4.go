@@ -32,6 +32,9 @@ func initclient()  {
 	fmt.Println("===============================")
 	Redis1.listOperation()
 	fmt.Println("===============================")
+	Redis1.Set()
+	fmt.Println("===============================")
+
 	Redis1.pubsub1() // 订阅 消息分发
 
 
@@ -44,6 +47,17 @@ func initclient()  {
 func main() {
 
 	initclient()
+}
+
+func (c redisStruct)Set(){
+	client:=c.Conn
+	fmt.Printf("%T\n",client)
+
+	i:=client.SAdd("1111111111111","0edb4518-1fe2-476b-bd3c-f38e1a81b821")
+	fmt.Printf("添加了%d个\n",i.Val())
+	b:=client.SIsMember("a","abc")
+	fmt.Println("KEY中是否存在mem abc" ,b.Val())
+	//client.SRem("a","abc")
 }
 
 func (c redisStruct)pubsub1()  {
