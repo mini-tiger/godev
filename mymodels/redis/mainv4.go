@@ -39,7 +39,7 @@ func initclient()  {
 	//hashOperation(client)
 	//
 	//connectPool(client)
-	//select{}
+	select{}
 }
 func main() {
 
