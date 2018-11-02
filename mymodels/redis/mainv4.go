@@ -115,7 +115,7 @@ func (c *redisStruct)stringOperation() {
 	client:=c.Conn
 	// 第三个参数是过期时间, 如果是0, 则表示没有过期时间.
 
-	err := client.Set("name", "xys", 0).Err()
+	err := client.Set("name", "xys", time.Duration(10)*time.Second).Err()
 	if err != nil {
 		panic(err)
 	}
