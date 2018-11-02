@@ -52,3 +52,4 @@ func main() {
 		panic("Failed to Copy: " + err.Error())
 	}
 	defer session.Close()
+}

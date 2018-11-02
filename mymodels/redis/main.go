@@ -2,31 +2,58 @@ package main
 
 import (
 	"fmt"
-
-	"gopkg.in/redis.v4"
-	"time"
+	"github.com/gomodule/redigo/redis"
+	"sync"
+	"log"
 )
 
-type Host struct {
-	Ip string
+type RedisStruct struct {
+	Conn redis.Conn
+	Lock sync.RWMutex
 }
 
+var Redis RedisStruct
 
-func main()  {
-	//rc:=createClient()
-	fmt.Printf("%T\n",time.Now().Unix())
+func simpleErr(err error) {
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-func createClient() *redis.Client {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.43.11:6378",
-		Password: "",
-		DB:       0,
-	})
+func (r RedisStruct) set(k, v string) error {
+	r.Lock.Lock()
+	defer r.Lock.Unlock()
+	_, err := r.Conn.Do("set", k, v)
+	simpleErr(err)
+	return err
+}
 
-	// 通过 cient.Ping() 来检查是否成功连接到了 redis 服务器
-	pong, err := client.Ping().Result()
-	fmt.Println(pong, err)
+func (r RedisStruct) get(k string) (error, string) {
+	r.Lock.Lock()
+	defer r.Lock.Unlock()
+	value, err := redis.String(r.Conn.Do("GET", k))
+	simpleErr(err)
+	if value == ""{
+		fmt.Println("nil")
+	}
+	fmt.Println(err,value)
+	return err, value
+}
 
-	return client
+func initredis() {
+	c, err := redis.Dial("tcp", "192.168.43.11:6378")
+	if err != nil {
+		fmt.Println("Connect to redis error", err)
+
+	}
+	Redis.Conn = c
+	//defer c.Close()
+
+}
+
+func main() {
+	initredis()
+	//Redis.set("a", "1")
+	Redis.get("b")
+
 }
