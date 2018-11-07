@@ -1,11 +1,14 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
 	"fmt"
+	"github.com/gin-gonic/gin"
 )
 
-func Test_midddle(c *gin.Context)  {
+func Test_midddle(c *gin.Context) {
+	for k, v := range c.Request.Header {
+		fmt.Printf("header key:%s, value:%s\n", k, v)
+	}
 	fmt.Println("this is Test_middle")
 }
 func CORS() gin.HandlerFunc {
