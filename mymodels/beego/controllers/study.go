@@ -4,6 +4,8 @@ import (
 	"github.com/astaxie/beego"
 	"fmt"
 	"encoding/json"
+	"github.com/astaxie/beego/orm"
+	"godev/mymodels/beego/models"
 )
 
 type Study struct {
@@ -20,8 +22,117 @@ func (c *Study) Get() {
 	fmt.Println(c.Input().Get("abcpost"))
 	c.Data["data1"] = "taojun"
 	c.Data["data2"] = "this is test data"
+
+	o1 := orm.NewOrm()
+	o1.Using("default")
+	fmt.Println(o1.Driver().Name()) // 数据库别名，default  切换不同数据库用
+	fmt.Println(o1.Driver().Type() == orm.DRMySQL)// 数据库类型
+
+	user := models.User{Id:0} // todo 空数据库 先查询
+	err:=o1.Read(&user)
+	if err == orm.ErrNoRows {
+		fmt.Println("查询不到")
+	} else if err == orm.ErrMissPK {
+		fmt.Println("找不到主键")
+	} else {
+		fmt.Println(user.Id, user.Name)
+	}
+
+	// todo 读 若不存在则创建
+	user = models.User{Name:"11",Email:"@111"}
+	// 默认必须传入一个参数作为条件字段，同时也支持多个参数多个条件字段
+	// 三个返回参数依次为：是否新创建的，对象 Id 值，错误
+	if created, id, err := o1.ReadOrCreate(&user, "Name"); err == nil { // todo 通过Name作为判断是否有数据标准
+		if created {
+			fmt.Println("新建立的数据. Id:", id)
+		} else {
+			fmt.Println("找到一条数据. Id:", id)
+		}
+	}
+
+	// todo 根据 人 添加对应的多个 课程
+	c1:=models.Class{Name:"shuxue",User:&user}
+	id, err := o1.Insert(&c1)
+	if err == nil {
+		fmt.Println(id)
+	}
+
+	c2:=models.Class{Name:"yuwen",User:&user}
+	id, err = o1.Insert(&c2)
+	if err == nil {
+		fmt.Println(id)
+	}
+	//todo 查询所有user id大于0
+	fmt.Println("===========查询所有user id大于0===================")
+	var users []*models.User
+	num, err := o1.QueryTable("auth_user").Filter("id__gt",0).All(&users)
+	fmt.Printf("Returned Rows Num: %d, %s\n", num, err)
+
+	//todo 查询所有user  返回MAP
+	fmt.Println("===========查询所有user  返回MAP===================")
+	//uu:=map[string]interface{}
+	var users2 []orm.Params //这是 params是orm模块自带的，不是模型
+	num, err = o1.QueryTable("auth_user").Values(&users2,"name","email")// todo 可以分字段或者全部
+	fmt.Printf("Returned Rows Num: %d, %s\n", num, err)
+	for _, m := range users2 {
+		fmt.Println(m["Name"], m["Email"]) //todo 这里要用大写
+	}
+
+	//todo 查询所有user  返回slice
+	//  每个子元素都是一个切片，排列与 Model 中定义的 Field 顺序一致
+	fmt.Println("===========查询所有user  返回slice===================")
+	var lists []orm.ParamsList
+	num, err = o1.QueryTable("auth_user").ValuesList(&lists,"name","class__name")
+	if err == nil {
+		fmt.Printf("Result Nums: %d\n", num)
+		fmt.Println(lists)
+	}
+
+	//todo 查询所有user  ,每个user 单个列 存入slice
+	fmt.Println("===========查询所有user  ,每个user 单个列 存入slice===================")
+	var lists1 orm.ParamsList
+	num, err = o1.QueryTable("class").ValuesFlat(&lists1,"name")
+	if err == nil {
+		fmt.Printf("Result Nums: %d\n", num)
+		fmt.Println(lists1)
+	}
+
+	// todo 通过人 查找多个课程
+	fmt.Println("==============todo 通过人 查找多个课程===========")
+	var clss []*models.Class
+	num, err = o1.QueryTable("Class").Filter("User", user.Id).RelatedSel().All(&clss)
+	if err == nil {
+		fmt.Printf("%d posts read\n", num)
+		for _, post := range clss {
+			fmt.Printf("Id: %d, Name: %s User:%+v,\n",post.Id, post.Name, post.User)
+		}
+	}
+
+	// todo 通过课程是数学的 属于哪个人
+	// 方法一
+	fmt.Println("==============课程是数学的 属于哪个人===========")
+	var user11 []orm.Params
+	num,err = o1.QueryTable("auth_user").Filter("class__name","shuxue").Values(&user11)
+	if err == nil {
+		//fmt.Println(user11)
+		fmt.Printf("数学user:%+v 拥有\n",user11[0]["Name"])
+	}
+	// 方法二
+	var cc1 models.Class
+	var user2 models.User
+    err=o1.QueryTable("class").Filter("name__icontains","shuxue").Limit(1).One(&cc1)
+	if err == nil{
+		fmt.Println(cc1)
+		o1.QueryTable("auth_user").Filter("id",cc1.User).Limit(1).One(&user2)
+		fmt.Printf("数学user:%+v 拥有\n",user2.Name)
+	}
+
+	// 级联删除 用户下的课程
+	o1.QueryTable("auth_user").Filter("id",1).Delete()
+
 	c.TplName = "study/index.tpl" //
 }
+
 
 func (c *Study) Post() {
 	//u := User{}
