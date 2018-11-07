@@ -9,6 +9,7 @@ import (
 
 func Login(c *gin.Context)  {
 	contentType := c.Request.Header.Get("Content-Type") //获取头文件
+	panic(123)
 	fmt.Println(contentType)
 	inputs := APILoginInput{}
 	if err := c.Bind(&inputs); err != nil {
