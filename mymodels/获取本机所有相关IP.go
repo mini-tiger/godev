@@ -8,7 +8,7 @@ import (
 	"sync"
 	"strings"
 	"time"
-	"github.com/toolkits/net/httplib"
+	"github.com/astaxie/beego/httplib"
 	"io/ioutil"
 )
 
