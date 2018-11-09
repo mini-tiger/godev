@@ -1,7 +1,7 @@
 package main
 
 import (
-	"godev/mymodels/cmdb/models"
+	"godev/mymodels/cmdb-Api/models"
 	"fmt"
 	"net/http"
 	"time"
