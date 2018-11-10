@@ -22,7 +22,7 @@ const (
 	MasterUrl  = "http://thzbt.co/"
 	MasterDir  = "g:\\image\\"
 	PAGES      = 4     //最多看3页的数据，3
-	MaxOld     = 7     //最大几天前
+	MaxOld     = 8     //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
@@ -242,7 +242,7 @@ func DownFile(url, fp string, c chan struct{}) {
 	//defer resp.Body.Close()
 
 	client := &http.Client{
-		Timeout: 20 * time.Second,
+		Timeout: 60 * time.Second,
 	}
 
 	request, _ := http.NewRequest("GET", url, nil)
@@ -286,7 +286,8 @@ func DownFile(url, fp string, c chan struct{}) {
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Printf("%v\n", err.Error())
+		f := filepath.Dir(fp)
+		fmt.Printf("body err: %s,dir: %s, url:%s\n", err.Error(), f, url)
 		c <- struct{}{}
 		return
 	}
