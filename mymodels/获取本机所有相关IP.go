@@ -18,7 +18,7 @@ var ip2 chan string = make(chan string, 0)
 var ip3 chan string = make(chan string, 0)
 
 func errlog(err error) {
-	_, _, fileno, _ := runtime.Caller(2)
+	_, _, fileno, _ := runtime.Caller(1)
 	log.Printf("RowNo: %d ,ERROR:%s\n", fileno, err)
 }
 
@@ -56,8 +56,14 @@ func get_external() {
 	if err != nil {
 		ip2 <- ""
 		errlog(err)
+		return
 	}
-	content, _ := ioutil.ReadAll(resp.Body)
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		ip2 <- ""
+		errlog(err)
+		return
+	}
 	tmp := string(content)
 	tmp = strings.TrimSpace(tmp)
 	tmp = strings.Trim(tmp, "\n")
@@ -87,7 +93,7 @@ func GetOutboundIP() {
 	//conn, err := net.Dial("udp", "8.8.8.8:80")
 	conn, err := net.DialTimeout("tcp", "www.baidu.com:80",time.Duration(5)*time.Second)
 	if err != nil {
-		ip3 <- "err"
+		ip3 <- ""
 
 		errlog(err)
 	}

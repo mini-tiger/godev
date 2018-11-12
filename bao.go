@@ -1,50 +1,38 @@
 package main
 
 import (
-	"github.com/shirou/gopsutil/host"
-	"log"
 	"fmt"
-	"reflect"
+	"time"
 )
 
-func main() {
-	h, err := host.Info()
-	if err != nil {
-		log.Fatalln(err)
+func main()  {
+	m:=make(map[string]string,0)
+	if len(m) == 0{
+		fmt.Println(1)
 	}
-	fmt.Println(h)
-	fmt.Println(host.Uptime())
-	fmt.Println(host.BootTime())
-	fmt.Println(host.PlatformInformation())
-	fmt.Println(host.Users())
-	fmt.Println(host.SensorsTemperatures())
-	fmt.Println(host.Virtualization())
-	fmt.Println(host.KernelVersion())
-	i := new(host.InfoStat)
-	i,err = host.Info()
-	if err!=nil{
-		log.Fatalln(err)
-	}
-	fmt.Println(i)
-	tt(i)
-	ttr(i)
-}
-func ttr(i interface{})  {
-	s:=reflect.ValueOf(i)
-	switch s.Kind() {
-	case reflect.Ptr:
-		fmt.Println("ptr")
-	}
-}
+	fmt.Println(len(m))
+	m1:=[]map[string]string{}
+	fmt.Println(len(m1))
 
-func tt(i interface{}){
-	switch i.(type) {
-	case int:
-		fmt.Println("int")
-	case host.InfoStat:
-		fmt.Println("infostat")
-	case *host.InfoStat:
-		fmt.Println("ptr infostat")
+
+	a:= func() {
+		for   {
+			fmt.Println(111222)
+			time.Sleep(time.Duration(1)*time.Second)
+		}
 
 	}
+	b:= func() {
+		go a()
+		for   {
+			fmt.Println(222333)
+			time.Sleep(time.Duration(1)*time.Second)
+		}
+
+	}
+	go b()
+
+	select {}
+
+
 }
