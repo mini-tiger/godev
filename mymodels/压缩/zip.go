@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -68,6 +69,10 @@ func compress(file *os.File, prefix string, zw *zip.Writer) error { // prefix �
 
 		prefix = filepath.Join(prefix, info.Name())
 
+		header, err := zip.FileInfoHeader(info)
+		header.Name = filepath.Join(prefix, header.Name)
+		//header.SetMode(os.ModeDir)
+
 		fileInfos, err := file.Readdir(-1) // n < 0 所有目录中文件
 		if err != nil {
 			return err
@@ -85,11 +90,13 @@ func compress(file *os.File, prefix string, zw *zip.Writer) error { // prefix �
 	} else {
 
 		header, err := zip.FileInfoHeader(info)
-		header.Name = filepath.Join(prefix, header.Name)
-
+		//header.Name = filepath.Join(prefix, header.Name)
+		header.Name = strings.TrimPrefix(prefix, string(filepath.Separator))
+		//header.SetMode(os.ModeDir)
 		if err != nil {
 			return err
 		}
+
 		writer, err := zw.CreateHeader(header)
 		if err != nil {
 			return err
@@ -158,17 +165,22 @@ func UnCompress(src, dst string) (err error) {
 		}
 
 		// 使用zip模块压缩的文件夹，解压缩时不能判断文件夹是否是目录，每个文件创建时，都要判断是否有父目录
-		if bd, err = IsDir(filepath.Dir(filepath.Join(dst, innerFile.Name))); err != nil {
-			continue
-		}
-		if !bd {
-			os.MkdirAll(filepath.Dir(filepath.Join(dst, innerFile.Name)), os.ModePerm)
-		}
+		//if bd, err = IsDir(filepath.Dir(filepath.Join(dst, innerFile.Name))); err != nil {
+		//	continue
+		//}
+		//if !bd {
+		//	os.MkdirAll(filepath.Dir(filepath.Join(dst, innerFile.Name)), os.ModePerm)
+		//}
 
 		newFile, err := os.Create(filepath.Join(dst, innerFile.Name))
 		if err != nil {
-			log.Println("Unzip File Create Error : " + err.Error())
-			continue
+			if strings.Contains(err.Error(), "The system cannot find the path specified") {
+				os.MkdirAll(filepath.Dir(filepath.Join(dst, innerFile.Name)), os.ModePerm)
+			} else {
+				log.Println("Unzip File Create Error : " + err.Error())
+				continue
+			}
+
 		}
 		io.Copy(newFile, srcFile)
 		newFile.Close()

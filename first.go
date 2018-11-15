@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"strings"
 )
 
 func main() {
-	s, e := os.Open("D:\\putty")
-	fmt.Println(e)
-	f, e := s.Stat()
-	fmt.Println(f.IsDir())
-	fmt.Println(filepath.Dir("putty\\PAGEANT.EXE"))
+	var s = "Goodbye,, world!"
+	s = strings.TrimPrefix(s, "Goodbye,")
+	fmt.Println(s)
+	s = strings.TrimPrefix(s, "Howdy,")
+	fmt.Print("Hello" + s)
 }
