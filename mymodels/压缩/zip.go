@@ -11,13 +11,13 @@ import (
 )
 
 func main() {
-	sfile := "d:\\D.zip"                                  // zip文件
-	files := []string{"d:\\putty", "d:\\1.bat", "dd.exe"} //需要压缩的文件夹或文件 切片
+	sfile := "/root/1.zip"                                  // zip文件
+	files := []string{"/root/c","/root/client.go"} //需要压缩的文件夹或文件 切片
 
 	err := Compress(files, sfile)
 	fmt.Println(err)
 	//time.Sleep(time.Duration(5)*time.Second)
-	err = UnCompress(sfile, "D:\\sss") // 压缩文件，解压缩路径
+	err = UnCompress(sfile, "/root/dd") // 压缩文件，解压缩路径
 	fmt.Println(err)
 }
 
@@ -143,7 +143,7 @@ func UnCompress(src, dst string) (err error) {
 
 	for _, innerFile := range zipFile.File {
 		info := innerFile.FileInfo()
-		//fmt.Println(info.Name())
+
 		if info.IsDir() {
 			err = os.MkdirAll(innerFile.Name, os.ModePerm)
 			if err != nil {
