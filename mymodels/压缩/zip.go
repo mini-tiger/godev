@@ -12,13 +12,13 @@ import (
 )
 
 func main() {
-	sfile := "/root/1.zip"                                  // zip文件
-	files := []string{"/root/c","/root/client.go"} //需要压缩的文件夹或文件 切片
+	sfile := "d:\\D.zip"                                  // zip文件
+	files := []string{"d:\\putty", "d:\\1.bat", "dd.exe"} //需要压缩的文件夹或文件 切片
 
 	err := Compress(files, sfile)
 	fmt.Println(err)
 	//time.Sleep(time.Duration(5)*time.Second)
-	err = UnCompress(sfile, "/root/dd") // 压缩文件，解压缩路径
+	err = UnCompress(sfile, "D:\\sss") // 压缩文件，解压缩路径
 	fmt.Println(err)
 }
 
@@ -69,8 +69,8 @@ func compress(file *os.File, prefix string, zw *zip.Writer) error { // prefix �
 
 		prefix = filepath.Join(prefix, info.Name())
 
-		header, err := zip.FileInfoHeader(info)
-		header.Name = filepath.Join(prefix, header.Name)
+		//header, err := zip.FileInfoHeader(info)
+		//header.Name = filepath.Join(prefix, header.Name)
 		//header.SetMode(os.ModeDir)
 
 		fileInfos, err := file.Readdir(-1) // n < 0 所有目录中文件
@@ -90,8 +90,8 @@ func compress(file *os.File, prefix string, zw *zip.Writer) error { // prefix �
 	} else {
 
 		header, err := zip.FileInfoHeader(info)
-		//header.Name = filepath.Join(prefix, header.Name)
-		header.Name = strings.TrimPrefix(prefix, string(filepath.Separator))
+		header.Name = filepath.Join(prefix, header.Name)
+		//header.Name = strings.TrimPrefix(prefix, string(filepath.Separator))
 		//header.SetMode(os.ModeDir)
 		if err != nil {
 			return err
@@ -150,7 +150,7 @@ func UnCompress(src, dst string) (err error) {
 
 	for _, innerFile := range zipFile.File {
 		info := innerFile.FileInfo()
-
+		//fmt.Println(info.Name())
 		if info.IsDir() {
 			err = os.MkdirAll(innerFile.Name, os.ModePerm)
 			if err != nil {
