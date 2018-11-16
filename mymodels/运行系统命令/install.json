@@ -4,15 +4,15 @@
     "run_dir": "/home/work/agent/",
     "stopErr": true,
     "install_step": {
-      "1": "ifconfig",
-      "2": "ls /root/",
-      "3": "ls /rm"
+      "1": "chmod +x /etc/rc.d/rc.local",
+      "2": "echo 'pushd /home/work/agent ; ./agent -d true' >>/etc/rc.local",
+      "3": "pushd /home/work/agent ; ./agent -d true"
     }
   },
   "start_cmd": "1.sh",
   "stop_cmd": "2.sh",
   "monitor": {
-    "cmd": "ps aux|grep agent|wc -l",
+    "cmd": "ps aux|grep ./agent|grep -v grep|wc -l",
     "return": 1
   }
 }

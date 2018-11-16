@@ -7,7 +7,7 @@
   "localPath":"/root/image",
   "downloadFile": [
     {
-      "dir_path": "/pub/1/",
+      "dir_path": "/pub",
       "file_path": "putty.zip"
     },
     {

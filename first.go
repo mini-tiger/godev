@@ -2,13 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"time"
 )
 
 func main() {
-	var s = "Goodbye,, world!"
-	s = strings.TrimPrefix(s, "Goodbye,")
-	fmt.Println(s)
-	s = strings.TrimPrefix(s, "Howdy,")
-	fmt.Print("Hello" + s)
+	fmt.Println(time.Now().Unix())
 }
