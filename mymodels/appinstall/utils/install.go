@@ -92,7 +92,7 @@ func UnInstallJson(jb []byte) (err error, dl *Install) {
 //
 //}
 
-func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp, stop bool) {
+func StepRun(step string, dl *Install) (resp InstallResp, stop bool) {
 	//defer func() {
 	//	c <- struct{}{}
 	//}()
@@ -106,6 +106,8 @@ func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp, stop 
 	mapInst := mapInstStep.(map[int]interface{})
 	slInstStep := mapKeySort(mapInst)
 
+	resp.Success=true // default true
+
 	for _, v := range slInstStep {
 		cmd, _ := mapInst[v]
 		stderr, stdout := RunCommand(cmd.(string))
@@ -117,7 +119,8 @@ func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp, stop 
 			stop = true
 			break
 		}
-		log.Printf("begin run Step:%s, index: %d,stdout:%s,stderr:%s\n", step, v, stdout, stderr)
+		log.Printf("begin :%s, index: %d,cmd:%s ,stdout:%s,stderr:%s,%+v\n", step, v,cmd.(string),
+			strings.TrimRight(stdout,"\n"), stderr,resp)
 		time.Sleep(time.Duration(dl.InstallAll.Interval) * time.Second)
 	}
 	return

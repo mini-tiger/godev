@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"github.com/satori/go.uuid"
 )
 
 //todo  下载agent.zip 到本地 /TmpDir/TmpFile 解压缩 到/TmpDir/TmpUnZipDir
@@ -18,7 +19,8 @@ type InstallStruct struct {
 	CurrTime             int64
 	ZipFile              string // zip ftp上的文件， agent.zip
 	version              string //agent version
-	uuid                 string
+	Uuid                 string
+	DataJson             *utils.Install
 }
 
 func (t *InstallStruct) ftpDown() {
@@ -62,14 +64,49 @@ func (t *InstallStruct) unInsJson() {
 	if err != nil {
 		log.Printf("解析install json文件:%s失败 err:%s\n", filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"), err)
 	}
-	fmt.Println(dataJson.InstallAll.RunDir)
-	fmt.Println(filepath.Join(t.TmpDir, t.TmpUnZipDir))
-	utils.RunCommand(fmt.Sprintf("/usr/bin/cp -rf %s/* %s", filepath.Join(t.TmpDir, t.TmpUnZipDir), dataJson.InstallAll.RunDir))
+	//fmt.Println(dataJson.InstallAll.RunDir)
+	//fmt.Println(filepath.Join(t.TmpDir, t.TmpUnZipDir))
+
+	t.DataJson = dataJson
+	utils.CreateDir(dataJson.InstallAll.RunDir) //create rundir
+	stderr, _ := utils.RunCommand(fmt.Sprintf("/usr/bin/cp -rf %s/* %s", filepath.Join(t.TmpDir, t.TmpUnZipDir), dataJson.InstallAll.RunDir))
+	if stderr != "" {
+		log.Printf("cp -rf fail")
+	}
+}
+
+func (t *InstallStruct) CreateCfg() (err error) {
+	u, err := uuid.NewV4()
+	if err != nil {
+		log.Printf("create uuid fail err:%s\n", err)
+
+	}
+	t.Uuid = u.String()
+	homedir := t.DataJson.InstallAll.RunDir
+	err = utils.CreateConf(1, filepath.Join(homedir, "cfg.json"), filepath.Join(homedir, "agent.json.tmp"), t.Uuid)
+	if err != nil {
+		log.Printf("create agent cfg.json fail err:%s\n", err)
+	}
+	return nil
+}
+
+func (t *InstallStruct) RunInstall() (utils.InstallResp) {
+	//for _,step:=range []string{"installStep"}{
+	//	resp,stop:=utils.StepRun(step, t.DataJson)
+	//	if stop{
+	//		fmt.Println(resp)
+	//		break
+	//	}
+	//}
+	var resp utils.InstallResp
+	resp, _ = utils.StepRun("installStep", t.DataJson)
+
+	return resp
 }
 
 func main() {
 	var agentStruct InstallStruct
-	agentStruct.TmpDir = "d:\\ssss"
+	agentStruct.TmpDir = "/tmp"
 	agentStruct.CurrTime = time.Now().Unix()
 	agentStruct.TmpUnZipDir = strconv.FormatInt(agentStruct.CurrTime, 10) //时间戳的名字
 	agentStruct.TmpFile = agentStruct.TmpUnZipDir + ".zip"                // 临时目录/unixtime/unixtime.zip
@@ -83,10 +120,17 @@ func main() {
 	//jiexi install.json,  rundir   cp -r /tmp/unixnano/ rundir
 
 	agentStruct.unInsJson()
+
 	// create cfg.json
+
+	agentStruct.CreateCfg()
 
 	//run install.json  installstep
 
+	resp := agentStruct.RunInstall()
+	if !resp.Success {
+		log.Printf("runinstall faile info:%+v\n", resp)
+	}
 	//agent  add  proclist monitor queue
 
 	// sqlite version uuid

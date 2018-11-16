@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	//go run glog.go -logtostderr=true -alsologtostderr=false -log_backtrace_at=main.go:2
+	//go run glog.go -logtostderr=true -alsologtostderr=false -log_backtrace_at=runinstall.go:2
 	//
 	//-logtostderr=true 写入标准错误，flase是文件
 
