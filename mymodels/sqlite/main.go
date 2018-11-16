@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("sqlite3", "D:\\work\\project-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
-	checkErr(err)
+	db, err := sql.Open("sqlite3", "/home/go/src/godev/mymodels/sqlite/111.sqlite")
 
 	//插入数据
 	stmt, err := db.Prepare("INSERT INTO agent(version ,uuid ,time) values(?,?,?)")
