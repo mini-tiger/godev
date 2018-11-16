@@ -1,4 +1,5 @@
-package FTP
+package main
+
 
 import (
 	"github.com/shenshouer/ftp4go"
@@ -8,6 +9,8 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"os"
+	"errors"
 )
 
 type DownLoadSub struct {
@@ -25,14 +28,34 @@ type DownLoad struct {
 	LocalPath    string
 }
 
-func main() {
-	f, _ := ioutil.ReadFile("C:\\work\\go-dev\\src\\godev\\mymodels\\FTP\\download.json")
-	err, dl := UnJson(f) // 解析Json
+func createDir(dir string) (err error) {
+	dirInfo, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err=os.MkdirAll(dir,os.ModePerm)
+			return
+		}
+	}
+	if dirInfo.IsDir() { //是目录
+		return nil
+	} else { //是文件
+		return errors.New(fmt.Sprintf("dir:%s not dir", dir))
+	}
 
+	return nil
+
+}
+
+
+func main() {
+	f, _ := ioutil.ReadFile("/home/go/src/godev/mymodels/FTP/download.json")
+	err, dl := UnJson(f) // 解析Json
+	//fmt.Println(dl.LocalPath)
 	if err != nil {
 		fmt.Println(1, err)
 	}
 	//fmt.Println(dl)
+	createDir(dl.LocalPath)
 	err = dl.FtpDownLoads() // 下载文件
 	if err != nil {
 		fmt.Println(2, err)
