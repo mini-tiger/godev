@@ -26,7 +26,7 @@ func main()  {
 		return
 	}
 	reader := bytes.NewReader(bytesData)
-	url:= "http://192.168.43.16:8083/api/v3/hosts/add"
+	url:= "http://192.168.43.202:8083/api/v3/hosts/add"
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,

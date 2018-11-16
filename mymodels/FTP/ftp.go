@@ -26,7 +26,6 @@ type DownLoad struct {
 }
 
 func main() {
-
 	f, _ := ioutil.ReadFile("C:\\work\\go-dev\\src\\godev\\mymodels\\FTP\\download.json")
 	err, dl := UnJson(f) // 解析Json
 
