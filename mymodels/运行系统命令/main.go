@@ -70,7 +70,7 @@ func main() {
 
 	cinstall := make(chan struct{}, 0)
 
-	for _,step:=range []string{"installStep", "startStep"}{
+	for _,step:=range []string{"installStep"}{
 		resp,stop:=StepRun(step, dataJson, cinstall)
 		if stop{
 			fmt.Println(resp)
@@ -94,11 +94,7 @@ func main() {
 
 }
 
-func StartRun(scmd string)  {
-	err,out:=RunCommand(scmd)
-	time.Sleep(time.Duration(5)*time.Second)
 
-}
 
 func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp,stop bool) {
 	//defer func() {
