@@ -20,13 +20,15 @@ type Monitor struct {
 type InstallAll struct {
 	Interval    int                 `json:"interval"`
 	StopErr     bool                `json:"stopErr"`
+	RunDir		string			`json:"run_dir"`
 	InstallStep map[int]interface{} `json:"install_step"`
-	StartStep   map[int]interface{} `json:"start_step"`
 }
 
 type Install struct {
 	InstallAll InstallAll `json:"install_all"`
 	Monitor    Monitor    `json:"monitor"`
+	StartCmd   string `json:"start_cmd"`
+	StopCmd	string	`json:"stop_cmd"`
 }
 
 type InstallResp struct {
@@ -92,6 +94,12 @@ func main() {
 
 }
 
+func StartRun(scmd string)  {
+	err,out:=RunCommand(scmd)
+	time.Sleep(time.Duration(5)*time.Second)
+
+}
+
 func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp,stop bool) {
 	//defer func() {
 	//	c <- struct{}{}
@@ -100,9 +108,6 @@ func StepRun(step string, dl *Install, c chan struct{}) (resp InstallResp,stop b
 	switch step {
 	case "installStep":
 		mapInstStep = dl.InstallAll.InstallStep
-		mapInstStep = mapInstStep.(map[int]interface{})
-	case "startStep":
-		mapInstStep = dl.InstallAll.StartStep
 		mapInstStep = mapInstStep.(map[int]interface{})
 	}
 

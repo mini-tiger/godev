@@ -1,18 +1,16 @@
 {
   "install_all": {
     "interval": 1,
-    "stopErr": false,
+    "run_dir": "/home/work/agent/",
+    "stopErr": true,
     "install_step": {
       "1": "ifconfig",
       "2": "ls /root/",
       "3": "ls /rm"
-    },
-    "start_step": {
-      "1": "ps",
-      "2": "ftp://127.0.0.1:22",
-      "3": "1.zip"
     }
   },
+  "start_cmd": "1.sh",
+  "stop_cmd": "2.sh",
   "monitor": {
     "cmd": "ps aux|grep agent|wc -l",
     "return": 1
