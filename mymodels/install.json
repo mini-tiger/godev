@@ -1,0 +1,17 @@
+{
+  "installStep": {
+    "1": "ftp",
+    "2": "ftp://127.0.0.1:22",
+    "3": "1.zip"
+  },
+  "startStep": {
+    "1": "ftp",
+    "2": "ftp://127.0.0.1:22",
+    "3": "1.zip"
+  },
+  "monitor":{
+    "cmd" : "ps aux|grep agent|wc -l",
+    "return": 1
+  }
+
+}

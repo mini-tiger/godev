@@ -1,0 +1,18 @@
+{
+  "type": "ftp",
+  "host": "192.168.43.12",
+  "port": 21,
+  "user": "ftp",
+  "pass": "ftp",
+  "localPath":"C:\\image",
+  "downloadFile": [
+    {
+      "dir_path": "/pub/1/",
+      "file_path": "putty.zip"
+    },
+    {
+      "dir_path": "/pub/1/",
+      "file_path": "1112.zip"
+    }
+  ]
+}

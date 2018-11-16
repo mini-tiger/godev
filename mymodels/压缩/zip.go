@@ -12,13 +12,13 @@ import (
 )
 
 func main() {
-	sfile := "d:\\D.zip"                                  // zip文件
-	files := []string{"d:\\putty", "d:\\1.bat", "dd.exe"} //需要压缩的文件夹或文件 切片
+	sfile := "c:\\image\\1.zip"        // zip文件
+	files := []string{"c:\\1", "d:\\1.bat", "c:\\safemon"} //需要压缩的文件夹或文件 的切片
 
 	err := Compress(files, sfile)
 	fmt.Println(err)
 	//time.Sleep(time.Duration(5)*time.Second)
-	err = UnCompress(sfile, "D:\\sss") // 压缩文件，解压缩路径
+	err = UnCompress(sfile, "c:\\sss") // 压缩文件，解压缩路径
 	fmt.Println(err)
 }
 
@@ -37,7 +37,7 @@ func Compress(filesStr []string, dst string) error {
 			log.Println("跳过压缩文件: ", f, "err:", err)
 			continue
 		} else {
-			log.Println("压缩文件: ", f)
+			log.Println("添加压缩文件: ", f)
 			files = append(files, tf)
 		}
 
@@ -133,7 +133,10 @@ func UnCompress(src, dst string) (err error) {
 		return
 	}
 	if !bd {
-		os.MkdirAll(dst, os.ModePerm)
+		err=os.MkdirAll(dst, os.ModePerm)
+		if err!=nil{
+			return
+		}
 	}
 
 	srcFile, err := os.Open(src)
