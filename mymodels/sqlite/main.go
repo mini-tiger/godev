@@ -148,9 +148,11 @@ func main() {
 	if err != nil {
 		log.Printf("run sql :%s faile err:%s\n", sql1, err)
 	}
+	cver := "v3" // 当前版本
+	// 没记录 直接插入，  有记录 判断是否 版本一样，一样则跳过，不一样更新
+	// ubs 发送过来 必须带有版本号
 	var uuid, ver, timestr string
-	uuid = "11111111"
-	ver = "22222222222"
+
 	timestr = strconv.FormatInt(time.Now().Unix(), 10)
 	if b {
 		err := SqlConn.GetData(sql1, &uuid, &ver)
@@ -158,6 +160,10 @@ func main() {
 			log.Println("getdata err", err)
 		}
 		fmt.Println(uuid, ver)
+		if ver == cver {
+			log.Println("version same skip")
+			return
+		}
 
 		err = SqlConn.UpdateAgentVer(uuid, ver, timestr)
 		if err != nil {
