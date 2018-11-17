@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 	"github.com/satori/go.uuid"
+	"os"
+	"errors"
 )
 
 //todo  下载agent.zip 到本地 /TmpDir/TmpFile 解压缩 到/TmpDir/TmpUnZipDir
@@ -23,7 +25,7 @@ type InstallStruct struct {
 	DataJson             *utils.Install
 }
 
-func (t *InstallStruct) ftpDown() {
+func (t *InstallStruct) ftpDown() (err error){
 	//ftp download
 	var ftpdl utils.DownLoad
 	ftpdl.Port = 21
@@ -38,23 +40,26 @@ func (t *InstallStruct) ftpDown() {
 
 	utils.CreateDir(ftpdl.LocalPath)
 	//fmt.Println(t.TmpFile)
-	err := ftpdl.FtpDownLoads(t.TmpFile) // 下载文件 本地文件改为 时间戳的名字
+	err = ftpdl.FtpDownLoads(t.TmpFile) // 下载文件 本地文件改为 时间戳的名字
 	if err != nil {
 		log.Printf("ftpdownload fail err:%s\n", err)
+		return
 	}
 	t.ZipFile = filepath.Join(ftpdl.LocalPath, ftpfile.FilePath) // 下载完成后 zip文件绝对路径
+	return
 }
 
-func (t *InstallStruct) unZip() {
+func (t *InstallStruct) unZip() (error){
 	//unzip /tmp/unix/unix.zip
 	//fmt.Println(t.ZipFile)
 	err := utils.UnCompress(filepath.Join(t.TmpDir, t.TmpFile), filepath.Join(t.TmpDir, t.TmpUnZipDir)) // 1.压缩文件，2.解压缩路径(/tmp + 临时目录)
 	if err != nil {
 		log.Printf("unzip file %s,err:%s\n", t.ZipFile, err)
 	}
+	return err
 }
 
-func (t *InstallStruct) unInsJson() {
+func (t *InstallStruct) unInsJson() (err error){
 	f, err := ioutil.ReadFile(filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"))
 	if err != nil {
 		log.Printf("读取install json文件:%s 失败 err:%s\n", filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"), err)
@@ -63,16 +68,25 @@ func (t *InstallStruct) unInsJson() {
 
 	if err != nil {
 		log.Printf("解析install json文件:%s失败 err:%s\n", filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"), err)
+		return
 	}
 	//fmt.Println(dataJson.InstallAll.RunDir)
 	//fmt.Println(filepath.Join(t.TmpDir, t.TmpUnZipDir))
 
 	t.DataJson = dataJson
 	utils.CreateDir(dataJson.InstallAll.RunDir) //create rundir
+
+	if utils.IsFile(filepath.Join(dataJson.InstallAll.RunDir, "info.sqlite")){
+		os.Remove(filepath.Join(t.TmpDir, t.TmpUnZipDir, "info.sqlite"))
+	}
+
 	stderr, _ := utils.RunCommand(fmt.Sprintf("/usr/bin/cp -rf %s/* %s", filepath.Join(t.TmpDir, t.TmpUnZipDir), dataJson.InstallAll.RunDir))
 	if stderr != "" {
 		log.Printf("cp -rf fail")
+		err=errors.New("cp -rf fail")
+		return
 	}
+	return
 }
 
 func (t *InstallStruct) CreateCfg() (err error) {
@@ -112,19 +126,28 @@ func main() {
 	agentStruct.TmpFile = agentStruct.TmpUnZipDir + ".zip"                // 临时目录/unixtime/unixtime.zip
 
 	//
-	agentStruct.ftpDown()
+	err:=agentStruct.ftpDown()
+	if err!=nil{
+		log.Println("ftp err")
+	}
 
 	//
-	agentStruct.unZip()
-
+	err=agentStruct.unZip()
+	if err!=nil{
+		log.Println("unzip err")
+	}
 	//jiexi install.json,  rundir   cp -r /tmp/unixnano/ rundir
 
-	agentStruct.unInsJson()
-
+	err=agentStruct.unInsJson()
+	if err!=nil{
+		log.Println("unInsJson err")
+	}
 	// create cfg.json
 
-	agentStruct.CreateCfg()
-
+	err=agentStruct.CreateCfg()
+	if err!=nil{
+		log.Println("createCfg err")
+	}
 	//run install.json  installstep
 
 	resp := agentStruct.RunInstall()

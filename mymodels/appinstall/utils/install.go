@@ -111,14 +111,14 @@ func StepRun(step string, dl *Install) (resp InstallResp, stop bool) {
 	for _, v := range slInstStep {
 		cmd, _ := mapInst[v]
 		stderr, stdout := RunCommand(cmd.(string))
-		if stderr != "" && dl.InstallAll.StopErr {
-			resp.error = strings.TrimRight(stderr, "\n")
-			resp.cmd = cmd.(string)
-			resp.Step = step
-			resp.Success = false
-			stop = true
-			break
-		}
+		//if stderr != "" && dl.InstallAll.StopErr {
+		//	resp.error = strings.TrimRight(stderr, "\n")
+		//	resp.cmd = cmd.(string)
+		//	resp.Step = step
+		//	resp.Success = false
+		//	stop = true
+		//	break
+		//}
 		log.Printf("begin :%s, index: %d,cmd:%s ,stdout:%s,stderr:%s,%+v\n", step, v,cmd.(string),
 			strings.TrimRight(stdout,"\n"), stderr,resp)
 		time.Sleep(time.Duration(dl.InstallAll.Interval) * time.Second)

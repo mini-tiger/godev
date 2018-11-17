@@ -25,6 +25,16 @@ type DownLoad struct {
 	LocalPath    string
 }
 
+func IsFile(file string) bool {
+	_, err := os.Stat(file)
+	if err != nil {
+
+		return false
+
+	}
+	return true
+}
+
 func CreateDir(dir string) (err error) {
 	dirInfo, err := os.Stat(dir)
 	if err != nil {
@@ -36,7 +46,8 @@ func CreateDir(dir string) (err error) {
 	if dirInfo.IsDir() { //是目录
 		return nil
 	} else { //是文件
-		return errors.New(fmt.Sprintf("dir:%s not dir", dir))
+		err := os.Rename(dir, dir+"_old")
+		return errors.New(fmt.Sprintf("dir:%s not dir,rename err:%s", dir, err))
 	}
 
 	return nil
