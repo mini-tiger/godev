@@ -149,7 +149,7 @@ func (d *SqliteDb) Close() {
 }
 
 func main() {
-	err := NewConn("D:\\work\\project-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
+	err := NewConn("/home/go/src/godev/mymodels/sqlite/111.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
