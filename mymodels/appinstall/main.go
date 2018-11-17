@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-	"github.com/satori/go.uuid"
 	"os"
 	"errors"
+	"github.com/satori/go.uuid"
 )
 
 //todo  下载agent.zip 到本地 /TmpDir/TmpFile 解压缩 到/TmpDir/TmpUnZipDir
@@ -20,10 +20,13 @@ type InstallStruct struct {
 	TmpFile, TmpUnZipDir string // 都是以当前时间作为
 	CurrTime             int64
 	ZipFile              string // zip ftp上的文件， agent.zip
-	version              string //agent version
 	Uuid                 string
 	DataJson             *utils.Install
+	Version 			string // agent recv_version
 }
+
+
+var agentStruct InstallStruct
 
 func (t *InstallStruct) ftpDown() (err error){
 	//ftp download
@@ -90,12 +93,7 @@ func (t *InstallStruct) unInsJson() (err error){
 }
 
 func (t *InstallStruct) CreateCfg() (err error) {
-	u, err := uuid.NewV4()
-	if err != nil {
-		log.Printf("create uuid fail err:%s\n", err)
 
-	}
-	t.Uuid = u.String()
 	homedir := t.DataJson.InstallAll.RunDir
 	err = utils.CreateConf(1, filepath.Join(homedir, "cfg.json"), filepath.Join(homedir, "agent.json.tmp"), t.Uuid)
 	if err != nil {
@@ -118,15 +116,83 @@ func (t *InstallStruct) RunInstall() (utils.InstallResp) {
 	return resp
 }
 
-func main() {
-	var agentStruct InstallStruct
+func (t *InstallStruct)SqliteCheck() (err error) {
+
+
+	sql1 := utils.CreateSelectSql("agent", "uuid,version", "1=1")
+
+
+	sqlconn := utils.ReturnSqlDB() // 其它模块时
+
+	err, b := sqlconn.GetExist(sql1)
+	if err != nil {
+		log.Printf("run sql :%s faile err:%s\n", sql1, err)
+	}
+	var uuidstr, currver,timestr string
+	//uuid = "11111111"
+	//ver = "22222222222"
+
+
+	timestr = strconv.FormatInt(time.Now().Unix(), 10)
+	//fmt.Println(uuidstr,ver,timestr)
+
+	if b {
+		err = sqlconn.GetData(sql1, &uuidstr, &currver)
+		if err != nil {
+			log.Println("getdata err", err)
+		}
+		fmt.Println(uuidstr,currver)
+		if currver == t.Version {
+			log.Println("version same skip")
+			return
+		}
+
+		t.Uuid = uuidstr
+
+		err=InstallDetail()
+		if err != nil {
+			log.Printf("InstallDetail err:%s\n", err)
+		}
+
+		err = sqlconn.UpdateAgentVer(uuidstr, t.Version, timestr)
+		if err != nil {
+			log.Printf("update err:%s\n", err)
+		}
+
+	} else {
+
+		u, err := uuid.NewV4()
+		if err != nil {
+			log.Printf("create uuid fail err:%s\n", err)
+
+		}
+		t.Uuid = u.String()
+
+		err=InstallDetail()
+
+
+		if err != nil {
+			log.Printf("InstallDetail err:%s\n", err)
+		}
+
+		err = sqlconn.InsertAgent(t.Version, uuidstr, timestr)
+
+		if err != nil {
+			log.Printf("insert agent err:%s\n", err)
+		}
+
+	}
+	return
+}
+
+func InstallDetail() (err error) {
 	agentStruct.TmpDir = "/tmp"
 	agentStruct.CurrTime = time.Now().Unix()
 	agentStruct.TmpUnZipDir = strconv.FormatInt(agentStruct.CurrTime, 10) //时间戳的名字
 	agentStruct.TmpFile = agentStruct.TmpUnZipDir + ".zip"                // 临时目录/unixtime/unixtime.zip
 
 	//
-	err:=agentStruct.ftpDown()
+	err=agentStruct.ftpDown()
 	if err!=nil{
 		log.Println("ftp err")
 	}
@@ -154,9 +220,33 @@ func main() {
 	if !resp.Success {
 		log.Printf("runinstall faile info:%+v\n", resp)
 	}
-	//agent  add  proclist monitor queue
+	return
+}
+
+func main() {
+
+	// 没记录 直接插入，  有记录 判断是否 版本一样，一样则跳过，不一样更新
+	// ubs 发送过来 必须带有版本号
 
 	// sqlite version uuid
+	// initDb
+	err := utils.NewConn("/home/go/src/godev/mymodels/appinstall/111.sqlite")
+	if err != nil {
+		log.Printf("sqlite conn fail err:%s\n", err)
+	}
+
+	agentStruct.Version="v3"
+
+	agentStruct.SqliteCheck()
+
+
+
+	//agent  add  proclist monitor queue
+	//
+	//
+
+
+
 
 	//return uuid version appname missionid
 }
