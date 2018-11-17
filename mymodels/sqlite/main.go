@@ -7,26 +7,37 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"strconv"
+	"sync"
 	"time"
 )
 
 type SqliteDb struct {
-	DB  *sql.DB
-	sql string
+	sync.RWMutex
+	DB *sql.DB
 }
 
-func (d *SqliteDb) NewConn(db string) (err error) {
+var SqlConn SqliteDb
+
+func ReturnSqlDB() *SqliteDb {
+	return &SqlConn
+}
+
+func NewConn(db string) (err error) {
 	db1, err := sql.Open("sqlite3", db)
-	d.DB = db1
+	SqlConn.DB = db1
 	return
 }
 
-func CreateInsertSql(table string, col, where string) (sql string) {
+func CreateSelectSql(table string, col, where string) (sql string) {
 	sql = fmt.Sprintf("select %s from %s where %s", col, table, where)
 	return
 }
 
 func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
+	d.Lock()
+	defer func() {
+		d.Unlock()
+	}()
 	rows, err := d.DB.Query(sql + " limit 1")
 	defer func() {
 		rows.Close()
@@ -45,7 +56,10 @@ func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
 	return nil
 }
 func (d *SqliteDb) GetExist(sql string) (error, bool) {
-
+	d.Lock()
+	defer func() {
+		d.Unlock()
+	}()
 	rows, err := d.DB.Query(sql + " limit 1")
 	defer func() {
 		rows.Close()
@@ -72,7 +86,10 @@ func (d *SqliteDb) GetExist(sql string) (error, bool) {
 }
 
 func (d *SqliteDb) UpdateAgentVer(where string, version, time string) (err error) {
-	fmt.Println(where)
+	d.Lock()
+	defer func() {
+		d.Unlock()
+	}()
 	stmt, err := d.DB.Prepare("update agent set version= ?, `time`=? where uuid = ?")
 	//if err!=nil{
 	//	return err
@@ -95,7 +112,10 @@ func (d *SqliteDb) UpdateAgentVer(where string, version, time string) (err error
 }
 
 func (d *SqliteDb) InsertAgent(ver, uuid, time string) (err error) {
-
+	d.Lock()
+	defer func() {
+		d.Unlock()
+	}()
 	stmt, err := d.DB.Prepare("INSERT INTO agent(version ,uuid ,time) values(?,?,?)")
 
 	res, err := stmt.Exec(ver, uuid, time)
@@ -112,25 +132,19 @@ func (d *SqliteDb) Close() {
 }
 
 func main() {
-	//db, err := sql.Open("sqlite3", "/home/go/src/godev/mymodels/sqlite/111.sqlite")
-	//
-	////插入数据
-
-	//
-	//fmt.Println(id)
-
-	sql1 := CreateInsertSql("agent", "uuid,version", "1=1")
-
-	var tsql SqliteDb
-	err := tsql.NewConn("D:\\work\\project-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
-
+	err := NewConn("D:\\work\\project-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
+
+	sql1 := CreateSelectSql("agent", "uuid,version", "1=1")
+
 	defer func() {
-		tsql.Close()
+		SqlConn.Close()
 	}()
-	err, b := tsql.GetExist(sql1)
+
+	sqlconn1 := ReturnSqlDB() // 其它模块时
+	err, b := sqlconn1.GetExist(sql1)
 	if err != nil {
 		log.Printf("run sql :%s faile err:%s\n", sql1, err)
 	}
@@ -139,19 +153,19 @@ func main() {
 	ver = "22222222222"
 	timestr = strconv.FormatInt(time.Now().Unix(), 10)
 	if b {
-		err := tsql.GetData(sql1, &uuid, &ver)
+		err := SqlConn.GetData(sql1, &uuid, &ver)
 		if err != nil {
 			log.Println("getdata err", err)
 		}
 		fmt.Println(uuid, ver)
 
-		err = tsql.UpdateAgentVer(uuid, ver, timestr)
+		err = SqlConn.UpdateAgentVer(uuid, ver, timestr)
 		if err != nil {
 			log.Printf("update err:%s\n", err)
 		}
-		tsql.Close()
+		SqlConn.Close()
 	} else {
-		err := tsql.InsertAgent(ver, uuid, timestr)
+		err := SqlConn.InsertAgent(ver, uuid, timestr)
 		if err != nil {
 			log.Printf("insert agent err:%s\n", err)
 		}
