@@ -4,9 +4,11 @@
     "run_dir": "/home/work/agent/",
     "stopErr": true,
     "install_step": {
-      "1": "chmod +x /etc/rc.d/rc.local",
-      "2": "echo 'pushd /home/work/agent ; ./agent -d true' >>/etc/rc.local",
-      "3": "pushd /home/work/agent ; ./agent -d true"
+      "1":"if [ `ps a|grep ./agent|grep -v grep|cut -d ' ' -f 1|wc -l` -gt 0 ]; then kill -9 `ps a|grep ./agent|grep -v grep|cut -d ' ' -f 1`; fi",
+      "2": "chmod +x /etc/rc.d/rc.local",
+      "3": "if [ `grep -c agent /etc/rc.local` -eq 0 ];then echo 'pushd /home/work/agent ; ./agent -d true' >>/etc/rc.local; fi",
+      "4": "chmod 755 /home/work/agent/agent",
+      "5": "pushd /home/work/agent ; ./agent -d true"
     }
   },
   "start_cmd": "1.sh",
