@@ -32,6 +32,23 @@ func CreateSelectSql(table string, col, where string) (sql string) {
 	sql = fmt.Sprintf("select %s from %s where %s", col, table, where)
 	return
 }
+func (d *SqliteDb) GetAgentVer() (ver string, err error) {
+	d.Lock()
+	defer func() {
+		d.Unlock()
+	}()
+	rows, err := d.DB.Query("select version from Agent limit 1")
+	defer func() {
+		rows.Close()
+	}()
+	for rows.Next() {
+		err = rows.Scan(&ver)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
 
 func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
 	d.Lock()
@@ -144,6 +161,8 @@ func main() {
 	}()
 
 	sqlconn1 := ReturnSqlDB() // 其它模块时
+	fmt.Println(sqlconn1.GetAgentVer())
+
 	err, b := sqlconn1.GetExist(sql1)
 	if err != nil {
 		log.Printf("run sql :%s faile err:%s\n", sql1, err)
