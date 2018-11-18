@@ -21,7 +21,7 @@ func RegitDB(dbstr string) {
 }
 
 type Mission struct {
-	Id          int    `orm:"pk"`
+	Id          int    `orm:"pk;auto"`
 	AppName     string `orm:"index;column(appname);size(20)"` // 应用名字
 	Version     string `orm:"column(version);size(20)"`       //版本
 	UUID        string `orm:"column(uuid);size(60);index"`    // agent uuid
