@@ -5,7 +5,7 @@ import (
 )
 
 func RegitDB(dbstr string) {
-	orm.RegisterModel(new(Mission))
+	orm.RegisterModel(new(MissionDetail))
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	// 参数1        数据库的别名，用来在 ORM 中切换数据库使用
 	// 参数2        driverName
@@ -20,10 +20,11 @@ func RegitDB(dbstr string) {
 		maxIdle, maxConn)
 }
 
-type Mission struct {
+type MissionDetail struct {
 	Id          int    `orm:"pk;auto"`
 	AppName     string `orm:"index;column(appname);size(20)"` // 应用名字
 	Version     string `orm:"column(version);size(20)"`       //版本
+	Ip          string `orm:"column(ip);size(32)"`           //IP
 	UUID        string `orm:"column(uuid);size(60);index"`    // agent uuid
 	Status      uint   `orm:"column(status);default(0)"`      // 是否安装过   0 没有 1 有
 	Count       uint   `orm:"column(count);default(0)"`       // 安装过的次数
@@ -31,21 +32,23 @@ type Mission struct {
 	CreateTime  int64  `orm:"column(createtime)"`             // 创建时间 unix time
 	LastTime    int64  `orm:"column(lasttime)"`               // 最后一次安装时间
 	InstallTime int64  `orm:"column(installtime)"`            // 计划安装时间
+	FtpInstallPath string `orm:"column(ftpinstallpath)"`   // FTP安装路径
+	InstallPath string `orm:"column(installpath)"`   // 安装路径
 }
 
 //自定义表名
-func (m *Mission) TableName() string {
-	return "mission"
+func (m *MissionDetail) TableName() string {
+	return "missiondetail"
 }
 
 // 多字段唯一键
-func (u *Mission) TableUnique() [][]string {
+func (u *MissionDetail) TableUnique() [][]string {
 	return [][]string{
 		[]string{"AppName", "Version", "UUID"},
 	}
 }
 
 // 设置引擎为 INNODB
-func (u *Mission) TableEngine() string {
+func (u *MissionDetail) TableEngine() string {
 	return "INNODB"
 }

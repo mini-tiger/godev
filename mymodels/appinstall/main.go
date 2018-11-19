@@ -230,7 +230,7 @@ func main() {
 
 	// sqlite version uuid
 	// initDb
-	err := utils.NewConn("/home/go/src/godev/mymodels/appinstall/111.sqlite")
+	err := utils.NewConn("/home/go/src/godev/mymodels/appinstall/old.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
