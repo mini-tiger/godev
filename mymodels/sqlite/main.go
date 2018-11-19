@@ -47,10 +47,11 @@ func (d *SqliteDb) GetAgentVer() (ver string, err error) {
 			return
 		}
 	}
+	fmt.Println(ver)
 	return
 }
 
-func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
+func (d *SqliteDb) GetData(sql string, ver *string) error {
 	d.Lock()
 	defer func() {
 		d.Unlock()
@@ -63,7 +64,7 @@ func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
 		return err
 	}
 	for rows.Next() {
-		err = rows.Scan(uuid, ver)
+		err = rows.Scan( ver)
 		if err != nil {
 
 			return err
@@ -78,14 +79,14 @@ func (d *SqliteDb) GetExist(sql string) (error, bool) {
 		d.Unlock()
 	}()
 	rows, err := d.DB.Query(sql + " limit 1")
+
+	if err != nil {
+
+		return err, false
+	}
 	defer func() {
 		rows.Close()
 	}()
-	if err != nil {
-		rows.Close()
-		return err, false
-	}
-
 	return err, rows.Next()
 	//checkErr(err)
 	//var uuid string
@@ -149,21 +150,21 @@ func (d *SqliteDb) Close() {
 }
 
 func main() {
-	err := NewConn("/home/go/src/godev/mymodels/sqlite/old.sqlite")
+	err := NewConn("C:\\work\\go-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
 
-	sql1 := CreateSelectSql("agent", "uuid,version", "1=1")
+	sql1 := CreateSelectSql("agent", "version", "1=1")
 
 	defer func() {
 		SqlConn.Close()
 	}()
 
 	sqlconn1 := ReturnSqlDB() // 其它模块时
-	fmt.Println(sqlconn1.GetAgentVer())
 
 	err, b := sqlconn1.GetExist(sql1)
+	fmt.Println(err,b)
 	if err != nil {
 		log.Printf("run sql :%s faile err:%s\n", sql1, err)
 	}
@@ -174,7 +175,7 @@ func main() {
 
 	timestr = strconv.FormatInt(time.Now().Unix(), 10)
 	if b {
-		err := SqlConn.GetData(sql1, &uuid, &ver)
+		err := SqlConn.GetData(sql1,  &ver)
 		if err != nil {
 			log.Println("getdata err", err)
 		}
