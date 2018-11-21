@@ -32,7 +32,7 @@ type MissionDetail struct {
 	CreateTime  int64  `orm:"column(createtime)"`             // 创建时间 unix time
 	LastTime    int64  `orm:"column(lasttime)"`               // 最后一次安装时间
 	InstallTime int64  `orm:"column(installtime)"`            // 计划安装时间
-	FtpInstallPath string `orm:"column(ftpinstallpath)"`   // FTP安装路径
+	FtpInfo string `orm:"column(ftpinfo)"`   // FTP 信息，json格式
 	InstallPath string `orm:"column(installpath)"`   // 安装路径
 }
 
@@ -44,7 +44,7 @@ func (m *MissionDetail) TableName() string {
 // 多字段唯一键
 func (u *MissionDetail) TableUnique() [][]string {
 	return [][]string{
-		[]string{"AppName", "Version", "UUID"},
+		[]string{"AppName", "Version", "UUID","Ip"},
 	}
 }
 

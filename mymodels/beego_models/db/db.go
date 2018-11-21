@@ -8,7 +8,7 @@ import (
 
 func Init() {
 	// todo 注册DB
-	models.RegitDB("falcon:123456@tcp(192.168.43.11:3306)/app?charset=utf8&loc=Asia%2FShanghai")
+	models.RegitDB("falcon:123456@tcp(192.168.43.11:3306)/nodeman?charset=utf8&loc=Asia%2FShanghai")
 	// 数据库别名
 	name := "default"
 	// drop table 后再建表
