@@ -1,22 +1,21 @@
 package main
 
-import "fmt"
+import (
+	"os"
+	"fmt"
+)
 
-type DownLoad struct {
-	//Type         string
-	Host string
-	Port int
-	User string
-	Pass string
-	//DownloadFile []*DownLoadSub
-	LocalPath string
+func IsFile(file string) bool {
+	_, err := os.Stat(file)
+	if err != nil {
+
+		return false
+
+	}
+	return true
 }
-
-func main() {
-	var ftp *DownLoad
-
-	//s:=DownLoad{}
-	//s.Port=21
-	ftp = &DownLoad{Port: 21}
-	fmt.Println(ftp)
+func main()  {
+	if IsFile("/home/work/vsftpd/install.json "){
+		fmt.Println(1)
+	}
 }
