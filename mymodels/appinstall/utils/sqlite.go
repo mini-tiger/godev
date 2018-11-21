@@ -13,17 +13,18 @@ type SqliteDb struct {
 	DB *sql.DB
 }
 
-//var SqlConn *SqliteDb
+var SqlConn *SqliteDb
+
 //
 ////func ReturnSqlDB() *SqliteDb {
 ////	return &SqlConn
 ////}
 //
-//func NewConn(db string) (err error) {
-//	db1, err := sql.Open("sqlite3", db)
-//	SqlConn.DB = db1
-//	return
-//}
+func NewConn(db string) (err error) {
+	db1, err := sql.Open("sqlite3", db)
+	SqlConn.DB = db1
+	return
+}
 
 func CreateSelectSql(table string, col, where string) (sql string) {
 	sql = fmt.Sprintf("select %s from %s where %s", col, table, where)
@@ -46,7 +47,6 @@ func (d *SqliteDb) GetAgentVer() (ver string, err error) {
 	}
 	return
 }
-
 
 func (d *SqliteDb) GetData(sql string, uuid, ver *string) error {
 	d.Lock()
