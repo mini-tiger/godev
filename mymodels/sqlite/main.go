@@ -25,6 +25,7 @@ func ReturnSqlDB() *SqliteDb {
 func NewConn(db string) (err error) {
 	db1, err := sql.Open("sqlite3", db)
 	SqlConn.DB = db1
+	err=db1.Ping()
 	return
 }
 
@@ -150,7 +151,7 @@ func (d *SqliteDb) Close() {
 }
 
 func main() {
-	err := NewConn("C:\\work\\go-dev\\src\\godev\\mymodels\\sqlite\\111.sqlite")
+	err := NewConn("C:\\work\\go-dev\\src\\godev\\mymodels\\sqlite\\info.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
