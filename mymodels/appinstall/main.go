@@ -1,16 +1,16 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/satori/go.uuid"
 	"godev/mymodels/appinstall/utils"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-	"os"
-	"errors"
-	"github.com/satori/go.uuid"
 )
 
 //todo  下载agent.zip 到本地 /TmpDir/TmpFile 解压缩 到/TmpDir/TmpUnZipDir
@@ -22,13 +22,12 @@ type InstallStruct struct {
 	ZipFile              string // zip ftp上的文件， agent.zip
 	Uuid                 string
 	DataJson             *utils.Install
-	Version 			string // agent recv_version
+	Version              string // agent recv_version
 }
-
 
 var agentStruct InstallStruct
 
-func (t *InstallStruct) ftpDown() (err error){
+func (t *InstallStruct) ftpDown() (err error) {
 	//ftp download
 	var ftpdl utils.DownLoad
 	ftpdl.Port = 21
@@ -52,7 +51,7 @@ func (t *InstallStruct) ftpDown() (err error){
 	return
 }
 
-func (t *InstallStruct) unZip() (error){
+func (t *InstallStruct) unZip() error {
 	//unzip /tmp/unix/unix.zip
 	//fmt.Println(t.ZipFile)
 	err := utils.UnCompress(filepath.Join(t.TmpDir, t.TmpFile), filepath.Join(t.TmpDir, t.TmpUnZipDir)) // 1.压缩文件，2.解压缩路径(/tmp + 临时目录)
@@ -62,7 +61,7 @@ func (t *InstallStruct) unZip() (error){
 	return err
 }
 
-func (t *InstallStruct) unInsJson() (err error){
+func (t *InstallStruct) unInsJson() (err error) {
 	f, err := ioutil.ReadFile(filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"))
 	if err != nil {
 		log.Printf("读取install json文件:%s 失败 err:%s\n", filepath.Join(t.TmpDir, t.TmpUnZipDir, "install.json"), err)
@@ -79,14 +78,14 @@ func (t *InstallStruct) unInsJson() (err error){
 	t.DataJson = dataJson
 	utils.CreateDir(dataJson.InstallAll.RunDir) //create rundir
 
-	if utils.IsFile(filepath.Join(dataJson.InstallAll.RunDir, "info.sqlite")){
+	if utils.IsFile(filepath.Join(dataJson.InstallAll.RunDir, "info.sqlite")) {
 		os.Remove(filepath.Join(t.TmpDir, t.TmpUnZipDir, "info.sqlite"))
 	}
 
 	stderr, _ := utils.RunCommand(fmt.Sprintf("/usr/bin/cp -rf %s/* %s", filepath.Join(t.TmpDir, t.TmpUnZipDir), dataJson.InstallAll.RunDir))
 	if stderr != "" {
 		log.Printf("cp -rf fail")
-		err=errors.New("cp -rf fail")
+		err = errors.New("cp -rf fail")
 		return
 	}
 	return
@@ -102,7 +101,7 @@ func (t *InstallStruct) CreateCfg() (err error) {
 	return nil
 }
 
-func (t *InstallStruct) RunInstall() (utils.InstallResp) {
+func (t *InstallStruct) RunInstall() utils.InstallResp {
 	//for _,step:=range []string{"installStep"}{
 	//	resp,stop:=utils.StepRun(step, t.DataJson)
 	//	if stop{
@@ -116,22 +115,19 @@ func (t *InstallStruct) RunInstall() (utils.InstallResp) {
 	return resp
 }
 
-func (t *InstallStruct)SqliteCheck() (err error) {
-
+func (t *InstallStruct) SqliteCheck() (err error) {
 
 	sql1 := utils.CreateSelectSql("agent", "uuid,version", "1=1")
 
-
-	sqlconn := utils.ReturnSqlDB() // 其它模块时
+	sqlconn := utils.SqlConn // 其它模块时
 
 	err, b := sqlconn.GetExist(sql1)
 	if err != nil {
 		log.Printf("run sql :%s faile err:%s\n", sql1, err)
 	}
-	var uuidstr, currver,timestr string
+	var uuidstr, currver, timestr string
 	//uuid = "11111111"
 	//ver = "22222222222"
-
 
 	timestr = strconv.FormatInt(time.Now().Unix(), 10)
 	//fmt.Println(uuidstr,ver,timestr)
@@ -141,7 +137,7 @@ func (t *InstallStruct)SqliteCheck() (err error) {
 		if err != nil {
 			log.Println("getdata err", err)
 		}
-		fmt.Println(uuidstr,currver)
+		fmt.Println(uuidstr, currver)
 		if currver == t.Version {
 			log.Println("version same skip")
 			return
@@ -149,7 +145,7 @@ func (t *InstallStruct)SqliteCheck() (err error) {
 
 		t.Uuid = uuidstr
 
-		err=InstallDetail()
+		err = InstallDetail()
 		if err != nil {
 			log.Printf("InstallDetail err:%s\n", err)
 		}
@@ -168,8 +164,7 @@ func (t *InstallStruct)SqliteCheck() (err error) {
 		}
 		t.Uuid = u.String()
 
-		err=InstallDetail()
-
+		err = InstallDetail()
 
 		if err != nil {
 			log.Printf("InstallDetail err:%s\n", err)
@@ -192,26 +187,26 @@ func InstallDetail() (err error) {
 	agentStruct.TmpFile = agentStruct.TmpUnZipDir + ".zip"                // 临时目录/unixtime/unixtime.zip
 
 	//
-	err=agentStruct.ftpDown()
-	if err!=nil{
+	err = agentStruct.ftpDown()
+	if err != nil {
 		log.Println("ftp err")
 	}
 
 	//
-	err=agentStruct.unZip()
-	if err!=nil{
+	err = agentStruct.unZip()
+	if err != nil {
 		log.Println("unzip err")
 	}
 	//jiexi install.json,  rundir   cp -r /tmp/unixnano/ rundir
 
-	err=agentStruct.unInsJson()
-	if err!=nil{
+	err = agentStruct.unInsJson()
+	if err != nil {
 		log.Println("unInsJson err")
 	}
 	// create cfg.json
 
-	err=agentStruct.CreateCfg()
-	if err!=nil{
+	err = agentStruct.CreateCfg()
+	if err != nil {
 		log.Println("createCfg err")
 	}
 	//run install.json  installstep
@@ -235,18 +230,13 @@ func main() {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
 
-	agentStruct.Version="v3"
+	agentStruct.Version = "v3"
 
 	agentStruct.SqliteCheck()
-
-
 
 	//agent  add  proclist monitor queue
 	//
 	//
-
-
-
 
 	//return uuid version appname missionid
 }

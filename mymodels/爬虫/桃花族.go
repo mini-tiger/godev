@@ -21,8 +21,8 @@ import (
 const (
 	MasterUrl  = "http://thzbt.co/"
 	MasterDir  = "g:\\image\\"
-	PAGES      = 4     //最多看3页的数据，3
-	MaxOld     = 8     //最大几天前
+	PAGES      = 5     //最多看3页的数据，3
+	MaxOld     = 14    //最大几天前
 	ExistCover = false //存在是否覆盖
 )
 
