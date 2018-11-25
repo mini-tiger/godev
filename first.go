@@ -2,18 +2,32 @@ package main
 
 import (
 	"fmt"
-	"unsafe"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 func main() {
-	var i int = 1
-	fmt.Printf("i变量类型%T, 内容是:%d\n", i, i)
+	proxy := func(_ *http.Request) (*url.URL, error) {
+		return url.Parse("http://127.0.0.1:1080")
+	}
 
-	p := unsafe.Pointer(&i) // todo 将i 的地址传入，转化为通用指针
-	fmt.Printf("p变量类型%T, 内容是:%v\n", p, p)
+	transport := &http.Transport{Proxy: proxy}
 
-	pu := (*int)(p)
-	*pu = 12
-	fmt.Printf("i变量类型%T, 内容是:%d\n", i, i)
+	client := &http.Client{Transport: transport, Timeout: 60 * time.Second}
+	resp, err := client.Get("http://www.google.com")
 
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if resp.StatusCode == 200 {
+		//fmt.Println(resp.Body)
+		s, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(s))
+	} else {
+		fmt.Println("Fail")
+	}
 }
