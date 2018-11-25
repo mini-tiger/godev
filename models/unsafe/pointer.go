@@ -1,33 +1,59 @@
 package main
 
 import (
-	"./p"
 	"fmt"
 	"unsafe"
 )
 
 func main() {
-	var v p.V
-	// v.i = 32 //由于 i小写不能导出
-	fmt.Println(v)
-	ex()
-}
+	s := struct {
+		a byte
+		b byte
+		c byte
+		d int64
+	}{0, 0, 0, 0}
 
-func ex() {
-	//https://studygolang.com/articles/1414
+	// 将结构体指针转换为通用指针
+	p := unsafe.Pointer(&s)
+	// 保存结构体的地址备用（偏移量为 0）
+	up0 := uintptr(p)
+	// 将通用指针转换为 byte 型指针
+	pb := (*byte)(p)
+	// 给转换后的指针赋值
+	*pb = 10
+	// 结构体内容跟着改变
+	fmt.Println(s)
 
-	var v *p.V = new(p.V) //v就是类型为p.V的一个指针
+	// 偏移到第 2 个字段
+	up := up0 + unsafe.Offsetof(s.b)
+	// 将偏移后的地址转换为通用指针
+	p = unsafe.Pointer(up)
+	// 将通用指针转换为 byte 型指针
+	pb = (*byte)(p)
+	// 给转换后的指针赋值
+	*pb = 20
+	// 结构体内容跟着改变
+	fmt.Println(s)
 
-	var i *int32 = (*int32)(unsafe.Pointer(v)) //将指针v转成通用指针，再转成int32指针。
+	// 偏移到第 3 个字段
+	up = up0 + unsafe.Offsetof(s.c)
+	// 将偏移后的地址转换为通用指针
+	p = unsafe.Pointer(up)
+	// 将通用指针转换为 byte 型指针
+	pb = (*byte)(p)
+	// 给转换后的指针赋值
+	*pb = 30
+	// 结构体内容跟着改变
+	fmt.Println(s)
 
-	*i = int32(98)
-
-	var j *int64 = (*int64)(unsafe.Pointer(uintptr(unsafe.Pointer(v)) + uintptr(unsafe.Sizeof(int32(0)))))
-	//i是int32类型，也就是说i占4个字节。所以j是相对于v偏移了4个字节。您可以用uintptr(4)或uintptr(unsafe.Sizeof(int32(0)))来做这个事。unsafe.Sizeof方法用来得到一个值应该占用多少个字节空间
-	*j = int64(763)
-
-	v.PutI()
-
-	v.PutJ()
-
+	// 偏移到第 4 个字段
+	up = up0 + unsafe.Offsetof(s.d)
+	// 将偏移后的地址转换为通用指针
+	p = unsafe.Pointer(up)
+	// 将通用指针转换为 int64 型指针
+	pi := (*int64)(p)
+	// 给转换后的指针赋值
+	*pi = 40
+	// 结构体内容跟着改变
+	fmt.Println(s)
 }

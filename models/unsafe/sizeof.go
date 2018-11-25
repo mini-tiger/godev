@@ -9,7 +9,6 @@ import (
 //只有 bool  intN floatN 不一定是8字节整数倍
 func main() {
 
-	fmt.Println(unsafe.Sizeof(aaa))
 	type name struct {
 		// b bool
 		// x float64
