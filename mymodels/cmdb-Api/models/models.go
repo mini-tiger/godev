@@ -1,7 +1,7 @@
 package models
 
 type AddhostResp struct {
-	Result string
+	Result bool
 	Bk_error_code int64
 	Bk_error_msg string
 	Data map[string]interface{}`json:"data"`

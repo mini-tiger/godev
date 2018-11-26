@@ -42,3 +42,4 @@ func main()  {
 	abc(&aa)
 	abc(&bb)
 }
+
