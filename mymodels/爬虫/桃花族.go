@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,9 +21,10 @@ import (
 const (
 	MasterUrl  = "http://thzbt.co/"
 	MasterDir  = "g:\\image\\"
-	PAGES      = 5     //最多看3页的数据，3
-	MaxOld     = 14    //最大几天前
+	PAGES      = 3     //最多看3页的数据，3
+	MaxOld     = 5     //最大几天前
 	ExistCover = false //存在是否覆盖
+	useProxy   = true  // 使用ssr翻墙，本地1080端口
 )
 
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
@@ -240,9 +241,19 @@ func DownFile(url, fp string, c chan struct{}) {
 	//	return
 	//}
 	//defer resp.Body.Close()
+	client := &http.Client{}
+	if useProxy {
+		proxy := func(_ *http.Request) (*neturl.URL, error) {
+			return neturl.Parse("http://127.0.0.1:1080")
+		}
 
-	client := &http.Client{
-		Timeout: 60 * time.Second,
+		transport := &http.Transport{Proxy: proxy}
+
+		client = &http.Client{Transport: transport, Timeout: 60 * time.Second}
+	} else {
+		client = &http.Client{
+			Timeout: 60 * time.Second,
+		}
 	}
 
 	request, _ := http.NewRequest("GET", url, nil)

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+	"strconv"
 	"sync"
-	"github.com/jander/golog/logger"
 	"time"
 )
 
@@ -25,6 +25,7 @@ func ReturnSqlDB() *SqliteDb {
 func NewConn(db string) (err error) {
 	db1, err := sql.Open("sqlite3", db)
 	SqlConn.DB = db1
+	err=db1.Ping()
 	return
 }
 
@@ -144,135 +145,58 @@ func (d *SqliteDb) InsertAgent(ver, uuid, time string) (err error) {
 	}
 	return
 }
-func (d *SqliteDb) InsertUuid(uuid string,bizid int) (err error) {
-	d.Lock()
-	defer func() {
-		d.Unlock()
-	}()
-	stmt, err := d.DB.Prepare("INSERT INTO updateinfo(uuid ,bizid) values(?,?)")
 
-	res, err := stmt.Exec(uuid,bizid)
-
-	id, err := res.LastInsertId()
-	if id == 0 {
-		err = errors.New("insertAgent table == 0")
-	}
-	return
-}
 func (d *SqliteDb) Close() {
 	d.DB.Close()
 }
 
-type AppSinge struct {
-	AppName string
-	Ver string
-}
-
-func (d *SqliteDb) GetAppData() (err error,tmp []AppSinge) {
-	d.Lock()
-	defer func() {
-		d.Unlock()
-	}()
-	rows, err := d.DB.Query("select name,version from app")
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer func() {
-		rows.Close()
-	}()
-	for rows.Next() {
-		var ts AppSinge
-		err = rows.Scan(&ts.AppName, &ts.Ver)
-		//if err!=nil{
-		//
-		//}
-		tmp=append(tmp,ts)
-		//fmt.Println(ts)
-	}
-
-	return
-}
-func (d *SqliteDb) AppUpdate() (err error) {
-	d.Lock()
-	defer func() {
-		d.Unlock()
-	}()
-	curtime := time.Now().Unix()
-	stmt, err := d.DB.Prepare("update app set monitor_cmd=?,monitor_return=?,start_cmd=?,stop_cmd=?,time=?,version=?, rundir=? where name=?")
-	if err!=nil{
-		logger.Printf("AppUpdate name:%s err:%s\n",rep.AppName,err)
-		return err
-	}
-
-	res, err := stmt.Exec("ps aux|grep vsftp|grep -v grep|wc -l","1","start.sh","stop.sh","")
-	if err!=nil{
-		logger.Printf("AppUpdate name:%s err:%s\n",rep.AppName,err)
-		return err
-	}
-
-	affect, err := res.RowsAffected()
-
-	//if err!=nil{
-	//	return err
-	//}
-
-	if affect == 0 {
-		return errors.New("update affect = 0")
-	}
-	return
-}
 func main() {
-	err := NewConn("C:\\Users\\Administrator\\Desktop\\111.sqlite")
+	err := NewConn("C:\\work\\go-dev\\src\\godev\\mymodels\\sqlite\\info.sqlite")
 	if err != nil {
 		log.Printf("sqlite conn fail err:%s\n", err)
 	}
 
-	//sql1 := CreateSelectSql("agent", "version", "1=1")
+	sql1 := CreateSelectSql("agent", "version", "1=1")
 
 	defer func() {
 		SqlConn.Close()
 	}()
 
 	sqlconn1 := ReturnSqlDB() // 其它模块时
-	//sqlconn1.InsertUuid("123",1)
-	//err, b := sqlconn1.GetExist(sql1)
-	sqlconn1.GetAppExists("vsftpd")
-	//err,tmp:=sqlconn1.GetAppData()
-	//fmt.Println(err,tmp[0])
-	//fmt.Println(err,b)
-	//if err != nil {
-	//	log.Printf("run sql :%s faile err:%s\n", sql1, err)
-	//}
-	//cver := "v3" // 当前版本
-	//// 没记录 直接插入，  有记录 判断是否 版本一样，一样则跳过，不一样更新
-	//// ubs 发送过来 必须带有版本号
-	//var uuid, ver, timestr string
-	//
-	//timestr = strconv.FormatInt(time.Now().Unix(), 10)
-	//if b {
-	//	err := SqlConn.GetData(sql1,  &ver)
-	//	if err != nil {
-	//		log.Println("getdata err", err)
-	//	}
-	//	fmt.Println(uuid, ver)
-	//	if ver == cver {
-	//		log.Println("version same skip")
-	//		return
-	//	}
-	//
-	//	err = SqlConn.UpdateAgentVer(uuid, ver, timestr)
-	//	if err != nil {
-	//		log.Printf("update err:%s\n", err)
-	//	}
-	//	SqlConn.Close()
-	//} else {
-	//	err := SqlConn.InsertAgent(ver, uuid, timestr)
-	//	if err != nil {
-	//		log.Printf("insert agent err:%s\n", err)
-	//	}
-	//}
+
+	err, b := sqlconn1.GetExist(sql1)
+	fmt.Println(err,b)
+	if err != nil {
+		log.Printf("run sql :%s faile err:%s\n", sql1, err)
+	}
+	cver := "v3" // 当前版本
+	// 没记录 直接插入，  有记录 判断是否 版本一样，一样则跳过，不一样更新
+	// ubs 发送过来 必须带有版本号
+	var uuid, ver, timestr string
+
+	timestr = strconv.FormatInt(time.Now().Unix(), 10)
+	if b {
+		err := SqlConn.GetData(sql1,  &ver)
+		if err != nil {
+			log.Println("getdata err", err)
+		}
+		fmt.Println(uuid, ver)
+		if ver == cver {
+			log.Println("version same skip")
+			return
+		}
+
+		err = SqlConn.UpdateAgentVer(uuid, ver, timestr)
+		if err != nil {
+			log.Printf("update err:%s\n", err)
+		}
+		SqlConn.Close()
+	} else {
+		err := SqlConn.InsertAgent(ver, uuid, timestr)
+		if err != nil {
+			log.Printf("insert agent err:%s\n", err)
+		}
+	}
 
 	////更新数据
 	//stmt, err = db.Prepare("update userinfo set username=? where uid=?")

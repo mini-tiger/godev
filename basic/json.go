@@ -20,6 +20,14 @@ func tjson() {
 }
 
 func main() {
+	//	todo map转JSON
+	mapInstance := make(map[string]interface{})
+	mapInstance["Name"] = "liang637210"
+	mapInstance["Age"] = 28
+	mapInstance["Address"] = "北京昌平区"
+
+	jsonStr, err := json.Marshal(mapInstance)
+	fmt.Println(string(jsonStr))
 
 	p := &Product{}
 	fmt.Println(p)
