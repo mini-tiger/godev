@@ -6,6 +6,32 @@ type AddhostResp struct {
 	Bk_error_msg string
 	Data map[string]interface{}`json:"data"`
 }
+type SearchResp struct {
+	Result bool
+	Bk_error_code int64
+	Bk_error_msg string
+	Data SearchRespSub`json:"data"`
+}
+type SearchRespSub struct {
+	Count uint
+	Info []SearchDataSub
+}
+
+type SearchDataSub struct {
+	Set interface{}
+	Biz interface{}
+	Host map[string]interface{}
+}
+
+type UpdateHostResp struct {
+	Result bool
+	Bk_error_code uint
+	Bk_error_msg string
+	Data string
+}
+
+
+
 
 type AddhostRespDataField struct {
 	Bk_comment string `json:"Bk_comment"`
@@ -41,4 +67,35 @@ type AddHostInfo struct {
 	//Bk_mac			string
 	//Bk_outer_mac	string
 	//Import_from		string
+}
+
+type SearchHostIp struct {
+	Data []interface{}
+	Exact uint
+	Flag string
+}
+
+type SearchHostConSub struct {
+	Bk_obj_id string `json:"bk_obj_id"`
+	Fields []interface{} `json:"fields"`
+	Condition []*ConSub `json:"condition"`
+}
+
+type ConSub struct {
+	Field string `json:"field"`
+	Operator string `json:"operator"`
+	Value string `json:"value"`
+}
+
+type SearchHost struct {
+	Ip *SearchHostIp `json:"ip"`
+	//Condition []*SearchHostConSub `json:"condition"`
+	Condition []interface{} `json:"condition"`
+	Page map[string]interface{} `json:"page"`
+	//Pattern string `json:"pattern"`
+}
+
+type UpdateHost struct {
+	Bk_host_id string `json:"bk_host_id"`
+	Bk_sn string `json:"bk_sn"`
 }
