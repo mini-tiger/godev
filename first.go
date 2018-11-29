@@ -1,21 +1,55 @@
 package main
 
-import "fmt"
+//感谢帮助的朋友
+//QQ29295842   欢迎大家技术交流
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/cookiejar"
+	//    "os"
+	"net/url"
+	"time"
+)
 
-func main()  {
-	exp()
-}
-func exp()  {
-	var ss []int=[]int{1,2,3}
-	var s int =1
-	send(ss,s)
-}
-func send(abc ...interface{})  {
-	fmt.Printf("%T,%+v\n",abc,abc)
-	fmt.Println("abc len:%d",len(abc))
-	recv(abc...)
-}
-func recv(aaa  ...interface{})  {
-	fmt.Printf("%T,%+v\n",aaa,aaa)
-	fmt.Println("aaa len:%d",len(aaa))
+func main() {
+	//Init jar
+	j, _ := cookiejar.New(nil)
+	// Create client
+	client := &http.Client{Jar: j}
+	// Create request
+	req, err := http.NewRequest("GET", "http://i.baidu.com/", nil)
+	// Fetch Request
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Failure : ", err)
+	}
+	//开始修改缓存jar里面的值
+	var clist []*http.Cookie
+	clist = append(clist, &http.Cookie{
+		Name:    "BDUSS",
+		Domain:  ".baidu.com",
+		Path:    "/",
+		Value:   "VLLVVIYVR-TUhqenRtSDk3bm1aU1lXZzRQNE04T3BONGp5UFhDUFlVMTRpQ2RjQVFBQUFBJCQAAAAAAAAAAAEAAACl6JECd3MwMDMxMDk3NgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHj7~1t4-~9bM1",
+		Expires: time.Now().AddDate(1, 0, 0),
+	})
+	urlX, _ := url.Parse("http://i.baidu.com/")
+	j.SetCookies(urlX, clist)
+
+	fmt.Printf("Jar cookie : %v", j.Cookies(urlX))
+	// Fetch Request
+	resp, err = client.Do(req)
+	if err != nil {
+		fmt.Println("Failure : ", err)
+	}
+
+	// Read Response Body
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	// Display Results
+	fmt.Println("response Status : ", resp.Status)
+	fmt.Println("response Headers : ", resp.Header)
+	fmt.Println("response Body : ", string(respBody))
+	fmt.Printf("response Cookies :%v", resp.Cookies())
+
 }
