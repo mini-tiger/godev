@@ -2,25 +2,25 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/context"
 	"github.com/silenceper/wechat"
 	"github.com/silenceper/wechat/message"
 )
 
-func hello(rw http.ResponseWriter, req *http.Request) {
-
+func hello(ctx *context.Context) {
 	//配置微信参数
 	config := &wechat.Config{
-		AppID:          "1",
-		AppSecret:      "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw",
-		Token:          "weixin",
-		EncodingAESKey: "BQptm8SueWbIj8z1NRPNSxdznzSAmRMiP54cKSmCsQh",
+		AppID:          "your app id",
+		AppSecret:      "your app secret",
+		Token:          "your token",
+		EncodingAESKey: "your encoding aes key",
 	}
 	wc := wechat.NewWechat(config)
 
 	// 传入request和responseWriter
-	server := wc.GetServer(req, rw)
+	server := wc.GetServer(ctx.Request, ctx.ResponseWriter)
 	//设置接收消息的处理方法
 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
 
@@ -40,9 +40,6 @@ func hello(rw http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", hello)
-	err := http.ListenAndServe(":8008", nil)
-	if err != nil {
-		fmt.Printf("start server error , err=%v", err)
-	}
+	beego.Any("/", hello)
+	beego.Run(":8001")
 }

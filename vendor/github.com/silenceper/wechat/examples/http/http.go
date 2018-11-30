@@ -12,10 +12,10 @@ func hello(rw http.ResponseWriter, req *http.Request) {
 
 	//配置微信参数
 	config := &wechat.Config{
-		AppID:          "1",
-		AppSecret:      "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw",
-		Token:          "weixin",
-		EncodingAESKey: "BQptm8SueWbIj8z1NRPNSxdznzSAmRMiP54cKSmCsQh",
+		AppID:          "your app id",
+		AppSecret:      "your app secret",
+		Token:          "your token",
+		EncodingAESKey: "your encoding aes key",
 	}
 	wc := wechat.NewWechat(config)
 
@@ -41,7 +41,7 @@ func hello(rw http.ResponseWriter, req *http.Request) {
 
 func main() {
 	http.HandleFunc("/", hello)
-	err := http.ListenAndServe(":8008", nil)
+	err := http.ListenAndServe(":8001", nil)
 	if err != nil {
 		fmt.Printf("start server error , err=%v", err)
 	}

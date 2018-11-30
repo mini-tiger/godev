@@ -2,25 +2,32 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/silenceper/wechat"
 	"github.com/silenceper/wechat/message"
 )
 
-func hello(rw http.ResponseWriter, req *http.Request) {
+func main() {
+	router := gin.Default()
+
+	router.Any("/", hello)
+	router.Run(":8001")
+}
+
+func hello(c *gin.Context) {
 
 	//配置微信参数
 	config := &wechat.Config{
-		AppID:          "1",
-		AppSecret:      "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw",
-		Token:          "weixin",
-		EncodingAESKey: "BQptm8SueWbIj8z1NRPNSxdznzSAmRMiP54cKSmCsQh",
+		AppID:          "your app id",
+		AppSecret:      "your app secret",
+		Token:          "your token",
+		EncodingAESKey: "your encoding aes key",
 	}
 	wc := wechat.NewWechat(config)
 
 	// 传入request和responseWriter
-	server := wc.GetServer(req, rw)
+	server := wc.GetServer(c.Request, c.Writer)
 	//设置接收消息的处理方法
 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
 
@@ -37,12 +44,4 @@ func hello(rw http.ResponseWriter, req *http.Request) {
 	}
 	//发送回复的消息
 	server.Send()
-}
-
-func main() {
-	http.HandleFunc("/", hello)
-	err := http.ListenAndServe(":8008", nil)
-	if err != nil {
-		fmt.Printf("start server error , err=%v", err)
-	}
 }
