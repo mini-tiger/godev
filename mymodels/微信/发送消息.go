@@ -29,7 +29,7 @@ type uploadresp struct {
 
 const (
 	corpid     = "wx0a5e0ea42d34d2e1"
-	corpsecret = "1YwqhYfsUKDoRYYJWjMRcCRPwk-oaEFNNOl7MhEX120"
+	corpsecret = "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw"
 	Agentid    = 1             //报警监控 应用ID
 	filename   = "c:\\111.png" //上传图片路径
 )

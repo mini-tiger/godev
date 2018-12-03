@@ -9,18 +9,20 @@ import (
 )
 
 func hello(rw http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.URL.Query())
 
 	//配置微信参数
 	config := &wechat.Config{
-		AppID:          "1",
+		AppID:          "wx0a5e0ea42d34d2e1",
 		AppSecret:      "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw",
-		Token:          "weixin",
+		Token:          "CP5XVwUICtULBUECMxqV",
 		EncodingAESKey: "BQptm8SueWbIj8z1NRPNSxdznzSAmRMiP54cKSmCsQh",
 	}
 	wc := wechat.NewWechat(config)
 
 	// 传入request和responseWriter
 	server := wc.GetServer(req, rw)
+
 	//设置接收消息的处理方法
 	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
 
@@ -40,7 +42,7 @@ func hello(rw http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", hello)
+	http.HandleFunc("/weixin", hello)
 	err := http.ListenAndServe(":8008", nil)
 	if err != nil {
 		fmt.Printf("start server error , err=%v", err)
