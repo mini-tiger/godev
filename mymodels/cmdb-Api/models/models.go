@@ -98,4 +98,24 @@ type SearchHost struct {
 type UpdateHost struct {
 	Bk_host_id string `json:"bk_host_id"`
 	Bk_sn string `json:"bk_sn"`
+
+
+	Bk_host_innerip string `json:"bk_host_innerip"`
+	//Bk_comment string `json:"bk_comment"`
+	Uuid string	`json:"uuid"`
+	Bk_host_name  string `json:"bk_host_name"`
+	//Bk_os_type    int   `json:"bk_os_type,string"`
+	Bk_os_name    string `json:"bk_os_name"`
+	Bk_os_version string `json:"bk_os_version"`
+	Bk_os_bit     string `json:"bk_os_bit"`
+	//Bk_cpu        int    `json:"bk_cpu,string"`
+	//Bk_cpu_mhz    int    `json:"bk_cpu_mhz"`
+	Bk_cpu_module string `json:"bk_cpu_module"`
+	Bk_mem        int64  `json:"bk_mem,int"`
+	Bk_disk       int64  `json:"bk_disk,int"`
+	Bk_mac        string `json:"bk_mac"`
+	Bk_outer_mac  string `json:"bk_outer_mac"`
+	//BK_cloud_id	  int	`json:"bk_cloud_id"`
+
+
 }

@@ -1,50 +1,39 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
-	"github.com/silenceper/wechat"
-	"github.com/silenceper/wechat/message"
+	"time"
+	"log"
 )
 
-func hello(rw http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.URL.Query())
-
-	//配置微信参数
-	config := &wechat.Config{
-		AppID:          "wx0a5e0ea42d34d2e1",
-		AppSecret:      "1YwqhYfsUKDoRYYJWjMRcL_T0G2ZSPCPmQ2RwhDTzcw",
-		Token:          "CP5XVwUICtULBUECMxqV",
-		EncodingAESKey: "BQptm8SueWbIj8z1NRPNSxdznzSAmRMiP54cKSmCsQh",
-	}
-	wc := wechat.NewWechat(config)
-
-	// 传入request和responseWriter
-	server := wc.GetServer(req, rw)
-
-	//设置接收消息的处理方法
-	server.SetMessageHandler(func(msg message.MixMessage) *message.Reply {
-
-		//回复消息：演示回复用户发送的消息
-		text := message.NewText(msg.Content)
-		return &message.Reply{MsgType: message.MsgTypeText, MsgData: text}
-	})
-
-	//处理消息接收以及回复
-	err := server.Serve()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	//发送回复的消息
-	server.Send()
-}
+var nt1 *time.Ticker
+var nt2 *time.Ticker
 
 func main() {
-	http.HandleFunc("/weixin", hello)
-	err := http.ListenAndServe(":8008", nil)
-	if err != nil {
-		fmt.Printf("start server error , err=%v", err)
+	nt1 = time.NewTicker(time.Duration(2) * time.Second)
+	nt2 = time.NewTicker(time.Duration(2) * time.Second)
+	f1 := func() {
+		for {
+			select {
+			case <-nt1.C:
+				log.Println("this is english")
+			}
+		}
+	}
+
+	f2 := func() {
+		for {
+			select {
+			case <-nt2.C:
+				log.Println("这是中文")
+			}
+		}
+	}
+	run([]func(){f1, f2})
+	select {}
+}
+
+func run(f []func()) {
+	for _, fn := range f {
+		go fn()
 	}
 }

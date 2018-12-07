@@ -6,7 +6,7 @@ import (
 )
 
 var tt *time.Ticker
-var tr *time.Timer
+var tr *time.Timer // 一次性
 func main() {
 	tt = time.NewTicker(time.Duration(2) * time.Second)
 	tr = time.NewTimer(time.Duration(5) * time.Second)

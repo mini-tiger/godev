@@ -94,16 +94,16 @@ func main() {
 func SearchHost() {
 	url := "http://192.168.43.202:8083/api/v3/hosts/search"
 	Searchhost := models.SearchHost{}
-	tmpcon := map[string]interface{}{"bk_obj_id": "host", "fields": []interface{}{"bk_sn"}} // fields 返回的属性
+	tmpcon := map[string]interface{}{"bk_obj_id": "host", "fields": []interface{}{"bk_host_id"}} // fields 返回的属性
 	tmpcon["condition"] = []interface{}{
-		map[string]interface{}{"field": "uuid", "operator": "$eq", "value": "ddddd"},
+		map[string]interface{}{"field": "uuid", "operator": "$eq", "value": "b12486ca-3738-4be9-84b3-02de2235a7be"},
 	}
 
 	Searchhost.Condition = []interface{}{tmpcon}
 
 	Searchhost.Ip = &models.SearchHostIp{[]interface{}{}, 1, "bk_host_innerip|bk_host_outerip"}
 	//Searchhost.Pattern=""
-	Searchhost.Page = map[string]interface{}{"start": 0, "limit": 1, "sort": "bk_sn"}
+	Searchhost.Page = map[string]interface{}{"start": 0, "limit": 1, "sort": "last_time"}
 
 	fmt.Printf("%+v\n", Searchhost)
 
@@ -129,7 +129,7 @@ func SearchHost() {
 		if len(respdata.Data.Info)>=1{
 			s:=respdata.Data.Info[0]
 			fmt.Printf("%T,%+v\n", s.Host, s.Host)
-			fmt.Println(s.Host["bk_sn"])
+			fmt.Printf("%T,%v\n",s.Host["bk_host_id"], s.Host["bk_host_id"])
 		}else{
 			log.Println("没有匹配到")
 		}
@@ -142,8 +142,26 @@ func SearchHost() {
 func updateHost()  {
 	url := "http://192.168.43.202:8083/api/v3/hosts/batch"
 	updateHost := models.UpdateHost{}
-	updateHost.Bk_host_id="17"
-	updateHost.Bk_sn="ddddaaaacccc"
+
+	updateHost.Bk_host_id="32"
+	updateHost.Bk_sn="VMware-42000000000000000000000000000000000000"
+	updateHost.Bk_host_innerip = "192.168.43.26"
+	//updateHost.BK_cloud_id = 1
+	updateHost.Uuid = "b12486ca-3738-4be9-84b3-02de2235a7be"
+	updateHost.Bk_host_name = "taojun-deepin-PC"
+	//updateHost.Bk_os_type =1
+	updateHost.Bk_os_name = "linux"
+	updateHost.Bk_os_version= "64位"
+	//updateHost.Bk_cpu = 8
+	updateHost.Bk_cpu_module ="Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz"
+	//updateHost.Bk_cpu_mhz = 2600
+	updateHost.Bk_mem = 15
+	updateHost.Bk_disk = 39
+	updateHost.Bk_mac = "00:50:56:b8:fa:17"
+
+
+
+
 
 	fmt.Printf("%+v\n", updateHost)
 
