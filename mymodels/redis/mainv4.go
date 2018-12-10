@@ -24,15 +24,20 @@ func initclient()  {
 	client1:=createClient()
 	//defer client.Close()
 	Redis1.Conn=client1
-	Redis1.stingJson()
+	Redis1.stingJson() // 存储json
 
-	Redis1.stringOperation()
+	Redis1.stringOperation() // 存入 获取字符串
 	fmt.Println("===============================")
-	Redis1.stringExists("name")
+	Redis1.stringExists("name") // KEY是否存在
+
+
 	fmt.Println("===============================")
-	Redis1.listOperation()
+	Redis1.listOperation() // list操作
 	fmt.Println("===============================")
-	Redis1.Set()
+
+	Redis1.Set() // set操作
+
+
 	fmt.Println("===============================")
 
 	Redis1.pubsub1() // 订阅 消息分发
@@ -53,11 +58,17 @@ func (c redisStruct)Set(){
 	client:=c.Conn
 	fmt.Printf("%T\n",client)
 
-	i:=client.SAdd("1111111111111","0edb4518-1fe2-476b-bd3c-f38e1a81b821")
+	i:=client.SAdd("abc","vsftp")
 	fmt.Printf("添加了%d个\n",i.Val())
-	b:=client.SIsMember("a","abc")
+
+	b:=client.SIsMember("abc","abc")
 	fmt.Println("KEY中是否存在mem abc" ,b.Val())
-	//client.SRem("a","abc")
+
+	b=client.SIsMember("abc","vsftp")
+	fmt.Println("KEY中是否存在mem vsftp" ,b.Val())
+
+	i=client.SRem("abc","vsftp")
+	fmt.Printf("删除了%+v个\n",i.Val())
 }
 
 func (c redisStruct)pubsub1()  {
@@ -108,7 +119,7 @@ func createClient() *redis.Client {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "192.168.43.11:6378",
 		Password: "",
-		DB:       0,
+		DB:       1,
 		PoolSize: 5,
 	})
 
