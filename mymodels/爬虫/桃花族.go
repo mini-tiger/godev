@@ -21,10 +21,10 @@ import (
 const (
 	MasterUrl  = "http://thzbt.co/"
 	MasterDir  = "g:\\image\\"
-	PAGES      = 3     //最多看3页的数据，3
+	PAGES      = 2     //最多看3页的数据，3
 	MaxOld     = 5     //最大几天前
 	ExistCover = false //存在是否覆盖
-	useProxy   = true  // 使用ssr翻墙，本地1080端口
+	useProxy   = false // 使用ssr翻墙，本地1080端口
 )
 
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道

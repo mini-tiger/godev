@@ -1,0 +1,162 @@
+swagger: "2.0"
+info:
+  title: beego Test API
+  description: beego has a very cool tools to autogenerate documents for your API
+  version: 1.0.0
+  termsOfService: http://beego.me/
+  contact:
+    email: astaxie@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+basePath: /v1
+paths:
+  /alarms/:
+    post:
+      tags:
+      - alarms
+      description: create object
+      operationId: AlarmController.Create
+      parameters:
+      - in: formData
+        name: count
+        description: count
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/funcs.CountTop'
+        "403":
+          description: body is empty
+  /single_alarms/:
+    post:
+      tags:
+      - single_alarms
+      description: create object
+      operationId: SingleAlarms.Create
+      parameters:
+      - in: formData
+        name: endpoint
+        description: endpoint
+        required: true
+        type: string
+      - in: formData
+        name: pageno
+        description: 第几页
+        required: true
+        type: integer
+        format: int64
+      - in: formData
+        name: pagesize
+        description: 每页多少个
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/funcs.Page'
+        "403":
+          description: endpoint is empty
+definitions:
+  funcs.CountTop:
+    title: CountTop
+    type: object
+    properties:
+      Error:
+        type: string
+      Events:
+        type: array
+        items:
+          $ref: '#/definitions/models.EventCases'
+  funcs.Page:
+    title: Page
+    type: object
+    properties:
+      Error:
+        type: string
+      FirstPage:
+        type: boolean
+      LastPage:
+        type: boolean
+      List:
+        type: array
+        items:
+          $ref: '#/definitions/models.EventCases'
+      PageNo:
+        type: integer
+        format: int64
+      PageSize:
+        type: integer
+        format: int64
+      TotalCount:
+        type: integer
+        format: int64
+      TotalPage:
+        type: integer
+        format: int64
+  models.EventCases:
+    title: EventCases
+    type: object
+    properties:
+      ClosedAt:
+        type: string
+        format: datetime
+      ClosedNote:
+        type: string
+      Cond:
+        type: string
+      CurrentStep:
+        type: integer
+        format: int64
+      Endpoint:
+        type: string
+      ExpressionId:
+        type: integer
+        format: int64
+      Func:
+        type: string
+      Id:
+        type: integer
+        format: int64
+      MaxStep:
+        type: integer
+        format: int64
+      Metric:
+        type: string
+      Note:
+        type: string
+      Priority:
+        type: integer
+        format: int64
+      ProcessNote:
+        type: integer
+        format: int64
+      ProcessStatus:
+        type: string
+      Status:
+        type: string
+      StrategyId:
+        type: integer
+        format: int64
+      TemplateId:
+        type: integer
+        format: int64
+      Timestamp:
+        type: string
+        format: datetime
+      TplCreator:
+        type: string
+      UpdateAt:
+        type: string
+        format: datetime
+      UserModified:
+        type: integer
+        format: int64
+tags:
+- name: alarms
+  description: |
+    Operations about object
