@@ -61,6 +61,9 @@ func (c redisStruct)Set(){
 	i:=client.SAdd("abc","vsftp")
 	fmt.Printf("添加了%d个\n",i.Val())
 
+	i=client.SAdd("abc","vsftp1")
+	fmt.Printf("添加了%d个\n",i.Val())
+
 	b:=client.SIsMember("abc","abc")
 	fmt.Println("KEY中是否存在mem abc" ,b.Val())
 
