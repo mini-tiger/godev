@@ -7,5 +7,6 @@ import (
 
 func main() {
 	var a reflect.StringHeader
+	println(12)
 
 }
