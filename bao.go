@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-func main()  {
+func main() {
 	var a reflect.StringHeader
-	a.Data=unsafe.Pointer("123")
+
 }
