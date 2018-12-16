@@ -1,39 +1,33 @@
 package main
 
 import (
-	"time"
+	"os/exec"
+	"strings"
 	"fmt"
-	"compress/zlib"
 )
 
-type Test struct {
-	S string
-}
-
-func main() {
-	timeLayout := "2006-01-02 15:04:05"
-	s := time.Now().Unix()
-	s = 1544600603
-	fmt.Println(time.Unix(s, 0).Format(timeLayout))
-	//time.Sleep(time.Duration(5)*time.Second)
-	ss := time.Now().Unix()
-	d,h:=getday(s, ss)
-	fmt.Printf("%d天%d小时",d,h)
-}
-func getday(sinter int64) (bb bool,day,interval int64) { // 是否不足1天, 有几天, 减去天数后的时间差
-	day =
-	if day < 0 {
-		b
-	}
+func getOSName() (cm string) {
+	cmd := exec.Command("/bin/bash", "-c", "lsb_release -d")
+	buf, _ := cmd.CombinedOutput()
+	cmd.Run()
+	cm = strings.Trim(string(buf), " ")
+	cm = strings.Trim(cm,"Description:")
+	cm = strings.Trim(cm, "\t")
+	cm = strings.Trim(cm, "\r\n")
 	return
-
 }
 
-func getBasic(sinter, tt int64) (zhengshu int64,b bool) { //除完的整数,是否整数大于0
-	zhengshu = sinter / tt
-	if zhengshu >0{
-		b=true
-		return
-	}
+func getOSVersion() (cm string) {
+	cmd := exec.Command("/bin/bash", "-c", "lsb_release -r")
+	buf, _ := cmd.CombinedOutput()
+	cmd.Run()
+	cm = strings.Trim(string(buf), " ")
+	cm = strings.Trim(cm,"Release:")
+	cm = strings.Trim(cm, "\t")
+	cm = strings.Trim(cm, "\r\n")
 	return
+}
+func main()  {
+	fmt.Print(getOSName())
+	fmt.Print(getOSVersion())
 }
