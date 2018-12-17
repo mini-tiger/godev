@@ -1,12 +1,8 @@
 package main
 
-import (
-	"reflect"
-	"unsafe"
-)
+func main()  {
 
-func main() {
-	var a reflect.StringHeader
+
 	println(12)
 
 }
