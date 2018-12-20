@@ -23,4 +23,12 @@ func main() {
 	fmt.Println(i)
 	i, err = regexp.MatchString(p, p2)
 	fmt.Println(i)
+
+	r, _ := regexp.Compile("p([a-z]+)ch")
+
+	fmt.Println(r.MatchString("peach"))
+	fmt.Println(r.FindString("peach punch"))
+
+	rr, _ := regexp.Compile(p)
+	fmt.Println(rr.FindString(p1))
 }

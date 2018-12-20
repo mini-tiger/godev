@@ -91,7 +91,7 @@ func GetOutboundIP() {
 	//	L.Done()
 	//}()
 	//conn, err := net.Dial("udp", "8.8.8.8:80")
-	conn, err := net.DialTimeout("tcp", "www.baidu.com:80",time.Duration(5)*time.Second)
+	conn, err := net.DialTimeout("tcp", "192.168.43.11:22",time.Duration(15)*time.Second)
 	if err != nil {
 		ip3 <- ""
 
