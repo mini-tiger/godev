@@ -1,0 +1,45 @@
+{
+    "debug": true,
+    "configInterval": 43200,
+    "dataInterval": 900,
+    "jeesite": "http://192.168.43.184:8080/f/api/trans",
+    "cmdburl":"http://49.4.12.116:8080/api/v3/host/add/agent",
+    "appsys": [
+    	{
+    		"appsys": "MySQL",
+    		"type": "4",
+    		"relation": "and",
+    		"process": ["mysqld"]
+    	},
+    	{
+    		"appsys": "Apache",
+    		"type": "0",
+    		"relation": "and",
+    		"process": ["httpd"]
+    	},
+    	{
+    		"appsys": "Memcached",
+    		"type": "0",
+    		"relation": "and",
+    		"process": ["memcached"]
+    	},
+    	{
+    		"appsys": "Tomcat",
+    		"type": "0",
+    		"relation": "and",
+    		"process": ["java", "tomcat"]
+    	},
+    	{
+    		"appsys": "Java",
+    		"type": "0",
+    		"relation": "or",
+    		"process": ["java", "javaw"]
+    	},
+    	{
+    		"appsys": "Ssh",
+    		"type": "0",
+    		"relation": "and",
+    		"process": ["ssh"]
+    	}    	
+    ]
+}
