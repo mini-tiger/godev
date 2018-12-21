@@ -1,59 +1,44 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"io"
-	"log"
 	"net"
-	// "os"
-	"strings"
-	"time"
+	"log"
 )
 
-func handleConn(c net.Conn) {
-	defer c.Close()
+func serverConn(conn net.Conn) {
+	defer conn.Close()
 	for {
-		_, err := io.WriteString(c, time.Now().Format("15:04:05\n"))
+		var buf = make([]byte, 1024)
+		n, err := conn.Read(buf)
 		if err != nil {
-			return // e.g., client disconnected
+		//	if err == io.EOF {
+		//		log.Println("server io EOF\n")
+		//		return
+		//	}
+			log.Printf("[ERROR] conn:%s,server read faild: %s\n", conn.RemoteAddr(),err)
+			return
 		}
-		time.Sleep(1 * time.Second)
+		log.Printf("recevice %d bytes, content is 【%s】\n", n, string(buf[:n]))
+
+
 	}
 }
-
-func listen(x string) {
-	fmt.Println(x)
-	listener, err := net.Listen("tcp", "0.0.0.0:"+x)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//!+
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Print(err) // e.g., connection aborted
-			continue
-		}
-		go handleConn(conn) // handle connections concurrently
-	}
-}
-
-var complete chan int = make(chan int)
-var sep = flag.String("p", " ", "port")
 
 func main() {
-	// if len(os.Args) < 2 {   //os.Args 获致命令行参数
-	// 	panic("没有命令行参数")
-	// 	// os.Exit(1)
-	// }
-
-	//go run server.go -p 8000,8001
-	flag.Parse()
-	// fmt.Printf("%T,%[1]v", *sep) //
-	fmt.Println("listen port:")
-	for _, x := range strings.Split(*sep, ",") {
-		go listen(x)
+	// 建立监听
+	l, err := net.Listen("tcp", ":8000")
+	if err != nil {
+		log.Fatalf("error listen: %s\n", err)
 	}
-	<-complete //阻塞 推出
+	defer l.Close()
+	for {
+
+		log.Println("waiting accept.")
+		// 允许客户端连接，在没有客户端连接时，会一直阻塞
+		conn, err := l.Accept()
+		if err != nil {
+			log.Fatalf("accept faild: %s\n", err)
+		}
+		serverConn(conn)
+	}
 }
