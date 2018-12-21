@@ -47,13 +47,14 @@ func handleRead(conn net.Conn) {
 }
 
 func handleConn(c net.Conn) {
-	input := bufio.NewScanner(c)
-	handleRead(c)
+	//input := bufio.NewScanner(c)
+
 	fmt.Printf("收到ip:%s 的链接\n", c.RemoteAddr().String())
 
-	for input.Scan() {
-		go echo(c, input.Text(), 1*time.Second)
-	}
+	//for input.Scan() {
+	//	go echo(c, input.Text(), 1*time.Second)
+	//}
+	handleRead(c) //  todo 一次性发送
 	// NOTE: ignoring potential errors from input.Err()
 	c.Close()
 }
