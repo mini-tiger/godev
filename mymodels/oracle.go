@@ -14,7 +14,7 @@ func main() {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
 	//}
 
-	db, err := sql.Open("oci8", "test1/test1@192.168.43.236:1521/orcl")
+	db, err := sql.Open("oci8", "test1/test1@1.119.132.155:1521/orcl")
 	//fmt.Printf("%+v\n",db)
 	if err != nil {
 		log.Fatalln(err)
@@ -22,7 +22,7 @@ func main() {
 
 	defer db.Close()
 
-	rows, err := db.Query("select train_serial from train where rownum < 2")
+	rows, err := db.Query("select train_serial from tf_op_train where rownum < 2")
 	if err != nil {
 		log.Fatalln(err)
 	}
