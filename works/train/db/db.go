@@ -1,12 +1,11 @@
 package db
 
 import (
-	"github.com/astaxie/beego/orm"
-	"github.com/open-falcon/falcon-plus/modules/ubs/g"
-	"github.com/open-falcon/falcon-plus/modules/ubs/models"
-	"log"
+	"godev/tjtools/db/oracle"
+	"godev/works/train/g"
+	"reflect"
+	"fmt"
 )
-
 //var DB *sql.DB
 //
 //func Init() {
@@ -25,20 +24,42 @@ import (
 //	}
 //}
 
+
+var DB oracle.OrclData
+
 func Init() {
-	// todo ×¢²áDB
-	models.RegitDB(g.Config().Database)
-	// Êý¾Ý¿â±ðÃû
-	name := "default"
-	// drop table ºóÔÙ½¨±í
-	force := false
-	// ´òÓ¡Ö´ÐÐ¹ý³Ì
-	verbose := true
-	// Óöµ½´íÎóÁ¢¼´·µ»Ø
-	err := orm.RunSyncdb(name, force, verbose)
-	if err != nil {
-		log.Fatalf("db %s err:\n", g.Config().Database, err)
+	err,db:=oracle.NewOrclClient("test1/test1@1.119.132.155:1521/orcl")
+	if err!=nil{
+		g.Logger().Error("db init Fail")
+		return
 	}
-	orm.Debug = false
+	g.Logger().Printf("db success")
+	DB = oracle.OrclData{DB:db}
 
 }
+
+func GetRows(sql string,i interface{},structName string) (err error,data []interface{}) {
+	//typ:=reflect.TypeOf(i)
+	v:=reflect.ValueOf(i)
+	//fmt.Println(typ.Kind() == reflect.Ptr,typ.Name())
+	fmt.Println(v.Type(),v.Kind() == reflect.Ptr)
+
+	err,rows:=DB.GetSqlData(sql)
+	if err!=nil{
+		g.Logger().Error("get sql %s err:%s",sql,err)
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		//var data string
+
+		rows.Scan(&data)
+		//fmt.Println(data)
+	}
+	if err = rows.Err(); err != nil {
+		return
+	}
+}
+
+

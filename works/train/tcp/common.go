@@ -1,4 +1,4 @@
-package http
+package tcp
 
 import (
 	"github.com/open-falcon/falcon-plus/modules/hbs/g"
