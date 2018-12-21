@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	_ "github.com/mattn/go-oci8"
+	"os"
 )
 
 func main() {
+	os.Setenv("NLS_LANG", "")
 	//if len(os.Args) != 2 {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
 	//}
