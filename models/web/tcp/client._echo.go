@@ -34,9 +34,13 @@ func main() {
 		log.Printf("json marshal err:%s\n", err)
 	}
 
-	handleWrite(conn, bytejson)
+	handleWrite(conn, bytejson) // todo 一次性发送
 	//b := bytes.NewBuffer(bytejson)
-	mustCopy(conn, os.Stdin)
+	//mustCopy(conn, os.Stdin) // 长链接，持续发送
+	//ss := "abc\n"
+	//os.Stdin.Write([]byte(ss))
+	//ss = "efg\n"
+	//os.Stdin.Write([]byte(ss))
 }
 
 func handleWrite(conn net.Conn, bj []byte) {
