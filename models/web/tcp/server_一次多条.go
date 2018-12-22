@@ -1,8 +1,8 @@
 package main
 
 import (
-	"net"
 	"log"
+	"net"
 )
 
 func serverConn(conn net.Conn) {
@@ -11,15 +11,14 @@ func serverConn(conn net.Conn) {
 		var buf = make([]byte, 1024)
 		n, err := conn.Read(buf)
 		if err != nil {
-		//	if err == io.EOF {
-		//		log.Println("server io EOF\n")
-		//		return
-		//	}
-			log.Printf("[ERROR] conn:%s,server read faild: %s\n", conn.RemoteAddr(),err)
+			//	if err == io.EOF {
+			//		log.Println("server io EOF\n")
+			//		return
+			//	}
+			log.Printf("[ERROR] conn:%s,server read faild: %s\n", conn.RemoteAddr(), err)
 			return
 		}
 		log.Printf("recevice %d bytes, content is 【%s】\n", n, string(buf[:n]))
-
 
 	}
 }
