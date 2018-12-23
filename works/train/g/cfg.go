@@ -5,6 +5,7 @@ import (
 	"github.com/toolkits/file"
 	"log"
 	"sync"
+	"github.com/go-xorm/xorm"
 )
 
 type redisinfo struct {
@@ -28,6 +29,7 @@ var (
 	config     *GlobalConfig
 	configLock = new(sync.RWMutex)
 	lock       = new(sync.RWMutex)
+	Engine *xorm.Engine //定义引擎全局变量
 )
 
 func Config() *GlobalConfig {

@@ -44,7 +44,7 @@ func main() {
 	fmt.Println(t1.Format(time.ANSIC)) //必须使用 文档中定义的时间不能修改
 	fmt.Println(t1.Format("Mon Jan _2 15:04:05 2006"))
 	fmt.Println(t1.Format("Mon Jan _2 15:04:06 2006")) //todo 修改后，输出时间倒退了
-	fmt.Println(t1.Format("2006 01-02 15:04:05"))
+	fmt.Println(t1.Format("2006-01-02 15:04:05"))
 	fmt.Println(t1.Year(), int(t1.Month()), t1.Day(), t1.Hour(), t1.Minute(), t1.Second()) //todo 自定义 2018 9 6 16 6 33
 	fmt.Println(t1.Date())
 	fmt.Println(int(time.September))

@@ -25,4 +25,7 @@ func get(i interface{})  {
 	//fmt.Println(v.in)
 	ss:=i.(*s)
 	fmt.Printf("%T\n",ss)
+	var ii int
+	ii =9999995380161200000
+	fmt.Println(ii)
 }
