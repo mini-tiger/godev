@@ -22,7 +22,7 @@ const (
 	MasterUrl  = "http://thzbt.co/"
 	MasterDir  = "g:\\image\\"
 	PAGES      = 3     //最多看3页的数据，3
-	MaxOld     = 6     //最大几天前
+	MaxOld     = 4     //最大几天前
 	ExistCover = false //存在是否覆盖
 	useProxy   = false // 使用ssr翻墙，本地1080端口
 )
