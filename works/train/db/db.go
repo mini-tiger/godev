@@ -36,8 +36,9 @@ func Init() {
 	}
 	g.Logger().Printf("db success")
 	//Engine.ShowExecTime(true)
-	Engine.ShowSQL(true)
+	//Engine.ShowSQL(true)
 	err = Engine.Ping()
+	Engine.ShowExecTime(true)
 	if err != nil {
 		g.Logger().Error("ping db fail:", err)
 		}
