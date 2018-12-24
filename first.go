@@ -1,31 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
+	"fmt"
 )
 
-type s struct {
-	A int
+type Person struct {
+	Name   string  `json:"name"`
+	Age       int	`json:"age"`
 }
+
+func SetValueToStruct() *Person {
+	p := &Person{Age:11}
+	v := reflect.ValueOf(p).Elem()
+	vn:=v.FieldByName("Name")
+	fmt.Printf("%T\n",vn.String())
+	fmt.Println(vn.String() == "")
+	fmt.Println(v.FieldByName("Age"))
+
+	return p
+}
+
 
 func main()  {
-	var ss s
-	ss.A=1
-	get(&ss)
-}
-
-func get(i interface{})  {
-	typ:=reflect.TypeOf(i)
-	v:=reflect.ValueOf(i)
-	fmt.Println(typ.Kind() == reflect.Ptr,typ.Name())
-	fmt.Println(v.Type(),v.Kind() == reflect.Ptr)
-	vv:=v.Type()
-	fmt.Println(vv.Kind(),vv.Name(),vv.PkgPath(),vv.String())
-	//fmt.Println(v.in)
-	ss:=i.(*s)
-	fmt.Printf("%T\n",ss)
-	var ii int
-	ii =9999995380161200000
-	fmt.Println(ii)
+	p := SetValueToStruct()
+	fmt.Println(*p)
 }

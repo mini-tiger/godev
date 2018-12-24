@@ -9,7 +9,7 @@ import (
 var Redis1 redis.RedisStruct
 
 func initclient() {
-	client1, err := redis.NewRedisClient("192.168.1.108:6379", "", 0, 10)
+	client1, err := redis.NewRedisClient("192.168.43.11:6379", "", 0, 10)
 	if err != nil {
 		log.Println("NewRedis err:", err)
 	}
@@ -17,19 +17,25 @@ func initclient() {
 
 	Redis1.Conn = client1
 
-	Redis1.StingJson() // 存储json
+	//Redis1.StingJson() // 存储json
 
-	//Redis1.stringOperation() // 存入 获取字符串
+	//Redis1.StringOperation() // 存入 获取字符串
 	//fmt.Println("===============================")
-	//Redis1.stringExists("name") // KEY是否存在
+	//Redis1.StringSet("a",11)
+	//Redis1.StringSet("a",22)
+	Redis1.StringExists("a") // KEY是否存在
+	val,err:=Redis1.StringGet("a") // K
+	if val==""{
+		fmt.Println("key nil")
+	}
 	//
 	//
 	//fmt.Println("===============================")
 	//Redis1.listOperation() // list操作
 	//fmt.Println("===============================")
 
-	Redis1.Set() // set操作
-	redis.SetOperation(client1)
+	//Redis1.Set() // set操作
+	//redis.SetOperation(client1)
 
 	fmt.Println("===============================")
 

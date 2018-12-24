@@ -70,4 +70,5 @@ func main() {
 	todayStrTime, _ := time.Parse("2006-1-2", fmt.Sprintf("%d-%d-%d", tNow.Year(), tNow.Month(), tNow.Day())) //todo 时间转 字符串，在转换时间， 只要年月日的unix时间戳
 
 	fmt.Println(todayStrTime,fmt.Sprintf("%d-%d-%d", tNow.Year(), tNow.Month(), tNow.Day()))
+
 }

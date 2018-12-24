@@ -29,7 +29,7 @@ import (
 
 func Init() {
 	os.Setenv("NLS_LANG", "")
-	Engine, err := oracle.NewEngine("test1/test1@1.119.132.155:1521/orcl", "runsql.log")
+	Engine, err := oracle.NewEngine(g.Config().OracleDsn, "runsql.log")
 	if err!=nil{
 		g.Logger().Error("db init Fail")
 		return

@@ -207,6 +207,30 @@ func (c *RedisStruct) ListOperation() {
 	fmt.Println("fruit: ", value)
 }
 
+func (c *RedisStruct) StringSet(key string,value int) (err error) {
+	c.Lock()
+	defer c.Unlock()
+	client := c.Conn
+	err=client.Set(key,value,0).Err()
+	if err!=nil{
+		return
+	}
+	return
+}
+func (c *RedisStruct) StringGet(key string) (val string,err error) {
+	c.Lock()
+	defer c.Unlock()
+	client := c.Conn
+	val, err = client.Get(key).Result()
+	if err != nil {
+		return
+	}
+	return
+	//fmt.Println("name", val)
+}
+
+
+
 // set 操作
 func SetOperation(client *redis.Client) {
 	client.SAdd("blacklist", "Obama")     // 向 blacklist 中添加元素

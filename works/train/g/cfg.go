@@ -18,10 +18,11 @@ type GlobalConfig struct {
 	Debug         bool       `json:"debug"`
 	OracleDsn     string     `json:"oracledsn"`
 	Redis         *redisinfo `json:"redis"`
-	TrainInterval uint       `json:"traininterval"`
+	TrainInterval int        `json:"traininterval"`
 	Logfile       string     `json:"logfile"`
 	LogMaxDays    int        `json:"logMaxDays"`
 	Daemon        bool       `json:"daemon"`
+	LoopInterval  int        `json:"loopinterval"`
 }
 
 var (
@@ -29,7 +30,7 @@ var (
 	config     *GlobalConfig
 	configLock = new(sync.RWMutex)
 	lock       = new(sync.RWMutex)
-	Engine *xorm.Engine //定义引擎全局变量
+	Engine     *xorm.Engine //定义引擎全局变量
 )
 
 func Config() *GlobalConfig {
