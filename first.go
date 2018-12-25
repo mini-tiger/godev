@@ -2,46 +2,25 @@ package main
 
 import (
 	"fmt"
-	"github.com/goinggo/mapstructure"
+	"os"
+	"runtime"
 )
 
-type Person struct {
-	Name string `json:"name111"` // json 命名不影响
-	Age int // 主要是字段名，要与 MAP中名字一样,todo 首字母不能小写
-	Ext string// 没有map的字段，为默认值
+func getline() (file string, line int) {
+	_, file, line, _ = runtime.Caller(1)
+	return
 }
-
-
 
 func main() {
-	mapInstance := make(map[string]interface{})
-	mapInstance["Name"] = "liang637210"
-	mapInstance["Age"] = 28
-	//var person Person
-	person :=Person{}
-	MapToStuct(mapInstance,&person)
-
-	//var person Person
-	////将 map 转换为指定的结构体
-	//if err := mapstructure.Decode(mapInstance, &person); err != nil {
-	//	log.Println(err)
-	//}
-	fmt.Println(person)
-	//fmt.Println(person.Ext)
+	//a, b, c, e := runtime.Caller(0)
+	//fmt.Println(a, b, c, e)
+	tt()
 }
 
-
-
-func MapToStuct(m map[string]interface{},structData interface{}) (err error) {
-	//fmt.Println(reflect.TypeOf(structData).Kind())
-	//fmt.Println(reflect.ValueOf(structData))
-
-	if err = mapstructure.Decode(m, structData); err != nil {
-		return
+func tt() {
+	_, err := os.Getwd()
+	if err == nil {
+		fmt.Println(getline())
 	}
-	return nil
-	//fmt.Println(person)
-	//fmt.Println(person.Ext)
+	fmt.Println(getline())
 }
-
-

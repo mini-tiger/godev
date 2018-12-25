@@ -24,7 +24,8 @@ const (
 	PAGES      = 3     //最多看3页的数据，3
 	MaxOld     = 4     //最大几天前
 	ExistCover = false //存在是否覆盖
-	useProxy   = false // 使用ssr翻墙，本地1080端口
+	useProxy   = true  // 使用ssr翻墙，本地1080端口
+	proxyUrl   = "http://192.168.1.100:1080"
 )
 
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
@@ -234,7 +235,7 @@ func UrlDomGet(url string) *goquery.Document {
 }
 
 func DownFile(url, fp string, c chan struct{}) {
-	log.Printf("download %s,url:%s", fp, url)
+	log.Printf("开始 download %s,url:%s", fp, url)
 	//resp, err := http.Get(url)
 	//if err != nil {
 	//	fmt.Printf("%v\n", err.Error())
@@ -244,7 +245,7 @@ func DownFile(url, fp string, c chan struct{}) {
 	client := &http.Client{}
 	if useProxy {
 		proxy := func(_ *http.Request) (*neturl.URL, error) {
-			return neturl.Parse("http://127.0.0.1:1080")
+			return neturl.Parse(proxyUrl)
 		}
 
 		transport := &http.Transport{Proxy: proxy}
@@ -311,7 +312,7 @@ func DownFile(url, fp string, c chan struct{}) {
 		c <- struct{}{}
 		return
 	}
-	fmt.Printf("Download: %+v\n", fp)
+	fmt.Printf("Download 成功: %+v\n", fp)
 	c <- struct{}{}
 }
 
