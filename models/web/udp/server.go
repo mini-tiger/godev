@@ -36,7 +36,7 @@ func handleClient(conn *net.UDPConn) {
 		return
 	}
 	daytime := time.Now().Unix()
-	fmt.Printf("接收到client addr:%s,数据长度:%d,数据:%s\n", remoteAddr, string(data[:n]), n)
+	fmt.Printf("接收到client addr:%s,数据长度:%d,数据:%s\n", remoteAddr, n, string(data[:n]))
 	b := make([]byte, 4)
 	binary.BigEndian.PutUint32(b, uint32(daytime))
 	conn.WriteToUDP(b, remoteAddr) // todo 给client发送
