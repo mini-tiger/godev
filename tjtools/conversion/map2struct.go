@@ -1,4 +1,4 @@
-package main
+package conversion
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func main() {
 	mapInstance["Age"] = 28
 	//var person Person
 	person :=Person{}
-	MapToStuct(mapInstance,&person)
+	MapToStruct(mapInstance,&person)
 
 	//var person Person
 	////将 map 转换为指定的结构体
@@ -32,7 +32,7 @@ func main() {
 
 
 
-func MapToStuct(m map[string]interface{},structData interface{}) (err error) {
+func MapToStruct(m map[string]interface{},structData interface{}) (err error) {
 	//fmt.Println(reflect.TypeOf(structData).Kind())
 	//fmt.Println(reflect.ValueOf(structData))
 
