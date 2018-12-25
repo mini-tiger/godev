@@ -5,6 +5,8 @@ import (
 	"sync"
 	"log"
 	"time"
+	"encoding/json"
+	"godev/works/train/cron"
 )
 
 type RedisS struct {
@@ -90,45 +92,45 @@ func (c *RedisS) StringGet(key string) (val string,err error) {
 	//fmt.Println("name", val)
 }
 
-//func (c *RedisS) SetJson(key string, value model.EnvGridExt, ex time.Duration) {
-//	client := c.Conn
+func (c *RedisS) SetJson(key string, value *cron.VehicleJson, ex time.Duration) {
+	client := c.Conn
+
+	b, err := json.Marshal(value)
+	if err != nil {
+		logger.Printf("key %s convert json faile data:%+v,err:%s\n", key, value, err)
+	}
+	//fmt.Println(b,e)
+	//fmt.Println("=========================================")
+	log.Printf("存入redis json %s\n", string(b))
+
+	c.Lock()
+	defer c.Unlock()
+
+	err = client.Set(key, b, ex).Err()
+	if err != nil {
+		logger.Printf("key %s 存入redis json 失败 data:%+v, ERR: %s\n", key, value, err)
+	}
+}
 //
-//	b, err := json.Marshal(value)
-//	if err != nil {
-//		log.Printf("uuid %s convert json faile data:%+v,err:%s\n", key, value, err)
-//	}
-//	//fmt.Println(b,e)
-//	//fmt.Println("=========================================")
-//	log.Printf("存入redis json %s\n", string(b))
-//
-//	c.Lock()
-//	defer c.Unlock()
-//
-//	err = client.Set(key, b, ex).Err()
-//	if err != nil {
-//		log.Printf("uuid %s 存入redis json 失败 data:%+v, ERR: %s\n", key, value, err)
-//	}
-//}
-//
-//func (c *RedisS) GetJson(key string) (h model.EnvGridExt) {
-//	client := c.Conn
-//
-//	c.Lock()
-//	defer c.Unlock()
-//
-//	value, err := client.Get(key).Result()
-//	if err != nil {
-//		log.Printf("uuid %s output redis faile!\n", key)
-//		return
-//	}
-//	json.Unmarshal([]byte(value), &h)
-//	//fmt.Println("==============================")
-//	//fmt.Println(value)
-//	//fmt.Println(h)
-//	//fmt.Println("==============================")
-//	return
-//
-//}
+func (c *RedisS) GetJson(key string) (h cron.VehicleJson) {
+	client := c.Conn
+
+	c.Lock()
+	defer c.Unlock()
+
+	value, err := client.Get(key).Result()
+	if err != nil {
+		log.Printf("key %s output redis faile!\n", key)
+		return
+	}
+	json.Unmarshal([]byte(value), &h)
+	//fmt.Println("==============================")
+	//fmt.Println(value)
+	//fmt.Println(h)
+	//fmt.Println("==============================")
+	return
+
+}
 
 func (c *RedisS) Expire(key string, time time.Duration) bool {
 	client := c.Conn

@@ -45,8 +45,8 @@ var ss string = `{
 
 func struct_func() {
 	fmt.Printf("\n\n\n")
-	var pp Jtest
-	// pp := &Jtest{}                       // 关联 struct
+	//var pp Jtest
+	pp := Jtest{}                       // 关联 struct
 	ee := json.Unmarshal([]byte(ss), &pp) //解析
 
 	fmt.Println(ee)         // nil

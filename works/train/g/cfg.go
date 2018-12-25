@@ -14,15 +14,24 @@ type redisinfo struct {
 	PoolSize int    `json:"poolSize"`
 }
 
+type Train struct {
+	LoopInterval   int `json:"loopinterval"`   // train 表到达traininterval 间隔后,没有找到新车进入，循环扫描库的间隔
+	TrainInterval  int `json:"traininterval"`  // 根据上一条 train pass_time 加上这个时间，下次获取train的时间
+	MaxVehicleTime int `json:"maxvehicletime"` // 根据train_serial，每次vehicle 等待的时间
+}
+type UdpInfo struct {
+	UdpAddr string `json:"udpAddr"`
+}
 type GlobalConfig struct {
-	Debug         bool       `json:"debug"`
-	OracleDsn     string     `json:"oracledsn"`
-	Redis         *redisinfo `json:"redis"`
-	TrainInterval int        `json:"traininterval"`
-	Logfile       string     `json:"logfile"`
-	LogMaxDays    int        `json:"logMaxDays"`
-	Daemon        bool       `json:"daemon"`
-	LoopInterval  int        `json:"loopinterval"`
+	Debug     bool       `json:"debug"`
+	OracleDsn string     `json:"oracledsn"`
+	Redis     *redisinfo `json:"redis"`
+
+	Logfile    string   `json:"logfile"`
+	LogMaxDays int      `json:"logMaxDays"`
+	Daemon     bool     `json:"daemon"`
+	Train      *Train   `json:"train"`
+	UdpInfo    *UdpInfo `json:"udpInfo"`
 }
 
 var (
