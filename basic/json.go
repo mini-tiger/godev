@@ -9,10 +9,11 @@ import (
 type Product struct {
 	Name      string `json:"name,omitempty"`       //tag
 	ProductID int64  `json:"product_id,omitempty"` //omitempy，可以在序列化的时候忽略0值或者空值
+													// todo omitempty 当数值为 默认值时，不能 生成带有此字段的json
 	Number    int    `json:"-"`                    //tag  标签，json不序列化 此项
 	Price     float64
-	IsOnSale  bool `json:"is_on_sale,string"` // 序列化转换 字符串
-	Bt        bool //首字母必须大写
+	IsOnSale  bool   `json:"is_on_sale,string"` // 序列化转换 字符串
+	Bt        bool                              //首字母必须大写
 }
 
 func tjson() {
@@ -30,13 +31,19 @@ func main() {
 	fmt.Println(string(jsonStr))
 
 	p := &Product{}
-	fmt.Println(p)
+	//fmt.Println(p)
 	(*p).Name = "Xiao mi 6"
 	p.IsOnSale = true
 	p.Number = 10000
 	p.Price = 2499.00
 	p.ProductID = 0
 	p.Bt = false
+
+	func(a interface{}) { //todo 接口也可以 打包json
+		data, err := json.Marshal(a)
+		fmt.Println(1111, string(data), err) //"Price":2499,"is_on_sale":"true","Bt":false} <nil>
+		fmt.Printf("%T\n", data)
+	}(p)
 
 	data, err := json.Marshal(p)
 	fmt.Println(string(data), err) //"Price":2499,"is_on_sale":"true","Bt":false} <nil>
@@ -101,6 +108,12 @@ func jiexi_shuzu(j *[]uint8) {
 
 func jiexi(j *[]uint8) {
 	p := &Product{} // 关联 struct
+	func(a interface{}){
+		e := json.Unmarshal([]byte(*j), a) // 接口也可以解析
+
+		fmt.Println(e)  // nil
+		fmt.Println(*p) //{Xiao mi 6 0 10000 2499 true false}
+	}(p)
 
 	e := json.Unmarshal([]byte(*j), p) //解析
 

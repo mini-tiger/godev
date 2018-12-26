@@ -9,8 +9,6 @@ import (
 
 const Lasttime = "lasttime"
 
-
-
 var lastTime *int = new(int) // todo 最近火车进入时间戳,可以从redis读取后 写入
 //var tt *time.Ticker
 //var tr *time.Timer // 一次性
@@ -18,34 +16,36 @@ var cTrain chan map[string]string = make(chan map[string]string, 5)
 
 func TrainCrond() {
 	//for{
+	go GetTrainPic()
 	LoadLasttime()
-	if *lastTime != 0 {
-		if b, resultTrain := diffTrainTime(); b {
-			g.Logger().Debug("第一次启动，lastime < ti 创建图片任务")
-			cTrain <- resultTrain
-			nt := *lastTime + g.Config().Train.TrainInterval - g.GetNow()
-			g.Logger().Printf("下次train任务开始时间%s\n", g.GetDateStr(nt+g.GetNow()))
-			go CreateNextTrainMission(nt) // 下次一次性
-
-		} else {
-			g.Logger().Debug("第一次启动，lastime == ti 创建循环任务")
-			go CreateLoopMission() // todo 创建循环10s 判断一次是否有新的
-		}
-
-	} else {
-		for {
-			results, err := getTrainNew()
-			if err != nil {
-				time.Sleep(time.Duration(5) * time.Second)
-				continue
-			}
-			firstRun(results[0])
-			break
-		}
-	}
+	CreateNextTrainMission(0)
+	//if *lastTime != 0 {
+	//	if b, resultTrain := diffTrainTime(); b {
+	//		g.Logger().Debug("第一次启动，lastime < ti 创建图片任务")
+	//		cTrain <- resultTrain
+	//		nt := *lastTime + g.Config().Train.TrainInterval - g.GetNow()
+	//		g.Logger().Printf("下次train任务开始时间%s\n", g.GetDateStr(nt+g.GetNow()))
+	//		go CreateNextTrainMission(nt) // 下次一次性
+	//
+	//	} else {
+	//		g.Logger().Debug("第一次启动，lastime == ti 创建循环任务")
+	//		go CreateLoopMission() // todo 创建循环10s 判断一次是否有新的
+	//	}
+	//
+	//} else {
+	//	for {
+	//		results, err := getTrainNew()
+	//		if err != nil {
+	//			time.Sleep(time.Duration(5) * time.Second)
+	//			continue
+	//		}
+	//		firstRun(results[0])
+	//		break
+	//	}
+	//}
 
 	//go WaitMission() // loop wait mission
-	go GetTrainPic()
+
 
 }
 func LoadLasttime() {
@@ -62,7 +62,7 @@ func LoadLasttime() {
 		i := 0
 		lastTime = &i
 	}
-	g.Logger().Debug("获取到lasttime %d", *lastTime, g.GetDateStr(*lastTime))
+	g.Logger().Debug("获取到lasttime %d,时间:%s", *lastTime, g.GetDateStr(*lastTime))
 }
 
 func GetTrainPic() {
@@ -83,8 +83,8 @@ func firstRun(result map[string]string) {
 	switch {
 	case nowUnix <= nextTime: //todo 当前时间小于 库中最新时间戳 加 时间间隔，可能第一次启动在 列车进入期间
 		g.Logger().Debug("第一次启动，创建图片获取任务")
-		cTrain <- result                                     // todo 创建协程 获取图片任务， 不影响下次 获取最新时间的任务
-		go CreateNextTrainMission(nextTime-nowUnix) // 距离下次的间隔秒数
+		cTrain <- result                              // todo 创建协程 获取图片任务， 不影响下次 获取最新时间的任务
+		go CreateNextTrainMission(nextTime - nowUnix) // 距离下次的间隔秒数
 		g.Logger().Debug("NextTime %s", g.GetDateStr(nextTime))
 
 	case nowUnix > nextTime:
@@ -106,15 +106,15 @@ func CreateNextTrainMission(interval int) { // 一次性，下次获取时间任
 
 func LoopMission(interval int) {
 	for {
-		tn := int(time.Now().Unix())
-		if b, resultTrain := diffTrainTime(); b {
 
+		if b, resultTrain := diffTrainTime(); b {
+			tn := g.GetNow() // 排除 执行sql使用的时间
 			g.Logger().Printf("循环结束\n")
 			//fmt.Println("go 启动获取图片")
 			cTrain <- resultTrain
-			//nt := *lastTime + g.Config().Train.TrainInterval - tn
-			nt := g.Config().Train.TrainInterval
-			g.Logger().Printf("启动train任务开始时间%s\n", g.GetDateStr(nt+tn))
+			nt := *lastTime + g.Config().Train.TrainInterval - tn
+			//nt := g.Config().Train.TrainInterval
+			g.Logger().Printf("下次train任务开始时间%s\n", g.GetDateStr(nt+tn))
 			go CreateNextTrainMission(nt)
 			return
 		} else {

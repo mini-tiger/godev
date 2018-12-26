@@ -12,7 +12,7 @@
   "train": {
     "traininterval": 60,
     "loopinterval": 10,
-    "maxvehicletime":120
+    "maxvehicletime":20
   },
   "udpInfo":{
     "udpAddr":"127.0.0.1:8000"

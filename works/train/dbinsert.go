@@ -5,8 +5,8 @@ import (
 	"log"
 	_ "github.com/mattn/go-oci8"
 	"os"
-	"fmt"
 	"time"
+	"fmt"
 )
 
 func main() {
@@ -15,7 +15,8 @@ func main() {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
 	//}
 
-	db, err := sql.Open("oci8", "test1/test1@1.119.132.155:1521/orcl")
+	db, err := sql.Open("oci8", "test1/test1@192.168.43.236:1521/orcl")
+	//db, err := sql.Open("oci8", "test1/test1@1.119.132.155:1521/orcl")
 	//fmt.Printf("%+v\n",db)
 	if err != nil {
 		log.Fatalln(err)
@@ -45,28 +46,28 @@ func main() {
 	//}
 
 	t1:=time.Now()
-	t2:=t1.Add(time.Duration(-90)*time.Second)
+	t2:=t1.Add(time.Duration(-10)*time.Second)
 	sql11:=fmt.Sprintf("update tf_op_train set pass_time = to_date('%s', 'YYYY/MM/DD HH24:MI:SS') " +
 		"where train_serial = '3D55FBC5EAD147A390CA3AFD775308C4'",t2.Format("2006-01-02 15:04:05"))
 
 
 	result,err:=db.Exec(sql11)
 	fmt.Println(result,err)
+	//
+	//t3:=t1.Add(time.Duration(-10)*time.Second)
+	//sql11=fmt.Sprintf("update tf_op_train set pass_time = to_date('%s', 'YYYY/MM/DD HH24:MI:SS') " +
+	//	"where train_serial = 'F50E2841AD1E4E5781A6C37BBCBD753D'",t3.Format("2006-01-02 15:04:05"))
+	//
+	//
+	//result,err=db.Exec(sql11)
+	//fmt.Println(result,err)
 
-	t3:=t1.Add(time.Duration(-10)*time.Second)
-	sql11=fmt.Sprintf("update tf_op_train set pass_time = to_date('%s', 'YYYY/MM/DD HH24:MI:SS') " +
-		"where train_serial = 'F50E2841AD1E4E5781A6C37BBCBD753D'",t3.Format("2006-01-02 15:04:05"))
-
-
-	result,err=db.Exec(sql11)
-	fmt.Println(result,err)
-
-	t4:=t1.Add(time.Duration(30)*time.Second)
-	sql11=fmt.Sprintf("update tf_op_train set pass_time = to_date('%s', 'YYYY/MM/DD HH24:MI:SS') " +
-		"where train_serial = '32F6ACC0B0A243FC974BC2BCECF2AA51'",t4.Format("2006-01-02 15:04:05"))
-
-
-	result,err=db.Exec(sql11)
-	fmt.Println(result,err)
+	//t4:=t1.Add(time.Duration(30)*time.Second)
+	//sql11=fmt.Sprintf("update tf_op_train set pass_time = to_date('%s', 'YYYY/MM/DD HH24:MI:SS') " +
+	//	"where train_serial = '32F6ACC0B0A243FC974BC2BCECF2AA51'",t4.Format("2006-01-02 15:04:05"))
+	//
+	//
+	//result,err=db.Exec(sql11)
+	//fmt.Println(result,err)
 }
 
