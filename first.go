@@ -3,24 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
+	"time"
 )
 
-func getline() (file string, line int) {
-	_, file, line, _ = runtime.Caller(1)
-	return
-}
-
-func main() {
-	//a, b, c, e := runtime.Caller(0)
-	//fmt.Println(a, b, c, e)
-	tt()
-}
-
-func tt() {
-	_, err := os.Getwd()
-	if err == nil {
-		fmt.Println(getline())
+func main()  {
+	for{
+		fmt.Printf("%v\n",os.Getenv("TOMCATHOME"))
+		time.Sleep(time.Duration(2)*time.Second)
 	}
-	fmt.Println(getline())
+
 }
