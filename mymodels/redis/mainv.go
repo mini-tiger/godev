@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"godev/tjtools/db/redis"
+	"tjtools/db/redis"
 	"log"
 	"time"
 )

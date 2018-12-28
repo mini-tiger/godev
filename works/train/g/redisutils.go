@@ -3,7 +3,7 @@ package g
 import (
 	//"gopkg.in/redis.v4"
 	//"log"
-	tjredis "godev/tjtools/db/redis"
+	tjredis "tjtools/db/redis"
 )
 
 

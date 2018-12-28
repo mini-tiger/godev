@@ -1,7 +1,7 @@
 package db
 
 import (
-	"godev/tjtools/db/oracle"
+	"tjtools/db/oracle"
 	"godev/works/train/g"
 	_ "github.com/mattn/go-oci8"
 	"os"

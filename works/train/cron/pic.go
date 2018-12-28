@@ -5,8 +5,8 @@ import (
 	"time"
 	"sync"
 	"fmt"
-	"godev/tjtools/net/udp"
-	"godev/tjtools/conversion"
+	"tjtools/net/udp"
+	"tjtools/conversion"
 	"encoding/json"
 )
 
