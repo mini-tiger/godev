@@ -4,9 +4,15 @@ import (
 	"tjtools/db/redis"
 	"log"
 	"fmt"
+	"encoding/json"
 )
 
 var Redis111 redis.RedisS
+
+type RedisJson struct {
+	Name string
+	Num  int
+}
 
 func main() {
 	client1, err := redis.CreateClient(8, "192.168.43.11:6379", "")
@@ -18,14 +24,19 @@ func main() {
 
 	go func() {
 		for {
-			s,err:=Redis111.SubChan("abc")
-			if err!=nil{
-				log.Println("sub err",err)
+			s, err := Redis111.SubChan("abc")
+			if err != nil {
+				log.Println("sub err", err)
 				continue
 			}
-			fmt.Println("receive,",s)
+			fmt.Println("receive,", s.Pattern,s.Channel,s.Payload)
+			var rj RedisJson
+			err = json.Unmarshal([]byte(s.Payload), &rj)
+			if err != nil {
+				log.Println("sub json err", err)
+			}
+			fmt.Printf("解析json后： %+v\n",rj)
 		}
-
 
 	}()
 
