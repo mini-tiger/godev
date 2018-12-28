@@ -23,7 +23,7 @@ func main() {
 				log.Println("sub err",err)
 				continue
 			}
-			fmt.Println("receive,",)
+			fmt.Println("receive,",s)
 		}
 
 
