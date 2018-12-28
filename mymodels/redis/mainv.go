@@ -19,6 +19,11 @@ type VehicleJson struct {
 	Send           int     `json:"Send,omitempty"`            // todo 是否发送过 ，存入redis对比 时间是否超过最大
 	Vehicle_serial string   `json:"Vehicle_serial,omitempty"`            // todo 程序需要使用，发送前清空
 }
+
+
+
+
+
 func initclient() {
 	client1, err := redis.CreateClient(8,"192.168.43.11:6379", "")
 	if err != nil {
