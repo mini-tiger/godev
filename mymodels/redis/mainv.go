@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"tjtools/db/redis"
 	"log"
-	"time"
 )
 
 var Redis1 redis.RedisS
@@ -43,7 +42,7 @@ func initclient() {
 
 	//fmt.Println(Redis1.StringExists("06020E2995A743F09CE1B0F52F174FF0")) // KEY是否存在
 
-	Redis1.SetJson("06020E2995A743F09CE1B0F52F174FF0",&v,time.Duration(0)*time.Second)
+	Redis1.SetJson("06020E2995A743F09CE1B0F52F174FF0",&v,0)
 
 	v1:=VehicleJson{}
 	Redis1.GetJson("06020E2995A743F09CE1B0F52F174FF0",&v1)
