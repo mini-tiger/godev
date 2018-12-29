@@ -42,5 +42,6 @@ func main() {
 		}
 	}()
 
+	go func() {}()
 	select {}
 }
