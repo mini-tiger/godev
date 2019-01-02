@@ -49,13 +49,20 @@ type CollectorConfig struct {
 	IfacePrefix []string `json:"ifacePrefix"`
 }
 
+type UbsConfig struct {
+	Enabled  bool   `json:"enabled"`
+	Addr     string `json:"addr"`
+	Interval int    `json:"interval"`
+	Timeout  int    `json:"timeout"`
+}
+
 type GlobalConfig struct {
 	Debug         bool              `json:"debug"`
 	Daemon        bool   			`json:"daemon"`
 	Hostname      string            `json:"hostname"`
 	IP            string            `json:"ip"`
-	IIs           *IIsConfig        `json:"iis"`
-	MsSQL         *MsSQLConfig      `json:"mssql"`
+	//IIs           *IIsConfig        `json:"iis"`
+	//MsSQL         *MsSQLConfig      `json:"mssql"`
 	Logfile       string            `json:"logfile"`
 	LogMaxDays    int				`json:"logMaxDays"`
 	Heartbeat     *HeartbeatConfig  `json:"heartbeat"`
@@ -64,6 +71,7 @@ type GlobalConfig struct {
 	Collector     *CollectorConfig  `json:"collector"`
 	DefaultTags   map[string]string `json:"default_tags"`
 	IgnoreMetrics map[string]bool   `json:"ignore"`
+	Ubs			*UbsConfig `json:"ubs"`
 }
 
 var (

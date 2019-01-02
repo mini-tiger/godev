@@ -34,12 +34,12 @@ func BuildMappers() {
 			},
 			Interval: interval,
 		},
-		FuncsAndInterval{
-			Fs: []func() []*model.MetricValue{
-				iisMetrics,
-				mssqlMetrics,
-			},
-			Interval: interval,
-		},
+		//FuncsAndInterval{
+		//	Fs: []func() []*model.MetricValue{
+		//		iisMetrics,
+		//		mssqlMetrics,
+		//	},
+		//	Interval: interval,
+		//},
 	}
 }

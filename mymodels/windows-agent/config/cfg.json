@@ -5,22 +5,11 @@
   "daemon": false,
   "hostname": "",
   "ip": "",
-  "iis":{
-    "enabled": false,
-    "websites": [
-      "Default Web Site"
-    ]
-  },
-  "mssql":{
-    "enabled": false,
-    "addr":"127.0.0.1",
-    "port":1433,
-    "username":"sa",
-    "password":"123456",
-    "encrypt":"disable",
-    "instance": [
-      "test"
-    ]
+  "ubs": {
+    "enabled": true,
+    "addr": "192.168.43.26:6038",
+    "interval": 60,
+    "timeout": 1000
   },
   "heartbeat": {
     "enabled": true,
@@ -42,7 +31,9 @@
     "backdoor": false
   },
   "collector": {
-    "ifacePrefix": ["网络"]
+    "ifacePrefix": [
+      "网络"
+    ]
   },
   "default_tags": {
   },

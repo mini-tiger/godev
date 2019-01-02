@@ -6,29 +6,34 @@ import (
 	"time"
 )
 
+var ConfigInterval int = 20 //todo HBS没准备好前，数据更新与配置更新 间隔的默认值
+var DataInterval int = 40
+
 func UploadEnvironmentGrid() {
-	g.Logger().Println("start environment grid ", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
-	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
+	g.Logger().Println("start environment grid ", g.Config().Ubs.Enabled, " -> ", g.Config().Ubs.Addr)
+	if g.Config().Ubs.Enabled && g.Config().Ubs.Addr != "" {
 		loadEnvironmentGridConfig(-1)
 		//go uploadEnvironmentGrid(time.Duration(5)*time.Second)
-		go uploadEnvironmentGrid(time.Duration(g.GetEnvGridConfig().DataInterval) * time.Second)
+		go uploadEnvironmentGrid(time.Duration(DataInterval) * time.Second)
 	}
 }
 
 func uploadEnvironmentGrid(interval time.Duration) {
 	for {
-		g.Logger().Println("ready collect environment grid", interval)
+		interval := time.Duration(DataInterval) * time.Second
+		g.Logger().Println("++++++++++++++++++++++++++++++++++ready Send agent version", interval)
 		req := g.EnvGrid()
-		g.Logger().Println("collect environment grid ok:", req)
+		g.Logger().Printf("Call UBS Itma.UploadEnvironmentGrid :%+v \n", req)
 
-		var resp model.SimpleRpcResponse
+		var resp model.AgentUpdateResp
+
 		err := g.HbsClient.Call("Itma.UploadEnvironmentGrid", req, &resp)
-		if err != nil || resp.Code != 0 {
-			g.Logger().Println("call Itma.UploadEnvironmentGrid fail:", err, "Request:", req, "Response:", resp)
+		if err != nil {
+			g.Logger().Error("call Itma.UploadEnvironmentGrid fail:", err, "Request:", req, "Response:", resp)
+			time.Sleep(interval)
+			continue
 		}
-		if err == nil && resp.Code == 0 {
-			g.Logger().Println("call Itma.UploadEnvironmentGrid Success:", err, "Request:", req, "Response:", resp)
-		}
+
 		if interval < 0 {
 			break
 		}
@@ -37,11 +42,11 @@ func uploadEnvironmentGrid(interval time.Duration) {
 }
 
 func LoadEnvironmentGridConfig() {
-	g.Logger().Println("start load environment grid config", g.Config().Heartbeat.Enabled, " -> ", g.Config().Heartbeat.Addr)
-	if g.Config().Heartbeat.Enabled && g.Config().Heartbeat.Addr != "" {
-		loadEnvironmentGridConfig(-1)
+	g.Logger().Println("start load environment grid config", g.Config().Ubs.Enabled, " -> ", g.Config().Ubs.Addr)
+	if g.Config().Ubs.Enabled && g.Config().Ubs.Addr != "" {
+		//loadEnvironmentGridConfig(-1)
 
-		go loadEnvironmentGridConfig(time.Duration(g.GetEnvGridConfig().ConfigInterval) * time.Second)
+		go loadEnvironmentGridConfig(time.Duration(ConfigInterval) * time.Second)
 	}
 }
 
@@ -57,8 +62,12 @@ func loadEnvironmentGridConfig(interval time.Duration) {
 		} else {
 			g.Logger().Println("call Itma.GetEnvironmentGridConfig Response:", resp)
 			g.GetEnvGridConfig().JsonConfig = resp
-			g.GetEnvGridConfig().ConfigInterval = resp.ConfigInterval
-			g.GetEnvGridConfig().DataInterval = resp.DataInterval
+			//g.GetEnvGridConfig().ConfigInterval = resp.ConfigInterval
+			//g.GetEnvGridConfig().DataInterval = resp.DataInterval
+
+			ConfigInterval = resp.ConfigInterval
+			DataInterval = resp.DataInterval
+
 			//var pa []g.ProcessAppsysWorker
 			//for _,worker := range resp.Config {
 			//	pa = append(pa, g.ProcessAppsysWorker(worker))

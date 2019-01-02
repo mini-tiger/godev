@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"container/list"
 	"fmt"
-	"github.com/toolkits/file"
+	"tjtools/file"
 	"godev/mymodels/windows-agent/common/model"
 	"io"
 	"io/ioutil"
@@ -14,6 +14,12 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"runtime"
+	"github.com/shirou/gopsutil/host"
+	"github.com/toolkits/nux"
+	"strconv"
+	"math"
+	"github.com/shirou/gopsutil/disk"
 )
 
 func mySplit(s string, ds string) []string {
@@ -183,7 +189,7 @@ func EnvGrid() model.EnvGrid {
 		}
 	}
 	hostname, _ := os.Hostname()
-	manufacturer, productName, version, serialNumber := GetHardware()
+	manufacturer, productName, _, serialNumber := GetHardware()
 	//fmt.Println(manufacturer, productName, version, serialNumber)
 
 	var appsyss []model.Appsys
@@ -204,16 +210,167 @@ func EnvGrid() model.EnvGrid {
 	//  	routes = append(routes,model.Route {k,traces})
 	//}
 
+	//extinfo := getExtInfo()
 	env := model.EnvGrid{
-		Hostname:     hostname,
-		Address:      ipaddress,
+		Hostname: hostname,
+		//Address:    ipaddress,
 		Manufacturer: manufacturer,
 		ProductName:  productName,
-		Version:      version,
+		//Version:      version,
+		Version:      *getOSVersion(),
 		SerialNumber: serialNumber,
 		Appsyss:      appsyss,
 		Routes:       routes,
+		Extinfo:      getExtInfo(ipaddress[0]),
+		//AgentInfo:    GetAgentVer(),
+	}
+	//fmt.Println(env.Extinfo)
+	return env
+}
+
+func getExtInfo(ipaddress string) (tmp model.EnvGridExt) {
+	//var tmp *model.EnvGridExt
+	//tmp.Osname = runtime.GOOS
+	tmp.Osname = *getOSName()
+	tmp.Osbit = strings.Split(string(runtime.GOARCH), "amd")[1]
+	tmp.MAC = rMac()
+	tmp.Disktotal = getDiskTotal()
+	tmp.Memtotal = getMemTotal()
+	tmp.Cpucores = runtime.NumCPU()
+	tmp.Cpumhz = getCpuMhz()
+	tmp.UUID = Uuid
+	tmp.Biz = BizId
+	tmp.Cpumodel = getCpuModel()
+	tmp.Address = GetIP(ipaddress) //  todo 以通过TCP链接获取到的IP为准
+	return tmp
+}
+
+func GetIP(ip string) (string) {
+	if *OutIP != "" {
+		return *OutIP
+	} else {
+		return ip
+	}
+}
+
+func TrimAny(cm *string) *string {
+	*cm = strings.Trim(*cm, " ")
+	*cm = strings.Trim(*cm, "\t")
+	*cm = strings.Trim(*cm, "\r\n")
+	return cm
+}
+
+//func getOSVersion() (cm *string) {
+//	cmd := exec.Command("/bin/bash", "-c", "lsb_release -r")
+//	buf, _ := cmd.CombinedOutput()
+//	cmd.Run()
+//	//cm = strings.Trim(string(buf), " ")
+//	cm = (*string)(unsafe.Pointer(&buf))
+//	if strings.Contains(*cm, "not found") || strings.Contains(*cm, "未找到") {
+//		rs, err := readLine("/etc/redhat-release")
+//		if err != nil {
+//			logger.Error("获取os_version失败,err:%s\n", err)
+//			return
+//		}
+//		//s := strings.Split(rs,"release")
+//		//s = strings.Split(s[1],"(")
+//		rr, _ := regexp.Compile(`(\d+)\.(\d+)`)
+//		rs = rr.FindString(rs)
+//		return &rs
+//	} else {
+//		*cm = strings.Trim(*cm, "Release:")
+//	}
+//
+//	return TrimAny(cm)
+//}
+
+func getOSName() (cm *string) {
+	n, err := host.Info()
+	if err != nil {
+		logger.Error("获取主机名失败:%s", err)
 	}
 
-	return env
+	return &n.Hostname
+}
+
+//
+func getCpuModel() (cm string) {
+	cmd := exec.Command("/bin/bash", "-c", "grep -i 'model name' /proc/cpuinfo |uniq|cut -d ':' -f 2")
+	buf, _ := cmd.CombinedOutput()
+	cmd.Run()
+	cm = strings.Trim(string(buf), " ")
+	cm = strings.Trim(cm, "\r\n")
+	return
+}
+
+func getCpuMhz() (cpumhz int) {
+	cpumhz1, err := nux.CpuMHz()
+	if err != nil {
+		logge.Error("get cpumhz err :%s", err)
+	}
+	s := strings.Split(cpumhz1, ".")
+	int, _ := strconv.Atoi(s[0])
+	return int
+}
+
+func getMemTotal() int64 {
+	mem, err := nux.MemInfo()
+	if err != nil {
+		logger.Error("get mem err:%s", err)
+	}
+
+	total, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", float64(mem.MemTotal)/1024/1024/1024), 2)
+	return int64(math.Floor(total))
+}
+
+func getDiskTotal() (int64) {
+	d, err := disk.Usage("/")
+	if err != nil {
+		logger.Error("get disk err:%s", err)
+	}
+}
+
+func rMac() (mac string) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		logge.Error("get net MAC err: " + err.Error())
+		return
+	}
+	for _, inter := range interfaces {
+
+		interaddr, _ := inter.Addrs()
+		for _, a := range interaddr {
+			//fmt.Println(a)
+			if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					//fmt.Println(ipnet.IP.String() )
+					//fmt.Println(inter.Name, inter.HardwareAddr)
+					mac = inter.HardwareAddr.String()
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+func GetIps() (err error, ipaddress []string) {
+	//ipaddress := []string {}
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		logge.Error("%s", err)
+		return
+	} else {
+		for _, address := range addrs {
+
+			// 检查ip地址判断是否回环地址
+			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					ipaddress = append(ipaddress, ipnet.IP.String())
+				}
+
+			}
+		}
+	}
+	return
 }

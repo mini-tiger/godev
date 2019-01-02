@@ -18,6 +18,7 @@ import (
 var (
 	Root  string
 	logge *nxlog.Logger
+	OutIP *string
 )
 
 type Log1 struct{}
@@ -36,6 +37,11 @@ func (l *Log1) Printf(arg0 interface{}, args ...interface{}) {
 func (l *Log1) Error(m ...interface{}) {
 	logge.Error(m)
 }
+
+func (l *Log1) Debug(arg0 interface{}, args ...interface{}) {
+	logge.Debug(arg0 , args...)
+}
+
 func (l *Log1) Fatalln(m ...interface{}) {
 	logge.Error(m)
 	os.Exit(1)
