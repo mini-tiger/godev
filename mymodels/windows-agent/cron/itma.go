@@ -27,7 +27,7 @@ func uploadEnvironmentGrid(interval time.Duration) {
 
 		var resp model.AgentUpdateResp
 
-		err := g.HbsClient.Call("Itma.UploadEnvironmentGrid", req, &resp)
+		err := g.UbsClient.Call("Itma.UploadEnvironmentGrid", req, &resp)
 		if err != nil {
 			g.Logger().Error("call Itma.UploadEnvironmentGrid fail:", err, "Request:", req, "Response:", resp)
 			time.Sleep(interval)
@@ -56,7 +56,7 @@ func loadEnvironmentGridConfig(interval time.Duration) {
 
 		var req model.NullRpcRequest
 		var resp model.EnvGridConfigResponse
-		err := g.HbsClient.Call("Itma.GetEnvironmentGridConfig", req, &resp)
+		err := g.UbsClient.Call("Itma.GetEnvironmentGridConfig", req, &resp)
 		if err != nil {
 			g.Logger().Println("call Itma.GetEnvironmentGridConfig fail:", err, "Request:", req, "Response:", resp)
 		} else {

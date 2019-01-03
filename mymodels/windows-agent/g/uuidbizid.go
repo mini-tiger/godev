@@ -50,6 +50,7 @@ func getMAC(ips string) string {
 	return ""
 }
 
+
 func getBiz() (bizid int) {
 
 	dir, _ := os.Getwd()
@@ -77,20 +78,20 @@ func getBiz() (bizid int) {
 func LoadUUIDBIZ()  {
 
 	bizid := getBiz() // 这里需要扫描文件
-	mac := getMAC(*OutIP)
-	if mac == "" {
-		logger.Error("mac err:")
-		return
-	} else {
-
-		logger.Debug("获取MAC地址:%s", mac)
-	}
+	//mac := getMAC(*OutIP)
+	//if mac == "" {
+	//	logger.Error("mac err:")
+	//	return
+	//} else {
+	//
+	//	logger.Debug("获取MAC地址:%s", mac)
+	//}
 
 	//m := Md5(fmt.Sprintf("%s%s", mac, *OutIP)) // mac,ip 生成md5 字符串 唯
 	m,_:=host.Info()
 	u, err := uuid.FromString(m.HostID)               // 生成UUID格式
 	if err != nil {
-		logger.Error("生成uuid失败,ip:%s,MAC:%s,err:%s\n", *OutIP, mac, err)
+		logger.Error("生成uuid失败,ip:%s,MAC:%s,err:%s\n", *OutIP, m.HostID, err)
 		return
 	}
 	logger.Printf("根据IP,MAC第一次生成uuid成功,uuid:%s\n", u.String())

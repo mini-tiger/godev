@@ -35,11 +35,11 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 	for {
 		<-t
 
-		hostname, err := g.Hostname()
-		if err != nil {
-			continue
-		}
-
+		//hostname, err := g.Hostname()
+		//if err != nil {
+		//	continue
+		//}
+		hostname := g.Uuid
 		mvs := []*model.MetricValue{}
 		ignoreMetrics := g.Config().IgnoreMetrics
 

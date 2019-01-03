@@ -129,6 +129,7 @@ func InitLocalIps() {
 
 var (
 	HbsClient *SingleConnRpcClient
+	UbsClient *SingleConnRpcClient
 )
 
 func InitRpcClients() {
@@ -138,7 +139,14 @@ func InitRpcClients() {
 			Timeout:   time.Duration(Config().Heartbeat.Timeout) * time.Millisecond,
 		}
 	}
+	if Config().Ubs.Enabled {
+		UbsClient = &SingleConnRpcClient{
+			RpcServer: Config().Ubs.Addr,
+			Timeout:   time.Duration(Config().Heartbeat.Timeout) * time.Millisecond,
+		}
+	}
 }
+
 
 func SendToTransfer(metrics []*model.MetricValue) {
 	if len(metrics) == 0 {
