@@ -11,7 +11,8 @@ import (
 	"fmt"
 	"github.com/kardianos/service"
 	"os"
-	"time"
+	"os/exec"
+	"bytes"
 )
 
 var logger service.Logger
@@ -24,19 +25,33 @@ func (p *program) Start(s service.Service) error {
 	return nil
 }
 func (p *program) run() { // todo 可以使用exec.command() 加入写过的程序
-	file, err := os.OpenFile("d:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Fatalln("fail to create test.log file!", err)
-	}
-	logger1 := log.New(file, "", log.Ltime|log.Ldate)
-	//log.Println("1.Println log with log.LstdFlags ...")
-	logger1.Println("1.Println log with log.LstdFlags ...")
-
-	for {
-		logger1.Println("2.Println log without log.LstdFlags ...")
-		time.Sleep(2 * time.Second)
-	}
+	//file, err := os.OpenFile("d:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	//if err != nil {
+	//	log.Fatalln("fail to create test.log file!", err)
+	//}
+	//logger1 := log.New(file, "", log.Ltime|log.Ldate)
+	////log.Println("1.Println log with log.LstdFlags ...")
+	//logger1.Println("1.Println log with log.LstdFlags ...")
+	//
+	//for {
+	//	logger1.Println("2.Println log without log.LstdFlags ...")
+	//	time.Sleep(2 * time.Second)
+	//}
 	//log.Println("2.Println log without log.LstdFlags ...")
+
+	cmd:=exec.Command("agent.exe -d true")
+	var out2 bytes.Buffer
+	cmd.Stdout = &out2
+	var ee bytes.Buffer
+	cmd.Stderr =&ee
+
+	cmd.Start()
+	file, _ := os.OpenFile("out.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	logger1 := log.New(file, "", log.Ltime|log.Ldate)
+
+	logger1.Println(out2.String())
+	logger1.Println(ee.String())
+
 
 }
 func (p *program) Stop(s service.Service) error {
@@ -68,9 +83,9 @@ var s service.Service
 
 func main() {
 	svcConfig := &service.Config{
-		Name:        "GoServiceExampleSimple",
-		DisplayName: "Go Service Example",
-		Description: "This is an example Go service.",
+		Name:        "GCL Monitor Windows Agent",
+		DisplayName: "GCL Monitor Windows Agent",
+		Description: "GCL Monitor Windows Agent",
 	}
 
 	prg := &program{}
@@ -104,7 +119,7 @@ func main() {
 				fmt.Printf("Failed to start: %s\n", err)
 				return
 			}
-			fmt.Printf("Service \"%s\" started.\n", "go")
+			fmt.Printf("Service \"%s\" started.\n", "")
 		case "stop":
 			err = s.Stop()
 			if err != nil {

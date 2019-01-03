@@ -7,6 +7,7 @@ import (
 	"godev/mymodels/windows-agent/funcs"
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/http"
+	_ "tjtools/daemon"
 	"os"
 )
 
@@ -43,7 +44,7 @@ func main() {
 	//
 	//cron.ReportAgentStatus() // 传送硬件信息到数据库，windows版本不支持plugin
 	//
-	go g.LoadUUIDBIZ()
+	g.LoadUUIDBIZ()
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 

@@ -21,7 +21,8 @@ func UploadEnvironmentGrid() {
 func uploadEnvironmentGrid(interval time.Duration) {
 	for {
 		interval := time.Duration(DataInterval) * time.Second
-		g.Logger().Println("++++++++++++++++++++++++++++++++++ready Send agent version", interval)
+		//interval := time.Duration(10)*time.Second
+		g.Logger().Println("ready uploadEnvironmentGrid", interval)
 		req := g.EnvGrid()
 		g.Logger().Printf("Call UBS Itma.UploadEnvironmentGrid :%+v \n", req)
 
