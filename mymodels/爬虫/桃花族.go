@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/toolkits/file"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -18,15 +21,30 @@ import (
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
 
-const (
-	MasterUrl  = "http://thzbt.co/"
-	MasterDir  = "g:\\image\\"
-	PAGES      = 3     //最多看3页的数据，3
-	MaxOld     = 4     //最大几天前
-	ExistCover = false //存在是否覆盖
-	useProxy   = true  // 使用ssr翻墙，本地1080端口
-	proxyUrl   = "http://192.168.1.100:1080"
-)
+type Config struct {
+	MasterUrl  string `json:"master_url"`
+	MasterDir  string `json:"master_dir"`
+	Pages      int    `json:"pages"`
+	MaxOld     int64  `json:"max_old"`
+	ExistCover bool   `json:"exist_cover"`
+	UseProxy   bool   `json:"use_proxy"`
+	ProxyUrl   string `json:"proxy_url"`
+}
+
+//const (
+//	MasterUrl  = "http://thzbt.co/"
+//	MasterDir  = "g:\\image\\"
+//	PAGES      = 3     //最多看3页的数据，3
+//	MaxOld     = 7     //最大几天前
+//	ExistCover = false //存在是否覆盖
+//	useProxy   = true  // 使用ssr翻墙，本地1080端口
+//	proxyUrl   = "http://192.168.1.100:1080"
+//)
+
+var MasterUrl, MasterDir, proxyUrl string
+var PAGES int
+var MaxOld int64
+var ExistCover, useProxy bool
 
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
 var tmpChan chan struct{} = make(chan struct{}, 1)        //最后下载图片种子后 退出，通道
@@ -387,7 +405,61 @@ func downloadall() {
 	}
 	tmpChan <- struct{}{}
 }
+
+func ParseConfig(cfg string) {
+	if cfg == "" {
+		log.Fatalln("use -c to specify configuration file")
+	}
+
+	if !file.IsExist(cfg) {
+
+		log.Fatalln("config file:", cfg, "is not existent. maybe you need `mv cfg.example.json cfg.json`")
+	}
+
+	configContent, err := file.ToTrimString(cfg)
+	if err != nil {
+		log.Fatalln("read config file:", cfg, "fail:", err)
+
+	}
+
+	var c Config
+	err = json.Unmarshal([]byte(configContent), &c)
+	if err != nil {
+		log.Fatalln("parse config file:", cfg, "fail:", err)
+	}
+	MasterUrl = c.MasterUrl
+	MasterDir = c.MasterDir
+	PAGES = c.Pages
+	proxyUrl = c.ProxyUrl
+	ExistCover = c.ExistCover
+	MaxOld = c.MaxOld
+	useProxy = c.UseProxy
+
+	log.Println("read config file:", cfg, "successfully")
+	//WLog(fmt.Sprintf("read config file: %s successfully",cfg))
+}
+
 func main() {
+	ParseConfig("cfg.json") // todo 解析配置文件
+	MasterUrl_custom := flag.String("url", "", "url")
+	use_proxy_custom := flag.Bool("proxy", false, "proxy")
+	maxold := flag.Int64("maxold", 0, "MaxOld")
+
+	flag.Parse() // todo 优先使用命令行参数
+	//fmt.Println(*MasterUrl_custom,*maxold,*use_proxy_custom)
+	if *maxold != 0 {
+		MaxOld = *maxold
+	}
+	if !*use_proxy_custom {
+		useProxy = false
+	}
+	if *MasterUrl_custom != "" {
+		MasterUrl = *MasterUrl_custom
+	}
+	log.Printf("========配置参数")
+	log.Println("最大天数:", MaxOld, "useproxy:", useProxy, "MasteruRL:", MasterUrl)
+	time.Sleep(time.Duration(2) * time.Second)
+
 	_now := time.Now().Unix()
 	runtime.GOMAXPROCS(1)
 	go UnLinks()
