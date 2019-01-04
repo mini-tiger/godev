@@ -1,7 +1,6 @@
 package funcs
 
 import (
-	"strings"
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/common/model"
 	"github.com/shirou/gopsutil/net"
@@ -9,15 +8,16 @@ import (
 
 func net_status(ifacePrefix []string) ([]net.IOCountersStat, error) {
 	net_iocounter, err := net.IOCounters(true)
-	netIfs := []net.IOCountersStat{}
-	for _, iface := range ifacePrefix {
-		for _, netIf := range net_iocounter {
-			if strings.Contains(netIf.Name, iface) {
-				netIfs = append(netIfs, netIf)
-			}
-		}
-	}
-	return netIfs, err
+	return net_iocounter,err
+	//netIfs := []net.IOCountersStat{}
+	//for _, iface := range ifacePrefix {
+	//	for _, netIf := range net_iocounter {
+	//		if strings.Contains(netIf.Name, iface) {
+	//			netIfs = append(netIfs, netIf)
+	//		}
+	//	}
+	//}
+	//return netIfs, err
 }
 
 func NetMetrics() []*model.MetricValue {
@@ -25,7 +25,7 @@ func NetMetrics() []*model.MetricValue {
 }
 
 func CoreNetMetrics(ifacePrefix []string) (L []*model.MetricValue) {
-	netIfs, err := net_status(ifacePrefix)
+	netIfs, err := net_status(ifacePrefix) // todo 过滤网卡功能关闭
 	if err != nil {
 		g.Logger().Println(err)
 		return []*model.MetricValue{}

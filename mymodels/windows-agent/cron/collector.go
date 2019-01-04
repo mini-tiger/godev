@@ -58,6 +58,7 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 					continue
 				} else {
 					mvs = append(mvs, mv)
+
 				}
 			}
 		}
@@ -68,6 +69,10 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 			mvs[j].Endpoint = hostname
 			mvs[j].Timestamp = now
 		}
+
+		//for _,v:=range mvs{
+		//	g.Logger().Debug("metric %+v",v)
+		//}
 		if len(mvs) > 1{
 			g.Logger().Println("采集系统指标完成")
 		}

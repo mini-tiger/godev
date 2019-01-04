@@ -19,7 +19,7 @@ func BuildMappers() {
 			Fs: []func() []*model.MetricValue{
 				AgentMetrics,
 				CpuMetrics,
-				NetMetrics,
+				NetMetrics, // todo 过滤网卡功能关闭
 				MemMetrics,
 				DeviceMetrics,
 				DiskIOMetrics,

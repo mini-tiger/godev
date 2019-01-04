@@ -12,7 +12,7 @@ var DataInterval int = 40
 func UploadEnvironmentGrid() {
 	g.Logger().Println("start environment grid ", g.Config().Ubs.Enabled, " -> ", g.Config().Ubs.Addr)
 	if g.Config().Ubs.Enabled && g.Config().Ubs.Addr != "" {
-		loadEnvironmentGridConfig(-1)
+		//loadEnvironmentGridConfig(-1)
 		//go uploadEnvironmentGrid(time.Duration(5)*time.Second)
 		go uploadEnvironmentGrid(time.Duration(DataInterval) * time.Second)
 	}
@@ -53,6 +53,7 @@ func LoadEnvironmentGridConfig() {
 
 func loadEnvironmentGridConfig(interval time.Duration) {
 	for {
+		interval := time.Duration(ConfigInterval) * time.Second
 		g.Logger().Println("ready get environment grid config ", interval)
 
 		var req model.NullRpcRequest

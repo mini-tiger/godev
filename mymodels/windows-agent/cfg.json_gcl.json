@@ -1,0 +1,43 @@
+{
+  "debug": true,
+  "logfile": "windows.log",
+  "logMaxDays": 7,
+  "daemon": false,
+  "hostname": "",
+  "ip": "",
+  "ubs": {
+    "enabled": true,
+    "addr": "10.51.65.222:6038",
+    "interval": 60,
+    "timeout": 1000
+  },
+  "heartbeat": {
+    "enabled": true,
+    "addr": "10.51.65.222:6030",
+    "interval": 60,
+    "timeout": 1000
+  },
+  "transfer": {
+    "enabled": true,
+    "addrs": [
+      "10.51.65.222:8433"
+    ],
+    "interval": 60,
+    "timeout": 1000
+  },
+  "http": {
+    "enabled": true,
+    "listen": ":1988",
+    "backdoor": false
+  },
+  "collector": {
+    "ifacePrefix": [
+      "网络"
+    ]
+  },
+  "default_tags": {
+  },
+  "ignore": {
+    "cpu.busy": true
+  }
+}
