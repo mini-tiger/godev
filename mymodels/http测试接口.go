@@ -27,6 +27,12 @@ func index(w http.ResponseWriter, r *http.Request) { // 上传form数据
 }
 
 func test(w http.ResponseWriter, r *http.Request) { // 上传json数据
+	w.Header().Set("Access-Control-Allow-Origin", "*")             //允许访问所有域
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type") //header的类型
+	w.Header().Add("Access-Control-Allow-Methods", "POST,GET,OPTIONS,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Add("Access-Control-Allow-Credentials", "true")
+	//w.Header().Set("content-type", "application/json")             //返回数据格式是json
 	body, _ := ioutil.ReadAll(r.Body)
 	//    r.Body.Close()
 	body_str := string(body)
@@ -48,7 +54,7 @@ func test(w http.ResponseWriter, r *http.Request) { // 上传json数据
 		ret, _ := json.Marshal(user)
 		fmt.Fprint(w, string(ret))
 	} else {
-		fmt.Println(err)
+		fmt.Println("err:",err)
 	}
 }
 
