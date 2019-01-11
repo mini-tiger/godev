@@ -2,85 +2,41 @@ package main
 
 import (
 	"fmt"
+	"godev/mymodels/ssh并发脚本/funcs"
+	"godev/mymodels/ssh并发脚本/g"
 	"golang.org/x/crypto/ssh"
-	"time"
-	"net"
-	"log"
-	"strings"
 	"io"
+	"log"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
+	"tjtools/logDiy"
 )
 
-type sshinfo struct {
-	IP, Username string
-	Passwd       string
-	Port         int
-	client       *ssh.Client
-	Session      *ssh.Session
-	Result       string
-}
-
-func New_ssh(port int, args ...string) *sshinfo {
-	temp := new(sshinfo)
-	temp.Port = port
-	temp.IP = args[0]
-	temp.Username = args[1]
-	temp.Passwd = args[2]
-	return temp
-
-}
-func (cli *sshinfo) connect() error {
-	auth := make([]ssh.AuthMethod, 0)
-	auth = append(auth, ssh.Password(cli.Passwd))
-
-	hostKeyCallbk := func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-		return nil
-	}
-	clientConfig := &ssh.ClientConfig{
-		User:            cli.Username,
-		Auth:            auth,
-		Timeout:         30 * time.Second,
-		HostKeyCallback: hostKeyCallbk,
-	}
-
-	// connet to ssh
-	addr := fmt.Sprintf("%s:%d", cli.IP, cli.Port)
-
-	client, err := ssh.Dial("tcp", addr, clientConfig)
-	if err != nil {
-		return err
-	}
-
-	// create session
-	session, err := client.NewSession()
-	if err != nil {
-		defer cli.close_session()
-		return err
-	}
-	cli.Session = session
-	return nil
-}
-func (cli *sshinfo) close_session() {
-	cli.Session.Close()
-}
-
 func main() {
+	//解析config
+	_, dir, _, _ := runtime.Caller(0)
+	currDir := filepath.Dir(dir)
+	logDiy.InitLog1(filepath.Join(currDir, "run.log"), 2)
 
-	ssh := New_ssh(22, []string{"192.168.43.12", "root", "root"}...)
-	fmt.Println(ssh)
-	err := ssh.connect()
-	if err != nil {
-		log.Fatal(err)
-	}
+	g.ParseConfig(filepath.Join(currDir, "config.json"))
+
+	funcs.SSHRun() // 测试密码
+	fmt.Printf("密码错误的主机有:%v\n", funcs.FailHosts)
+	fmt.Printf("正确的主机有:%v\n", funcs.HostPass.Keys())
+
+	funcs.UploadFile() // 源脚本， 目标文件
+
 	//ssh.Session.Stdout=os.Stdout
 	//ssh.Session.Stderr=os.Stderr
 	//ssh.Session.Run("touch /root/1")
 	//ssh.Session.Run("ls /; ls /tmp")
 	//ssh.close_session() //todo session一次运行一次run
 
-	terminal_run(ssh.Session)
-	ssh.close_session()
-
+	//terminal_run(ssh.Session)
+	//ssh.close_session()
+	select {}
 }
 
 func terminal_run(session *ssh.Session) {
@@ -163,7 +119,7 @@ func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {
 			t += n //每次命令结果 追加至buf
 			result := string(buf[:t])
 			if strings.Contains(result, "password:") ||
-				strings.Contains(result, "#") {//匹配是否执行完成
+				strings.Contains(result, "#") { //匹配是否执行完成
 				out <- result
 				t = 0 //t是临时存 当前命令返回的结果，清空
 				wg.Done()
