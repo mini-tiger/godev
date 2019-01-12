@@ -2,13 +2,35 @@ package g
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh"
+
 	"io"
 	"strings"
 	"sync"
+	"tjtools/sshtools"
+	"golang.org/x/crypto/ssh"
 )
 
-func terminal_run(session *ssh.Session, cmd string) (err error) {
+func SSHScriptRun(host , passwd ,cmd string)  (err error,out string){
+	ssh1 := sshtools.New_ssh(22, []string{host, "root", passwd}...)
+	//fmt.Println(ssh)
+	err = ssh1.Connect()
+	if err != nil {
+		//log.Fatal(err)
+		return
+	}
+	//ssh.Session.Stdout=os.Stdout
+	//ssh.Session.Stderr=os.Stderr
+	//ssh.Session.Run("touch /root/1")
+	//ssh.Session.Run("ls /; ls /tmp")
+	//ssh.close_session() //todo session一次运行一次run
+
+	terminal_run(ssh1.Session,cmd)
+	ssh1.Close_session()
+	return nil
+}
+
+
+func terminal_run(session *ssh.Session, cmd string) (err error,outResult string) {
 	defer func() {
 		session.Close()
 	}()
@@ -49,18 +71,19 @@ func terminal_run(session *ssh.Session, cmd string) (err error) {
 	in <- cmd
 	//in <- "ls /tmp"
 
-	//in <- "exit"
+	in <- "exit" //todo 需要用这条 关闭Session
+
 
 	for {
 		if k, ok := <-out; ok {
-			fmt.Printf("%s\n", k) //todo 所有out通道中记录的 返回信息 打开出来
+			outResult+=fmt.Sprintf("%s\n", k) //todo 所有out通道中记录的 返回信息 打开出来
 		} else {
 			break
 		}
 	}
 
 	session.Wait()
-	return nil
+	return
 }
 
 func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {

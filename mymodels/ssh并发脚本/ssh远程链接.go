@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"godev/mymodels/ssh并发脚本/funcs"
 	"godev/mymodels/ssh并发脚本/g"
 	"path"
@@ -24,8 +25,12 @@ func main() {
 		logDiy.Logger().Fatalf("没有成功的主机")
 	}
 
-	funcs.UploadFile(filepath.Join(currDir, "1.sh"), path.Join("/tmp/", "1.sh")) // 源脚本， 目标文件,unix 使用path.join
+	funcs.UploadFileAndRun(filepath.Join(currDir, "1.sh"), path.Join("/tmp/", "1.sh")) // 源脚本， 目标文件,unix 使用path.join
 	logDiy.Logger().Printf("上传文件错误的主机有:%v\n", funcs.FailSftpHosts)
+	logDiy.Logger().Printf("执行脚本错误的主机有:%v\n", funcs.FailRun)
+	for host, result := range funcs.HostResult.M {
+		fmt.Printf("主机:%s ,运行结果:\n%s\n", host, result)
+	}
 	//ssh.Session.Stdout=os.Stdout
 	//ssh.Session.Stderr=os.Stderr
 	//ssh.Session.Run("touch /root/1")
@@ -34,5 +39,5 @@ func main() {
 
 	//terminal_run(ssh.Session)
 	//ssh.close_session()
-	select {}
+	//select {}
 }

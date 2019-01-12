@@ -44,6 +44,7 @@ func SSHSingle(host interface{}) {
 		err := ssh1.Connect()
 		if err == nil {
 			HostPass.Put(h, pass)
+			ssh1.Session.Close()
 			//pass = pass.(string)
 			return
 		}
