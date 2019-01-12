@@ -47,6 +47,6 @@ func ParseConfig(cfg string) {
 	config = &c
 
 	log.Println("read config file:", cfg, "successfully")
-	log.Println("hosts:", config.Hosts)
-	log.Println("passwd:", config.PasswdMap)
+	log.Println("config hosts:", config.Hosts)
+	log.Println("config passwd:", config.PasswdMap)
 }

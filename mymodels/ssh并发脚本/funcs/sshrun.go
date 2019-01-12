@@ -1,16 +1,17 @@
 package funcs
 
 import (
-	"fmt"
 	"github.com/deckarep/golang-set"
-	"godev/mymodels/ssh并发运行脚本/g"
+	"godev/mymodels/ssh并发脚本/g"
+	"tjtools/logDiy"
 	"tjtools/nmap"
+	"tjtools/sshtools"
 )
 
 var hostSet mapset.Set
 var passwdSet mapset.Set
-var HostPass *nmap.SafeMap = nmap.NewSafeMap()
-var FailHosts []string = make([]string, 0)
+var HostPass *nmap.SafeMap = nmap.NewSafeMap() // 成功后 主机与密码 MAP
+var FailHosts []string = make([]string, 0)     // SSH失败的主机
 
 var hostchan chan struct{}
 
@@ -23,8 +24,7 @@ func SSHRun() {
 
 	passwdSet = mapset.NewSetFromSlice(passwds) // 去重
 	for _, host := range hostSet.ToSlice() {
-		fmt.Println(host)
-
+		logDiy.Logger().Printf("开始测试%s密码", host)
 		go SSHSingle(host)
 	}
 
@@ -39,14 +39,15 @@ func SSHSingle(host interface{}) {
 	}()
 	h := host.(string)
 	for _, pass := range passwdSet.ToSlice() {
-		ssh1 := g.New_ssh(22, []string{h, "root", pass.(string)}...)
+		ssh1 := sshtools.New_ssh(22, []string{h, "root", pass.(string)}...)
 		//fmt.Println(ssh1)
 		err := ssh1.Connect()
 		if err == nil {
 			HostPass.Put(h, pass)
-			pass = pass.(string)
+			//pass = pass.(string)
 			return
 		}
 	}
 	FailHosts = append(FailHosts, h)
+	return
 }
