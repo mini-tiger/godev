@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"time"
-	"net"
-	"log"
-	"strings"
 	"io"
+	"log"
+	"net"
+	"strings"
 	"sync"
+	"time"
 )
 
 type sshinfo struct {
@@ -66,9 +66,9 @@ func (cli *sshinfo) close_session() {
 
 func main() {
 
-	ssh := New_ssh(22, []string{"192.168.43.12", "root", "root"}...)
-	fmt.Println(ssh)
-	err := ssh.connect()
+	ssh1 := New_ssh(22, []string{"192.168.1.106", "root", "123.com"}...)
+	fmt.Println(ssh1)
+	err := ssh1.connect()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,21 +78,21 @@ func main() {
 	//ssh.Session.Run("ls /; ls /tmp")
 	//ssh.close_session() //todo session一次运行一次run
 
-	terminal_run(ssh.Session)
-	ssh.close_session()
+	ssh1.terminal_run()
+	ssh1.close_session()
 
 }
 
-func terminal_run(session *ssh.Session) {
-	w, err := session.StdinPipe()
+func (cli *sshinfo) terminal_run() {
+	w, err := cli.Session.StdinPipe()
 	if err != nil {
 		panic(err)
 	}
-	r, err := session.StdoutPipe()
+	r, err := cli.Session.StdoutPipe()
 	if err != nil {
 		panic(err)
 	}
-	e, err := session.StderrPipe()
+	e, err := cli.Session.StderrPipe()
 	if err != nil {
 		panic(err)
 	}
@@ -104,17 +104,17 @@ func terminal_run(session *ssh.Session) {
 	}
 
 	// Request pseudo terminal 建立终端
-	if err := session.RequestPty("vt100", 40, 80, modes); err != nil { //term:xerm 是彩色显示
+	if err := cli.Session.RequestPty("vt100", 40, 80, modes); err != nil { //term:xerm 是彩色显示
 		log.Fatal("request for pseudo terminal failed: ", err)
 	}
 
 	in, out := MuxShell(w, r, e)
-	if err := session.Shell(); err != nil { //打开仿真shell
+	if err := cli.Session.Shell(); err != nil { //打开仿真shell
 		log.Fatal(err)
 	}
 	//<-out 通信out第一次返回的是 linux 登录信息,可以跳过
-	in <- "ls /"
-	in <- "ls /tmp"
+	in <- "chmod 777 /tmp/1.sh"
+	in <- "bash /tmp/1.sh"
 
 	in <- "exit"
 
@@ -125,9 +125,10 @@ func terminal_run(session *ssh.Session) {
 			break
 		}
 	}
-
-	session.Wait()
-
+	//session.Close()
+	cli.Session.Close()
+	//session.Wait()
+	//session.Close()
 }
 
 func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {
@@ -163,7 +164,7 @@ func MuxShell(w io.Writer, r, e io.Reader) (chan<- string, <-chan string) {
 			t += n //每次命令结果 追加至buf
 			result := string(buf[:t])
 			if strings.Contains(result, "password:") ||
-				strings.Contains(result, "#") {//匹配是否执行完成
+				strings.Contains(result, "#") { //匹配是否执行完成
 				out <- result
 				t = 0 //t是临时存 当前命令返回的结果，清空
 				wg.Done()

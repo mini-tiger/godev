@@ -1,16 +1,14 @@
 package main
 
 import (
-	"github.com/pkg/sftp"
-	"time"
-	"log"
-	"io/ioutil"
-	"golang.org/x/crypto/ssh"
 	"fmt"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"io/ioutil"
+	"log"
 	"os"
+	"time"
 )
-
-
 
 func main() {
 	var (
@@ -18,56 +16,55 @@ func main() {
 		sftpClient *sftp.Client
 	)
 	//start := time.Now()
-	sftpClient, err = connect("root","root","192.168.43.11",22)  //远程链接打开
+	sftpClient, err = connect("root", "123.com", "192.168.1.106", 22) //远程链接打开
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer sftpClient.Close()
 
-	_, errStat := sftpClient.Stat("/root/")   //远程目录确认状态是否存在
+	_, errStat := sftpClient.Stat("/tmp/") //远程目录确认状态是否存在
 	if errStat != nil {
-		log.Fatal("/root/" + " remote path not exists!")
+		log.Fatal("/tmp/" + " remote path not exists!")
 	}
 
 	//backupDirs, err := ioutil.ReadDir("c:\\1.log")
 	//if err != nil {
 	//	log.Fatal("c:\\1.log  local path not exists!")
 	//}
-	uploadFile(sftpClient,"C:\\1.log","/root/1.log")
+	uploadFile(sftpClient, "D:\\work\\project-dev\\src\\godev\\mymodels\\ssh并发运行脚本\\1.sh", "/tmp/1.sh")
 }
 func connect(user, password, host string, port int) (*sftp.Client, error) {
 	var (
-	auth         []ssh.AuthMethod
-	addr         string
-	clientConfig *ssh.ClientConfig
-	sshClient    *ssh.Client
-	sftpClient   *sftp.Client
-	err          error
+		auth         []ssh.AuthMethod
+		addr         string
+		clientConfig *ssh.ClientConfig
+		sshClient    *ssh.Client
+		sftpClient   *sftp.Client
+		err          error
 	)
 	// get auth method
 	auth = make([]ssh.AuthMethod, 0)
 	auth = append(auth, ssh.Password(password))
 
 	clientConfig = &ssh.ClientConfig{
-	User:            user,
-	Auth:            auth,
-	Timeout:         30 * time.Second,
-	HostKeyCallback: ssh.InsecureIgnoreHostKey(), //ssh.FixedHostKey(hostKey),
+		User:            user,
+		Auth:            auth,
+		Timeout:         30 * time.Second,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //ssh.FixedHostKey(hostKey),
 	}
 
 	// connet to ssh
 	addr = fmt.Sprintf("%s:%d", host, port)
 	if sshClient, err = ssh.Dial("tcp", addr, clientConfig); err != nil {
-	return nil, err
+		return nil, err
 	}
 
 	// create sftp client
 	if sftpClient, err = sftp.NewClient(sshClient); err != nil {
-	return nil, err
+		return nil, err
 	}
 	return sftpClient, nil
-	}
-
+}
 
 func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string) {
 	srcFile, err := os.Open(localFilePath) //打开需要上传的本地文件
@@ -94,7 +91,6 @@ func uploadFile(sftpClient *sftp.Client, localFilePath string, remotePath string
 		log.Fatal(err)
 
 	}
-	dstFile.Write(ff)  //远程文件 写入 本地文件内容
+	dstFile.Write(ff) //远程文件 写入 本地文件内容
 	fmt.Println(localFilePath + "  copy file to remote server finished!")
 }
-
