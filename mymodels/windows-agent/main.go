@@ -37,7 +37,7 @@ func main() {
 
 	cron.CollectInfo()
 	//
-	go g.RunStatus()
+	g.RunStatus()
 	funcs.BuildMappers()
 	//
 	go cron.InitDataHistory()

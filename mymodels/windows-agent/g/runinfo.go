@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"tjtools/utils"
+	"runtime"
 )
 
 var startRunTime int64
@@ -15,13 +16,30 @@ func init() {
 }
 
 func RunStatus() {
+	go TimeStatus()
+	//go MemStatus()
+}
+
+func MemStatus()  {
+	for {
+		var m runtime.MemStats
+
+		runtime.ReadMemStats(&m)
+
+		logger.Printf("程序使用内存:%+v\n",m)
+		time.Sleep(time.Duration(60) * time.Second)
+	}
+}
+
+func TimeStatus()  {
 	for {
 
-		d, h,m,s := utils.GetTime(time.Now().Unix() - startRunTime)
+		d, h, m, s := utils.GetTime(time.Now().Unix() - startRunTime)
 		logger.Printf("开始运行时间 %s,已经运行%d天%d小时%d分钟%d秒", time.Unix(startRunTime, 0).Format(timeLayout), d, h, m, s)
 		time.Sleep(time.Duration(3600) * time.Second)
 	}
 }
+
 //func getTime(b, e int64) (day, hour int64) {
 //	day = getDay(b, e)
 //	if day <= 0 {
