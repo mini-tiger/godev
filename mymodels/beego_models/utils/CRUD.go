@@ -7,19 +7,19 @@ import (
 	"time"
 )
 
-func GetApps()  {
-		o1 := orm.NewOrm()
-		o1.Using("default")
-		//fmt.Println(o1.Driver().Name())                // 数据库别名，default  切换不同数据库用
+func GetApps() {
+	o1 := orm.NewOrm()
+	o1.Using("default")
+	//fmt.Println(o1.Driver().Name())                // 数据库别名，default  切换不同数据库用
 
-		//result, err := BaseSelect(tmp)
-		//tmp = result.(models.Mission)
-	ct:=time.Now().Unix()
+	//result, err := BaseSelect(tmp)
+	//tmp = result.(models.Mission)
+	ct := time.Now().Unix()
 	fmt.Println(ct)
 	var tmp []orm.Params
 	m := new(models.MissionDetail)
-	num,_ := o1.QueryTable(m).Filter("uuid","b38ae270-4e5a-4a2f-9ce8-9c49a6c171a1").Filter("installtime__lte",ct).Exclude("appname","agent").Filter("status__lte",0).Values(&tmp,"appname","installpath","version","ftpinfo")
-	if num==0{
+	num, _ := o1.QueryTable(m).Filter("uuid", "b38ae270-4e5a-4a2f-9ce8-9c49a6c171a1").Filter("installtime__lte", ct).Exclude("appname", "agent").Filter("status__lte", 0).Values(&tmp, "appname", "installpath", "version", "ftpinfo")
+	if num == 0 {
 		return
 	}
 	//for _,v:=range tmp{
@@ -36,8 +36,22 @@ func GetApps()  {
 	fmt.Println(tmp)
 }
 
+func sql()  {
+	o1 := orm.NewOrm()
+	o1.Using("default")
+	res, err := o1.Raw("UPDATE missiondetail SET status=?,success=?,lasttime=?,stdout=?,stderr=? where id=?",
+		1,1,1551152139000,"","",89).Exec()
+	if err == nil {
+		num, err := res.RowsAffected()
+		fmt.Println(err)
+		fmt.Println("mysql row affected nums: ", num)
+	}
+	fmt.Println("111",err)
+}
+
 func CRUD(ver, appname, uuid string) { // 查询任务表 ,判断是否执行
-GetApps()
+	//GetApps()
+	sql()
 
 	//currt := time.Now().Unix()
 	//	//
