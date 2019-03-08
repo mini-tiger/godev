@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
+	"reflect"
 )
 
 func main() {
 	//defer_call()  // defer panic 顺序
+	// defer_call_panic()
 	//pase_student() //循环赋值指针
 	//three() // 随机性和闭包，变量作用域
 	//foure() // chan 无缓冲阻塞,select 随机 触发case
@@ -24,6 +26,25 @@ func defer_call() {
 
 	panic("触发异常")
 	// todo 考点 打印  顺序  panic应该在 defer 后面打印
+}
+
+
+func defer_call_panic() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("++++")
+			f := err.(func() string)
+			fmt.Println(err, f(), reflect.TypeOf(err).Kind().String())
+		} else {
+			fmt.Println("fatal")
+		}
+	}()
+	defer func() { // defer中的panic 会在 代码中panic后面执行
+		panic(func() string { // 后执行 覆盖前面 的panci
+			return "defer panic"
+		})
+	}()
+	panic("panic") // 先执行
 }
 
 type student struct {
