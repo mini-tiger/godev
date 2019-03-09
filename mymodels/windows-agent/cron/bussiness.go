@@ -3,10 +3,10 @@ package cron
 import (
 	"fmt"
 	"godev/mymodels/windows-agent/g"
-	"time"
 	"net"
-	"strings"
 	"regexp"
+	"strings"
+	"time"
 )
 
 func CollectInfo() {
@@ -49,7 +49,7 @@ func GetOutboundIP() { // 连接公网的内网地址
 	func() {
 		conn, err := net.DialTimeout("tcp", g.Config().Ubs.Addr, time.Duration(15)*time.Second)
 		if err != nil {
-			g.Logger().Error("获取本机出网私网IP err:%s", err)
+			g.Logger().Error("获取本机出网私网IP失败 ERROR:", err)
 			return
 		}
 		//defer conn.Close()

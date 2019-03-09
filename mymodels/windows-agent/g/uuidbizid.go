@@ -4,12 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"net"
-	"strings"
-	"os"
-	"path/filepath"
 	"github.com/satori/go.uuid"
 	"github.com/shirou/gopsutil/host"
+	"net"
+	"os"
+	"path/filepath"
+	"strings"
 	"tjtools/file"
 )
 
@@ -50,7 +50,6 @@ func getMAC(ips string) string {
 	return ""
 }
 
-
 func getBiz() (bizid int) {
 
 	dir, _ := os.Getwd()
@@ -75,7 +74,7 @@ func getBiz() (bizid int) {
 	bizid = c.Bizid
 	return
 }
-func LoadUUIDBIZ()  {
+func LoadUUIDBIZ() {
 
 	bizid := getBiz() // 这里需要扫描文件
 	//mac := getMAC(*OutIP)
@@ -88,15 +87,16 @@ func LoadUUIDBIZ()  {
 	//}
 
 	//m := Md5(fmt.Sprintf("%s%s", mac, *OutIP)) // mac,ip 生成md5 字符串 唯
-	m,_:=host.Info()
-	u, err := uuid.FromString(m.HostID)               // 生成UUID格式
+	m, _ := host.Info()
+
+	u, err := uuid.FromString(m.HostID) // 生成UUID格式
 	if err != nil {
 		logger.Error("生成uuid失败,ip:%s,MAC:%s,err:%s\n", *OutIP, m.HostID, err)
 		return
 	}
-	logger.Printf("根据IP,MAC第一次生成uuid成功,uuid:%s\n", u.String())
+	logger.Printf("根据win HOSTID生成uuid成功,uuid:%s\n", u.String())
 
 	BizId = bizid
-	logger.Printf("BizId:%d\n",BizId)
+	logger.Printf("BizId:%d\n", BizId)
 	Uuid = u.String()
 }
