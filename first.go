@@ -1,24 +1,27 @@
 package main
 
-import (
-	"os/exec"
-	"os"
-	"path/filepath"
-	"fmt"
-)
+import "fmt"
 
-func main()  {
-	fmt.Println(GetCurPath())
+func main() {
+	bbb()
+
 }
+func bbb() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
-/*获取当前文件执行的路径*/
-func GetCurPath() string {
-	file, _ := exec.LookPath(os.Args[0])
+	abc()
+}
+func abc() {
+	defer func() {
+		fmt.Println(1)
+	}()
+	defer func() {
+		fmt.Println(2)
 
-	//得到全路径，比如在windows下E:\\golang\\test\\a.exe
-	path, _ := filepath.Abs(file)
-
-	rst := filepath.Dir(path)
-
-	return rst
+	}()
+	panic(111)
 }

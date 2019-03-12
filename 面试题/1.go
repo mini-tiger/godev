@@ -22,7 +22,10 @@ func main() {
 func defer_call() {
 	defer func() { fmt.Println("打印前") }()
 	defer func() { fmt.Println("打印中") }()
-	defer func() { fmt.Println("打印后") }()
+	defer func() {
+		fmt.Println("打印后")
+		panic(111) // 这里也是在defer后面打印，不会影响上面两个Defer打印
+}()
 
 	panic("触发异常")
 	// todo 考点 打印  顺序  panic应该在 defer 后面打印
@@ -40,7 +43,7 @@ func defer_call_panic() {
 		}
 	}()
 	defer func() { // defer中的panic 会在 代码中panic后面执行
-		panic(func() string { // 后执行 覆盖前面 的panci
+		panic(func() string { // 后执行 覆盖前面 的panic
 			return "defer panic"
 		})
 	}()
