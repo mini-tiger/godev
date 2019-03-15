@@ -13,6 +13,7 @@ import (
 	"github.com/toolkits/slice"
 	"io"
 
+	"path/filepath"
 )
 
 var (
@@ -61,8 +62,8 @@ func InitRootDir() {
 	}
 }
 
-func InitLog() *nxlog.Logger{
-	fileName := Config().Logfile
+func InitLog(fileName string) *nxlog.Logger{
+	//fileName := Config().Logfile
 
 	//logFile, err := os.Create(fileName)
 	//if err != nil {
@@ -74,11 +75,26 @@ func InitLog() *nxlog.Logger{
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
 	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(Config().LogMaxDays) //log保存最大天数
 
+
+
+	f,_:=os.OpenFile(fileName,os.O_WRONLY|os.O_APPEND,0777)
+	d,_:=os.Getwd()
+	ws := []byte(d)
+	f.Write(ws) //追加写
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	f.Write([]byte(dir)) //追加写
+
+
+
+	f.Close()
+
+
+
 	var ww io.Writer
 	if Config().Daemon{
 		ww = io.MultiWriter(rfw) //todo 输出到rfw定义
 	}else{
-		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到rfw 与 系统输出
+		ww = io.MultiWriter(f,rfw) //todo 同时输出到rfw 与 系统输出
 	}
 
 	// Get a new logger instance

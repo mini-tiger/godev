@@ -11,8 +11,10 @@ import (
 	"fmt"
 	"github.com/kardianos/service"
 	"os"
-	"os/exec"
-	"bytes"
+	"godev/mymodels/windows-agent/cron"
+	"godev/mymodels/windows-agent/funcs"
+	"godev/mymodels/windows-agent/g"
+	"godev/mymodels/windows-agent/http"
 )
 
 var logger service.Logger
@@ -25,32 +27,39 @@ func (p *program) Start(s service.Service) error {
 	return nil
 }
 func (p *program) run() { // todo 可以使用exec.command() 加入写过的程序
-	//file, err := os.OpenFile("d:\\mysqlsync.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	//if err != nil {
-	//	log.Fatalln("fail to create test.log file!", err)
-	//}
-	//logger1 := log.New(file, "", log.Ltime|log.Ldate)
-	////log.Println("1.Println log with log.LstdFlags ...")
-	//logger1.Println("1.Println log with log.LstdFlags ...")
+
+	g.ParseConfig("c:\\falcon-agent_win\\cfg.json")
+	g.InitLog("c:\\falcon-agent_win\\windows.log")
+
+	g.InitRootDir()
+	g.InitLocalIps()
+	g.InitRpcClients()
+
+	cron.CollectInfo()
 	//
-	//for {
-	//	logger1.Println("2.Println log without log.LstdFlags ...")
-	//	time.Sleep(2 * time.Second)
-	//}
-	//log.Println("2.Println log without log.LstdFlags ...")
+	g.RunStatus()
+	funcs.BuildMappers()
+	//
+	go cron.InitDataHistory()
+	//
+	//cron.ReportAgentStatus() // 传送硬件信息到数据库，windows版本不支持plugin
+	//
+	g.LoadUUIDBIZ("c:\\falcon-agent_win")
+	cron.SyncBuiltinMetrics()
+	cron.SyncTrustableIps()
 
-	cmd:=exec.Command(fmt.Sprintf("pushd %s;./%s","C:\falcon-agent_win","agent.exe -d true" ))
-	var out2 bytes.Buffer
-	cmd.Stdout = &out2
-	var ee bytes.Buffer
-	cmd.Stderr =&ee
+	cron.LoadEnvironmentGridConfig() // agent 机器的删除尽量在，前端界面，涉及多表
+	// 直接删除库后， 再次运行Agent，不往graph库endpoint中插入,要删除graph/data/6070文件夹
+	//extend_cron.Loadportporcess_taskConfig()
+	//extend_cron.Updateportprocess_env_task()
 
-	cmd.Start()
-	file, _ := os.OpenFile("C:\\falcon-agent_win\\out.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	logger1 := log.New(file, "", log.Ltime|log.Ldate)
+	cron.UploadEnvironmentGrid() //硬件信息
 
-	logger1.Println(out2.String())
-	logger1.Println(ee.String())
+	cron.Collect()
+	//
+	go http.Start()
+
+	select {}
 
 
 }

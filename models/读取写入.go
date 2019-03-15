@@ -22,8 +22,8 @@ func main() {
 	flag.Set("v", "5") // 配置V输出的等级。
 	flag.Parse()
 
-	//openfile1() //使用OS, 也具有read方法 可以使用bufio
-	openfile2() //ioutil,  ioutil  要使用bytes.NewReader,
+	openfile1() //使用OS, 也具有read方法 可以使用bufio
+	//openfile2() //ioutil,  ioutil  要使用bytes.NewReader,
 	//openfile3()//bufio,  os.openfile, 查询字符串，字符
 }
 

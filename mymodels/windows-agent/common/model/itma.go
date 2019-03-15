@@ -112,6 +112,7 @@ type AgentUpdateResp struct {
 	RunDir string `json:"run_dir"`
 	RowId int64 `json:"row_id"`
 }
+
 type Ftpinfo struct {
 	Ip       string
 	Port     int

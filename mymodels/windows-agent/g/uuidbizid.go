@@ -7,7 +7,6 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/shirou/gopsutil/host"
 	"net"
-	"os"
 	"path/filepath"
 	"strings"
 	"tjtools/file"
@@ -50,9 +49,9 @@ func getMAC(ips string) string {
 	return ""
 }
 
-func getBiz() (bizid int) {
+func getBiz(dir string) (bizid int) {
 
-	dir, _ := os.Getwd()
+	//dir, _ := os.Getwd()
 	f := filepath.Join(dir, "biz.json")
 	configContent, err := file.ToTrimString(f)
 
@@ -74,9 +73,9 @@ func getBiz() (bizid int) {
 	bizid = c.Bizid
 	return
 }
-func LoadUUIDBIZ() {
+func LoadUUIDBIZ(dir string) {
 
-	bizid := getBiz() // 这里需要扫描文件
+	bizid := getBiz(dir) // 这里需要扫描文件
 	//mac := getMAC(*OutIP)
 	//if mac == "" {
 	//	logger.Error("mac err:")
