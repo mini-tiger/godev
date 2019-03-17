@@ -2,7 +2,7 @@
   "master_url": "http://thz33.com/",
   "master_dir": "g:\\image\\",
   "pages": 3,
-  "max_old": 7,
+  "max_old": 8,
   "exist_cover": false,
   "use_proxy": false,
   "proxy_url": "http://192.168.1.100:1080"
