@@ -13,7 +13,7 @@ import (
 	"github.com/toolkits/slice"
 	"io"
 
-	"path/filepath"
+	"path"
 )
 
 var (
@@ -61,15 +61,48 @@ func InitRootDir() {
 		log.Fatalln("getwd fail:", err)
 	}
 }
+//type Logstruct struct {
+//	sync.RWMutex
+//	Log *log.Logger
+//}
+//
+//func (l *Logstruct)Info(str string)  {
+//	l.Log.SetPrefix("[INFO]")
+//	l.Log.Print(str)
+//}
+//
+//func (l *Logstruct)Error(str string)  {
+//	l.Log.SetPrefix("[ERROR]")
+//	l.Log.Print(str)
+//}
+//
+//var log11 Logstruct
 
-func InitLog(fileName string) *nxlog.Logger{
+func InitLog() *nxlog.Logger{
 	//fileName := Config().Logfile
 
 	//logFile, err := os.Create(fileName)
 	//if err != nil {
 	//	log.Fatalln("open file error !")
 	//}
+	fileName:=path.Join(Root,Config().Logfile)
 
+
+	//file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	//if err != nil {
+	//	log.Fatalln("fail to create test.log file!", err)
+	//}
+	//log11.Log = log.New(file, "", log.Ltime|log.Ldate)
+	//log.Println("1.Println log with log.LstdFlags ...")
+	//logger.Println("1.Println log with log.LstdFlags ...")
+
+
+	//go func() {
+	//	for{
+	//		log11.Info(fmt.Sprintln(1111))
+	//		time.Sleep(time.Duration(1)*time.Second)
+	//	}
+	//}()
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
@@ -77,24 +110,11 @@ func InitLog(fileName string) *nxlog.Logger{
 
 
 
-	f,_:=os.OpenFile(fileName,os.O_WRONLY|os.O_APPEND,0777)
-	d,_:=os.Getwd()
-	ws := []byte(d)
-	f.Write(ws) //追加写
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	f.Write([]byte(dir)) //追加写
-
-
-
-	f.Close()
-
-
-
 	var ww io.Writer
 	if Config().Daemon{
 		ww = io.MultiWriter(rfw) //todo 输出到rfw定义
 	}else{
-		ww = io.MultiWriter(f,rfw) //todo 同时输出到rfw 与 系统输出
+		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到rfw 与 系统输出
 	}
 
 	// Get a new logger instance

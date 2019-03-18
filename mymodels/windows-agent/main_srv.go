@@ -28,10 +28,12 @@ func (p *program) Start(s service.Service) error {
 }
 func (p *program) run() { // todo 可以使用exec.command() 加入写过的程序
 
-	g.ParseConfig("c:\\falcon-agent_win\\cfg.json")
-	g.InitLog("c:\\falcon-agent_win\\windows.log")
 
 	g.InitRootDir()
+	g.ParseConfig()
+	g.InitLog()
+
+
 	g.InitLocalIps()
 	g.InitRpcClients()
 
@@ -44,7 +46,7 @@ func (p *program) run() { // todo 可以使用exec.command() 加入写过的程�
 	//
 	//cron.ReportAgentStatus() // 传送硬件信息到数据库，windows版本不支持plugin
 	//
-	g.LoadUUIDBIZ("c:\\falcon-agent_win")
+	g.LoadUUIDBIZ()
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 

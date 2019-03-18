@@ -7,8 +7,8 @@ import (
 	"github.com/toolkits/file"
 
 	"log"
+	"path"
 )
-
 
 type MsSQLConfig struct {
 	Enabled  bool     `json:"enabled"`
@@ -57,21 +57,21 @@ type UbsConfig struct {
 }
 
 type GlobalConfig struct {
-	Debug         bool              `json:"debug"`
-	Daemon        bool   			`json:"daemon"`
-	Hostname      string            `json:"hostname"`
-	IP            string            `json:"ip"`
+	Debug    bool   `json:"debug"`
+	Daemon   bool   `json:"daemon"`
+	Hostname string `json:"hostname"`
+	IP       string `json:"ip"`
 	//IIs           *IIsConfig        `json:"iis"`
 	//MsSQL         *MsSQLConfig      `json:"mssql"`
 	Logfile       string            `json:"logfile"`
-	LogMaxDays    int				`json:"logMaxDays"`
+	LogMaxDays    int               `json:"logMaxDays"`
 	Heartbeat     *HeartbeatConfig  `json:"heartbeat"`
 	Transfer      *TransferConfig   `json:"transfer"`
 	Http          *HttpConfig       `json:"http"`
 	Collector     *CollectorConfig  `json:"collector"`
 	DefaultTags   map[string]string `json:"default_tags"`
 	IgnoreMetrics map[string]bool   `json:"ignore"`
-	Ubs			*UbsConfig `json:"ubs"`
+	Ubs           *UbsConfig        `json:"ubs"`
 }
 
 var (
@@ -115,10 +115,14 @@ func IP() string {
 }
 
 func ParseConfig(cfg string) {
+
 	if cfg == "" {
-		log.Fatalln("use -c to specify configuration file")
+		cfg = path.Join(Root, "cfg.json")
+		log.Fatalln("configle use: ", cfg)
 	}
 
+
+	cfg = path.Join(Root, "cfg.json")
 	if !file.IsExist(cfg) {
 		log.Fatalln("config file:", cfg, "is not existent. maybe you need `mv cfg.example.json cfg.json`")
 	}

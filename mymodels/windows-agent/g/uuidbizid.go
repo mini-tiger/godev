@@ -73,9 +73,9 @@ func getBiz(dir string) (bizid int) {
 	bizid = c.Bizid
 	return
 }
-func LoadUUIDBIZ(dir string) {
+func LoadUUIDBIZ() {
 
-	bizid := getBiz(dir) // 这里需要扫描文件
+	bizid := getBiz(Root) // 这里需要扫描文件
 	//mac := getMAC(*OutIP)
 	//if mac == "" {
 	//	logger.Error("mac err:")
