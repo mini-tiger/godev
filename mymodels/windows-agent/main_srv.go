@@ -30,7 +30,7 @@ func (p *program) run() { // todo 可以使用exec.command() 加入写过的程�
 
 
 	g.InitRootDir()
-	g.ParseConfig()
+	g.ParseConfig("")
 	g.InitLog()
 
 

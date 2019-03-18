@@ -14,6 +14,7 @@ import (
 	"io"
 
 	"path"
+	"fmt"
 )
 
 var (
@@ -30,7 +31,7 @@ func (l *Log1) Println(m ...interface{}) {
 func (l *Log1) Printf(arg0 interface{}, args ...interface{}) {
 	//fmt.Printf("%T,%v\n", m, m)
 	//arg0 = arg0.(string)
-
+	log11.Info(fmt.Sprintf("test\n"))
 	//fmt.Printf("%T,%v\n",arg0,arg0)
 	arg0 = strings.Trim(arg0.(string),"\n") // todo 去掉换行
 	logge.Info(arg0, args...)
@@ -61,22 +62,22 @@ func InitRootDir() {
 		log.Fatalln("getwd fail:", err)
 	}
 }
-//type Logstruct struct {
-//	sync.RWMutex
-//	Log *log.Logger
-//}
-//
-//func (l *Logstruct)Info(str string)  {
-//	l.Log.SetPrefix("[INFO]")
-//	l.Log.Print(str)
-//}
-//
-//func (l *Logstruct)Error(str string)  {
-//	l.Log.SetPrefix("[ERROR]")
-//	l.Log.Print(str)
-//}
-//
-//var log11 Logstruct
+type Logstruct struct {
+	sync.RWMutex
+	Log *log.Logger
+}
+
+func (l *Logstruct)Info(str string)  {
+	l.Log.SetPrefix("[INFO]")
+	l.Log.Print(str)
+}
+
+func (l *Logstruct)Error(str string)  {
+	l.Log.SetPrefix("[ERROR]")
+	l.Log.Print(str)
+}
+
+var log11 Logstruct
 
 func InitLog() *nxlog.Logger{
 	//fileName := Config().Logfile
@@ -88,26 +89,26 @@ func InitLog() *nxlog.Logger{
 	fileName:=path.Join(Root,Config().Logfile)
 
 
-	//file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	//if err != nil {
-	//	log.Fatalln("fail to create test.log file!", err)
-	//}
-	//log11.Log = log.New(file, "", log.Ltime|log.Ldate)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalln("fail to create test.log file!", err)
+	}
+	log11.Log = log.New(file, "", log.Ltime|log.Ldate)
 	//log.Println("1.Println log with log.LstdFlags ...")
 	//logger.Println("1.Println log with log.LstdFlags ...")
 
 
-	//go func() {
-	//	for{
-	//		log11.Info(fmt.Sprintln(1111))
-	//		time.Sleep(time.Duration(1)*time.Second)
-	//	}
-	//}()
+	go func() {
+		for{
+			log11.Info(fmt.Sprintln(1111))
+			time.Sleep(time.Duration(1)*time.Second)
+		}
+	}()
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
 	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(Config().LogMaxDays) //log保存最大天数
-
+	log11.Info(fmt.Sprintf("%+v\n",rfw))
 
 
 	var ww io.Writer
@@ -117,13 +118,14 @@ func InitLog() *nxlog.Logger{
 		ww = io.MultiWriter(os.Stdout,rfw) //todo 同时输出到rfw 与 系统输出
 	}
 
+
 	// Get a new logger instance
 	// todo FINEST 级别最低
 	// todo %p prefix, %N 行号
 	logge = nxlog.New(nxlog.FINEST).SetOutput(ww).SetPattern("%P [%Y %T] [%L] (%S LineNo:%N) %M\n")
 	//Log.SetPrefix("11111")
 	logge.SetLevel(1)
-
+	log11.Info(fmt.Sprintf("%+v\n",logge))
 	logge.Info("read config file ,successfully") // 走到这里代表配置文件已经读取成功
 	logge.Info("日志文件最多保存%d天",Config().LogMaxDays)
 	logge.Info("logging on %s", fileName)

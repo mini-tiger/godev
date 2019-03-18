@@ -116,13 +116,12 @@ func IP() string {
 
 func ParseConfig(cfg string) {
 
-	if cfg == "" {
-		cfg = path.Join(Root, "cfg.json")
-		log.Fatalln("configle use: ", cfg)
-	}
-
-
+	//if cfg == "" {
+	//	cfg = path.Join(Root, "cfg.json")
+	//	log.Fatalln("configle use: ", cfg)
+	//}
 	cfg = path.Join(Root, "cfg.json")
+
 	if !file.IsExist(cfg) {
 		log.Fatalln("config file:", cfg, "is not existent. maybe you need `mv cfg.example.json cfg.json`")
 	}

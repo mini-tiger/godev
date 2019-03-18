@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cfg := flag.String("c", "cfg.json", "configuration file")
+	cfg := flag.String("c", "C:\\work\\go-dev\\src\\godev\\mymodels\\windows-agent\\cfg.json", "configuration file")
 	version := flag.Bool("v", false, "show version")
 	check := flag.Bool("check", false, "check collector")
 
