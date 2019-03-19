@@ -61,12 +61,13 @@ func (p *program) run() { // todo 可以使用exec.command() 加入写过的程�
 	//
 	go http.Start()
 
-	select {}
-
-
 }
+
+
+
 func (p *program) Stop(s service.Service) error {
 	// Stop should not block. Return with a few seconds.
+	os.Exit(0)
 	return nil
 }
 
@@ -94,9 +95,9 @@ var s service.Service
 
 func main() {
 	svcConfig := &service.Config{
-		Name:        "GCL Monitor Windows Agent",
-		DisplayName: "GCL Monitor Windows Agent",
-		Description: "GCL Monitor Windows Agent",
+		Name:        "GCL1",
+		DisplayName: "GCL1",
+		Description: "GCL1",
 	}
 
 	prg := &program{}

@@ -7,6 +7,7 @@ import (
 
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/common/model"
+	"fmt"
 )
 
 func SyncBuiltinMetrics() {
@@ -34,6 +35,11 @@ func syncBuiltinMetrics() {
 		if err != nil {
 			continue
 		}
+		hostname1 := g.Uuid
+		if hostname != hostname1{ // 去HBS请求要用endpoint 改成UUID，不用hostname
+			hostname=hostname1
+		}
+
 
 		req := model.AgentHeartbeatRequest{
 			Hostname: hostname,
@@ -46,6 +52,10 @@ func syncBuiltinMetrics() {
 			g.Logger().Println("ERROR:", err)
 			continue
 		}
+
+		fmt.Println("------------------------------")
+		fmt.Printf("%+v\n",&resp)
+		//fmt.Println(procs)
 
 		if resp.Timestamp <= timestamp {
 			continue
@@ -89,7 +99,9 @@ func syncBuiltinMetrics() {
 				procs[metric.Tags] = tmpMap
 			}
 		}
-
+		fmt.Println("================================")
+		fmt.Println(ports)
+		fmt.Println(procs)
 		g.SetReportUrls(urls)
 		g.SetReportPorts(ports)
 		g.SetReportProcs(procs)

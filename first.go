@@ -8,6 +8,7 @@ var c1 chan int = make(chan int, 2)
 
 func main() {
 	fmt.Println(len(c1))
+	A()
 	c1 <- 10
 	recv(c1)
 
