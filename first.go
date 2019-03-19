@@ -1,37 +1,69 @@
 package main
 
 import (
+	"strconv"
+	"net"
 	"fmt"
+	"log"
 )
 
-var c1 chan int = make(chan int, 2)
-
-func main() {
-	fmt.Println(len(c1))
-	A()
-	c1 <- 10
-	recv(c1)
-
-	//for i:=0;i<10;i++{
+func main()  {
+	fmt.Printf("%+v\n",CheckTCPPortUsed(8080))
+	//port:="80"
+	//cmd := exec.Command("cmd.exe ", "/c", fmt.Sprintf("netstat -ano|findstr %s",port))
 	//
-	//	if i%2==0{
-	//		c1<-i
-	//	}else{
-	//		c1<-i
-	//	}
+	//stdout, err := cmd.StdoutPipe()
+	//if err != nil {
+	//	log.Fatalf("ips_business run port:%d, err:%v")
+	//
 	//}
-
-}
-
-func recv(c chan int) {
-	for {
-		fmt.Println(len(c1))
-		select {
-		case i := <-c:
-			fmt.Println(i)
-			fmt.Println(len(c1))
-			fmt.Println("===========")
-		}
+	//cmd.Start()
+	//
+	//reader := bufio.NewReader(stdout)
+	//pids:=make([]string,0)
+	//for {
+	//	line, err := reader.ReadString('\n')
+	//	if err != nil || io.EOF == err {
+	//		break
+	//	}
+	//	line = strings.TrimSpace(strings.Trim(line, "\n"))
+	//
+	//	//fmt.Println([]byte(line))
+	//	pids = append(pids, line)
+	//}
+	//
+	//cmd.Wait()
+	//for i:=0;i<len(pids);i++{
+	//	ii:=strings.Split(pids[i],"    ")
+	//	iii:=strings.Split(ii[1],":")
+	//	fmt.Println(iii[1],len(iii))
+	//}
 	}
 
+func IsTCPPortUsed(addr string, port int64) bool {
+	connString := addr + strconv.FormatInt(port, 10)
+	fmt.Println(connString)
+	conn, err := net.Dial("tcp", connString)
+	if err != nil {
+		log.Println(connString, conn, err)
+		return false
+	}
+	conn.Close()
+	return true
+}
+
+func CheckTCPPortUsed(port int64) bool {
+	if IsTCPPortUsed("0.0.0.0:", port) {
+		return true
+	}
+	if IsTCPPortUsed("127.0.0.1:", port) {
+		return true
+	}
+	if IsTCPPortUsed("[::1]:", port) {
+		return true
+	}
+	if IsTCPPortUsed("[::]:", port) {
+		return true
+	}
+	return false
 }

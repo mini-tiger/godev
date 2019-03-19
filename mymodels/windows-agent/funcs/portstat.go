@@ -19,34 +19,35 @@ func IsTCPPortUsed(addr string, port int64) bool {
 		return false
 	}
 	connString := addr + strconv.FormatInt(port, 10)
-	conn, err := net.Listen("tcp", connString)
+	conn, err := net.Dial("tcp", connString) // 尝试建立链接，而不是监听
 	if err != nil {
-		//		log.Println(connString, conn, err)
-		return true
+		g.Logger().Println(connString, conn, err)
+		return false
 	}
 	conn.Close()
-	return false
+	return true
 }
 
 func CheckTCPPortUsed(port int64) bool {
-	if IsTCPPortUsed("0.0.0.0:", port) {
-		return true
-	}
+	//if IsTCPPortUsed("0.0.0.0:", port) {
+	//	return true
+	//}
 	if IsTCPPortUsed("127.0.0.1:", port) {
 		return true
 	}
-	if IsTCPPortUsed("[::1]:", port) {
-		return true
-	}
-	if IsTCPPortUsed("[::]:", port) {
-		return true
-	}
+	//if IsTCPPortUsed("[::1]:", port) {
+	//	return true
+	//}
+	//if IsTCPPortUsed("[::]:", port) {
+	//	return true
+	//}
 	return false
 }
 
 func PortMetrics() (L []*model.MetricValue) {
 	reportPorts := g.ReportPorts()
 	sz := len(reportPorts)
+
 	if sz == 0 {
 		return
 	}
@@ -59,6 +60,8 @@ func PortMetrics() (L []*model.MetricValue) {
 			L = append(L, GaugeValue(g.NET_PORT_LISTEN, 0, tags))
 		}
 	}
-
+	//g.Logger().Println("==================================")
+	//
+	//g.Logger().Println(L)
 	return
 }

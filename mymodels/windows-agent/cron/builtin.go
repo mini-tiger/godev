@@ -7,7 +7,6 @@ import (
 
 	"godev/mymodels/windows-agent/g"
 	"godev/mymodels/windows-agent/common/model"
-	"fmt"
 )
 
 func SyncBuiltinMetrics() {
@@ -53,10 +52,6 @@ func syncBuiltinMetrics() {
 			continue
 		}
 
-		fmt.Println("------------------------------")
-		fmt.Printf("%+v\n",&resp)
-		//fmt.Println(procs)
-
 		if resp.Timestamp <= timestamp {
 			continue
 		}
@@ -99,9 +94,7 @@ func syncBuiltinMetrics() {
 				procs[metric.Tags] = tmpMap
 			}
 		}
-		fmt.Println("================================")
-		fmt.Println(ports)
-		fmt.Println(procs)
+
 		g.SetReportUrls(urls)
 		g.SetReportPorts(ports)
 		g.SetReportProcs(procs)
