@@ -14,7 +14,7 @@ func mem_info() (*mem.VirtualMemoryStat, error) {
 func MemMetrics() []*model.MetricValue {
 	meminfo, err := mem_info()
 	if err != nil {
-		g.Logger().Println(err)
+		g.Logger().Error("%s",err)
 		return []*model.MetricValue{}
 	}
 	memTotal := meminfo.Total

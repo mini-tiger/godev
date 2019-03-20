@@ -74,7 +74,7 @@ func collect(sec int64, fns []func() []*model.MetricValue) {
 		//	g.Logger().Debug("metric %+v",v)
 		//}
 		if len(mvs) > 1{
-			g.Logger().Println("采集系统指标完成")
+			g.Logger().Printf("采集系统指标完成")
 		}
 		g.SendToTransfer(mvs)
 

@@ -1,5 +1,6 @@
 package g
- // https://www.superpig.win/blog/details/rsybkyvz
+
+// https://www.superpig.win/blog/details/rsybkyvz
 import (
 	"bytes"
 	"fmt"
@@ -27,6 +28,7 @@ type Logge struct {
 	logFunc       bool
 	msgQueue      chan string // 所有的日志先到这来
 	closed        bool
+	maxDays       int
 }
 
 var logger *Logge
@@ -42,9 +44,24 @@ var INFO = 3
 var ERROR = 5
 
 //InitLogging 初始化默认的日志对象，初始化后，就能使用Error，Info函数记录日志
-func InitLogging(inputfilename string, level int) {
+func InitLogging() {
+	inputfilename := filepath.Join(Root, Config().Logfile)
+
+	level := 0
+	if Config().Debug {
+		level = 0
+	} else {
+		level = 3
+	}
+	maxDays := Config().LogMaxDays
 	logger = New(inputfilename, true, false,
-		DEBUG, 2)
+		level, 2, maxDays)
+
+
+	logger.Printf("read config file ,successfully")
+	logger.Printf("日志文件最多保存%d天", Config().LogMaxDays)
+	logger.Printf("logging on %s", inputfilename)
+	logger.Printf("进程已启动, 当前进程PID:%d", os.Getpid())
 }
 
 //Error 默认日志对象方法，记录一条错误日志，需要先初始化
@@ -77,8 +94,6 @@ func InitLogging(inputfilename string, level int) {
 //	logger.Debugln(args...)
 //}
 
-
-
 //New 创建一个自己的日志对象。
 // filename:在logs文件夹下创建的文件名
 // logFilePath: 日志中记录文件路径
@@ -86,7 +101,7 @@ func InitLogging(inputfilename string, level int) {
 // level: 打印等级。DEBUG, INFO, ERROR
 // runtimeCaller: 文件路径深度，设定适当的值，否则文件路径不正确
 func New(filename string, logFilePath bool,
-	logFunc bool, level int, runtimeCaller int) *Logge {
+	logFunc bool, level int, runtimeCaller int, maxDays int) *Logge {
 
 	// result := newLogger(logFile, flag)
 	result := new(Logge)
@@ -120,6 +135,7 @@ func New(filename string, logFilePath bool,
 	result.logFilePath = logFilePath
 	result.logFunc = logFunc
 	result.level = level
+	result.maxDays = maxDays
 	result.todaydate = time.Now().Format("2006-01-02")
 
 	// 启动日志切换
@@ -186,20 +202,23 @@ func (logobj *Logge) Printf(format string, v ...interface{}) {
 	if logger.level > 3 {
 		return
 	}
-	format = strings.Trim(format,"\n") // todo 去掉换行
+	format = strings.Trim(format, "\n") // todo 去掉换行
 	format = logobj.getFormat("INFO ", format)
 	logobj.msgQueue <- fmt.Sprintf(format, v...)
 }
 
 //Infoln 打印一行消息日志
-func (logobj *Logge) Println(args ...interface{}) {
-	if logger.level > 3 {
-		return
-	}
-
-	prefix := logobj.getFormat("INFO ", "")
-	logobj.msgQueue <- fmt.Sprintln(append([]interface{}{prefix}, args...)...)
-}
+//func (logobj *Logge) Println(args ...interface{}) {
+//	if logger.level > 3 {
+//		return
+//	}
+//
+//	prefix := logobj.getFormat("INFO ", "")
+//	tmpstring := fmt.Sprintln(args...)
+//	format := strings.Trim(tmpstring, "\n") // todo 去掉换行
+//	logobj.msgQueue <- fmt.Sprintf("%s %s", prefix, format)
+//	//logobj.msgQueue <- fmt.Sprintln(append([]interface{}{prefix}, args...)...)
+//}
 
 func (logobj *Logge) Fatalln(args ...interface{}) {
 
@@ -297,10 +316,11 @@ func (logobj *Logge) doRotate() {
 }
 
 func (logobj *Logge) deleteHistory() {
-	// 尝试删除5天前的日志
+	// 尝试删除maxDays天前的日志
 	fmt.Println("deleteHistory run")
 	nowTime := time.Now()
-	time5dAgo := nowTime.Add(-1 * time.Hour * 24 * 5)
+
+	time5dAgo := nowTime.Add(-1 * time.Duration(86400*logobj.maxDays) * time.Second)
 
 	//dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	filePath := logobj.filename + "." + time5dAgo.Format("2006-01-02")

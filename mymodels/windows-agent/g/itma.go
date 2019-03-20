@@ -116,7 +116,6 @@ func gethare_sub(sub_info string) string {
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		logger.Println(err)
 		logger.Printf("Error get hardinfo:%s,%s\n", sub_info, err)
 		return temps
 	}

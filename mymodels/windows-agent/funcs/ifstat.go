@@ -27,7 +27,7 @@ func NetMetrics() []*model.MetricValue {
 func CoreNetMetrics(ifacePrefix []string) (L []*model.MetricValue) {
 	netIfs, err := net_status(ifacePrefix) // todo 过滤网卡功能关闭
 	if err != nil {
-		g.Logger().Println(err)
+		g.Logger().Error("%s",err)
 		return []*model.MetricValue{}
 	}
 

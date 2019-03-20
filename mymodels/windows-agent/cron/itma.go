@@ -10,7 +10,7 @@ var ConfigInterval int = 20 //todo HBS没准备好前，数据更新与配置更
 var DataInterval int = 40
 
 func UploadEnvironmentGrid() {
-	g.Logger().Println("start environment grid ", g.Config().Ubs.Enabled, " -> ", g.Config().Ubs.Addr)
+	g.Logger().Printf("start environment grid Ubs Addr:%s", g.Config().Ubs.Addr)
 	if g.Config().Ubs.Enabled && g.Config().Ubs.Addr != "" {
 		//loadEnvironmentGridConfig(-1)
 		//go uploadEnvironmentGrid(time.Duration(5)*time.Second)
@@ -22,7 +22,7 @@ func uploadEnvironmentGrid(interval time.Duration) {
 	for {
 		interval := time.Duration(DataInterval) * time.Second
 		//interval := time.Duration(10)*time.Second
-		g.Logger().Println("ready uploadEnvironmentGrid", interval)
+		g.Logger().Printf("ready uploadEnvironmentGrid %v", interval)
 		req := g.EnvGrid()
 		g.Logger().Printf("Call UBS Itma.UploadEnvironmentGrid :%+v \n", req)
 
@@ -43,7 +43,7 @@ func uploadEnvironmentGrid(interval time.Duration) {
 }
 
 func LoadEnvironmentGridConfig() {
-	g.Logger().Println("start load environment grid config", g.Config().Ubs.Enabled, " -> ", g.Config().Ubs.Addr)
+	g.Logger().Printf("start load environment grid config %v -> %s", g.Config().Ubs.Enabled, g.Config().Ubs.Addr)
 	if g.Config().Ubs.Enabled && g.Config().Ubs.Addr != "" {
 		//loadEnvironmentGridConfig(-1)
 
@@ -54,15 +54,15 @@ func LoadEnvironmentGridConfig() {
 func loadEnvironmentGridConfig(interval time.Duration) {
 	for {
 		interval := time.Duration(ConfigInterval) * time.Second
-		g.Logger().Println("ready get environment grid config ", interval)
+		g.Logger().Printf("ready get environment grid config %s", interval)
 
 		var req model.NullRpcRequest
 		var resp model.EnvGridConfigResponse
 		err := g.UbsClient.Call("Itma.GetEnvironmentGridConfig", req, &resp)
 		if err != nil {
-			g.Logger().Println("call Itma.GetEnvironmentGridConfig fail:", err, "Request:", req, "Response:", resp)
+			g.Logger().Printf("call Itma.GetEnvironmentGridConfig fail: %s  Request:%v Response:%v", err,  req,  resp)
 		} else {
-			g.Logger().Println("call Itma.GetEnvironmentGridConfig Response:", resp)
+			g.Logger().Printf("call Itma.GetEnvironmentGridConfig Response: %v", resp)
 			g.GetEnvGridConfig().JsonConfig = resp
 			//g.GetEnvGridConfig().ConfigInterval = resp.ConfigInterval
 			//g.GetEnvGridConfig().DataInterval = resp.DataInterval

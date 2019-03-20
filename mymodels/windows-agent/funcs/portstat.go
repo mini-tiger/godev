@@ -21,7 +21,7 @@ func IsTCPPortUsed(addr string, port int64) bool {
 	connString := addr + strconv.FormatInt(port, 10)
 	conn, err := net.Dial("tcp", connString) // 尝试建立链接，而不是监听
 	if err != nil {
-		g.Logger().Println(connString, conn, err)
+		g.Logger().Printf("%s,%s,%s",connString, conn, err)
 		return false
 	}
 	conn.Close()

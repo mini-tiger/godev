@@ -7,7 +7,7 @@ import (
 	"github.com/toolkits/file"
 
 	"log"
-	"path"
+	"path/filepath"
 )
 
 type MsSQLConfig struct {
@@ -94,7 +94,7 @@ func Hostname() (string, error) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		logger.Println("ERROR: os.Hostname() fail", err)
+		logger.Printf("ERROR: os.Hostname() fail:%v", err)
 		//logger.Error("ERROR: os.Hostname() fail", err)
 	}
 	return hostname, err
@@ -117,10 +117,9 @@ func IP() string {
 func ParseConfig(cfg string) {
 
 	if cfg == "" {
-		cfg = path.Join(Root, "cfg.json")
-		log.Fatalln("configle use: ", cfg)
+		cfg = filepath.Join(Root, "cfg.json")
+		log.Println("configle use: ", cfg)
 	}
-	//cfg = path.Join(Root, "cfg.json")
 
 	if !file.IsExist(cfg) {
 		log.Fatalln("config file:", cfg, "is not existent. maybe you need `mv cfg.example.json cfg.json`")

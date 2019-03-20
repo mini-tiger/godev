@@ -48,7 +48,7 @@ func syncBuiltinMetrics() {
 		var resp model.BuiltinMetricResponse
 		err = g.HbsClient.Call("Agent.BuiltinMetrics", req, &resp)
 		if err != nil {
-			g.Logger().Println("ERROR:", err)
+			g.Logger().Error("ERROR:", err)
 			continue
 		}
 
@@ -73,7 +73,7 @@ func syncBuiltinMetrics() {
 				if port, err := strconv.ParseInt(arr[1], 10, 64); err == nil {
 					ports = append(ports, port)
 				} else {
-					g.Logger().Println("metrics ParseInt failed:", err)
+					g.Logger().Error("metrics ParseInt failed:", err)
 				}
 
 				continue

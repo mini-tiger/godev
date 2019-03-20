@@ -24,7 +24,7 @@ func ProcMetrics() (L []*model.MetricValue) {
 	startTime := time.Now()
 	ps, err := Processes()
 	if err != nil {
-		g.Logger().Println(err)
+		g.Logger().Error("%s",err)
 		return
 	}
 

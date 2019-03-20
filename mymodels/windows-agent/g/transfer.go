@@ -40,7 +40,7 @@ func updateMetrics(addr string, metrics []*model.MetricValue, resp *model.Transf
 	defer TransferClientsLock.RUnlock()
 	err := TransferClients[addr].Call("Transfer.Update", metrics, resp)
 	if err != nil {
-		logger.Println("call Transfer.Update fail", addr, err)
+		logger.Printf("call Transfer.Update %s fail %s", addr, err)
 		return false
 	}
 	return true

@@ -13,7 +13,7 @@ import (
 	"github.com/toolkits/slice"
 	"io"
 
-	"path"
+	"path/filepath"
 )
 
 var (
@@ -52,7 +52,7 @@ func (l *Log1) Fatalf(arg0 interface{}, args ...interface{}) {
 	os.Exit(1)
 }
 
-var logger *Log1
+//var logger *Log1
 
 func InitRootDir() {
 	var err error
@@ -78,37 +78,15 @@ func InitRootDir() {
 //
 //var log11 Logstruct
 
-func InitLog() *nxlog.Logger{
-	//fileName := Config().Logfile
+func InitLog(f *os.File) *nxlog.Logger{
 
-	//logFile, err := os.Create(fileName)
-	//if err != nil {
-	//	log.Fatalln("open file error !")
-	//}
-	fileName:=path.Join(Root,Config().Logfile)
+	fileName:=filepath.Join(Root,Config().Logfile)
+	f.WriteString(fileName)
 
-
-	//file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	//if err != nil {
-	//	log.Fatalln("fail to create test.log file!", err)
-	//}
-	//log11.Log = log.New(file, "", log.Ltime|log.Ldate)
-	//log.Println("1.Println log with log.LstdFlags ...")
-	//logger.Println("1.Println log with log.LstdFlags ...")
-
-
-	//go func() {
-	//	for{
-	//		log11.Info(fmt.Sprintln(1111))
-	//		time.Sleep(time.Duration(1)*time.Second)
-	//	}
-	//}()
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间
 	nxlog.LogCallerDepth = 3 //runtime.caller(3)  日志触发上报的层级
 	rfw := nxlog.NewRotateFileWriter(fileName).SetDaily(true).SetMaxBackup(Config().LogMaxDays) //log保存最大天数
-	//log11.Info(fmt.Sprintf("%+v\n",rfw))
-
 
 	var ww io.Writer
 	if Config().Daemon{
@@ -122,35 +100,23 @@ func InitLog() *nxlog.Logger{
 	// todo FINEST 级别最低
 	// todo %p prefix, %N 行号
 	logge = nxlog.New(nxlog.FINEST).SetOutput(ww).SetPattern("%P [%Y %T] [%L] (%S LineNo:%N) %M\n")
-	//Log.SetPrefix("11111")
+
 	logge.SetLevel(1)
-	//log11.Info(fmt.Sprintf("%+v\n",logge))
+
 	logge.Info("read config file ,successfully") // 走到这里代表配置文件已经读取成功
 	logge.Info("日志文件最多保存%d天",Config().LogMaxDays)
 	logge.Info("logging on %s", fileName)
 	logge.Info("进程已启动, 当前进程PID:%d",os.Getpid())
 	return logge
-	// Log some experimental messages
-	//for j := 0; j < 15; j++ {
-	//	for i := 0; i < 400 / (j+1); i++ {
-	//		Log.Finest("Everything is created now (notice that I will not be printing to the file)")
-	//		Log.Info("%d. The time is now: %s", j, time.Now().Format("15:04:05 MST 2006/01/02"))
-	//		Log.Critical("Time to close out!")
-	//
-	//		time.Sleep(1*time.Second)
-	//	}
-	//}
-	//rfw.Close()
 
-	//logger = log.New(logFile, "[Debug]", log.LstdFlags)
 
 }
 
-func Logger() *Log1 {
-	lock.RLock()
-	defer lock.RUnlock()
-	return logger
-}
+//func Logger() *Log1 {
+//	lock.RLock()
+//	defer lock.RUnlock()
+//	return logger
+//}
 
 var LocalIps []string
 
@@ -225,7 +191,7 @@ func SendToTransfer(metrics []*model.MetricValue) {
 	SendMetrics(metrics, &resp)
 
 	if debug {
-		logger.Println("<=", &resp)
+		logger.Printf("<= %v", &resp)
 		//logger.Debug("<=", &resp)
 	}
 }

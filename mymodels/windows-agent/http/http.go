@@ -63,6 +63,6 @@ func Start() {
 		MaxHeaderBytes: 1 << 30,
 	}
 
-	g.Logger().Println("listening", addr)
+	g.Logger().Printf("listening %s", addr)
 	g.Logger().Fatalln(s.ListenAndServe())
 }

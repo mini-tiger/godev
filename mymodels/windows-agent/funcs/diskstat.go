@@ -9,7 +9,7 @@ func DiskIOMetrics() (L []*model.MetricValue) {
 
 	disk_iocounter, err := IOCounters()
 	if err != nil {
-		g.Logger().Println(err)
+		g.Logger().Error("%s",err)
 		return
 	}
 

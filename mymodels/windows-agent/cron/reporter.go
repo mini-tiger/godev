@@ -23,9 +23,9 @@ func reportAgentStatus(interval time.Duration) {
 		}
 		manufacturer, productName, version, serialNumber := g.GetHardware()
 		req := model.AgentReportRequest{
-			Hostname:     hostname,
-			IP:           g.IP(),
-			AgentVersion: g.VERSION,
+			Hostname:      hostname,
+			IP:            g.IP(),
+			AgentVersion:  g.VERSION,
 			PluginVersion: "",
 			Manufacturer:  manufacturer,
 			ProductName:   productName,
@@ -36,7 +36,7 @@ func reportAgentStatus(interval time.Duration) {
 		var resp model.SimpleRpcResponse
 		err = g.HbsClient.Call("Agent.ReportStatus", req, &resp)
 		if err != nil || resp.Code != 0 {
-			g.Logger().Println("call Agent.ReportStatus fail:", err, "Request:", req, "Response:", resp)
+			g.Logger().Error("call Agent.ReportStatus fail: %s Request: %v Response:%v", err, req, resp)
 		}
 
 		time.Sleep(interval)
