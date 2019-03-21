@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"github.com/astaxie/beego/orm"
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"godev/mymodels/beego_models/models"
 	"math/rand"
 )
@@ -43,7 +43,7 @@ var days []int
 var itemName = []string{"油饰不良，号码不明", "熔丝容量不符规定", "盘面铭牌缺失，字迹不清", "插接器材不良、焊点不良或脱焊", "移位器安装不良，挤岔功能失灵"}
 
 func return_s(s interface{}) string {
-	if (s == nil || s.(string) == "") {
+	if s == nil || s.(string) == "" {
 		return ""
 	}
 	return s.(string)
@@ -104,10 +104,10 @@ func insert_total_month(maps []orm.Params) {
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 1000 // 每个车站 设备总数固定,
+		Total_Dev := 1000         // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for im, mo := range month { // 遍历月
-				Total_Dev = Total_Dev + (y - 2000)*2 + im
+				Total_Dev = Total_Dev + (y-2000)*2 + im
 				total_good := rand.Intn(88)
 				total_Qualified := rand.Intn(88)
 				total_unQualified := rand.Intn(88)
@@ -128,15 +128,89 @@ func insert_total_month(maps []orm.Params) {
 
 }
 
+func insert_total_season(maps []orm.Params) {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("INSERT INTO `Total_Season_Device` " +
+		"(`YEAR`, `season`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(maps); i++ {
+		m := maps[i]
+		Total_Dev := 1000         // 每个车站 设备总数固定,
+		for _, y := range years { // 遍历年
+			for im, season := range []int{1, 2, 3, 4} { // 遍历季度
+				Total_Dev = Total_Dev + (y-2000)*2 + im //每过一段时间 加一些设备
+				total_good := rand.Intn(300)
+				total_Qualified := rand.Intn(300)
+				total_unQualified := rand.Intn(300)
+				total_Appraisal := total_good + total_Qualified + total_unQualified
+
+				total_workbase := total_Appraisal * 3 //工单数
+				Total_Work_People := rand.Intn(100)   // 相关人员
+				_, err := p.Exec(y, season, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
+	}
+	p.Close() // 别忘记关闭 statement
+
+}
+
+func insert_total_year(maps []orm.Params) {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("INSERT INTO `Total_Year_Device` " +
+		"(`YEAR`,`DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(maps); i++ {
+		m := maps[i]
+		Total_Dev := 1000         // 每个车站 设备总数固定,
+		for _, y := range years { // 遍历年
+
+			Total_Dev = Total_Dev + (y-2000)*3 //每过一段时间 加一些设备
+			total_good := rand.Intn(500)
+			total_Qualified := rand.Intn(250)
+			total_unQualified := rand.Intn(250)
+			total_Appraisal := total_good + total_Qualified + total_unQualified
+
+			total_workbase := total_Appraisal * 3 //工单数
+			Total_Work_People := rand.Intn(100)   // 相关人员
+			_, err := p.Exec(y, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+		}
+	}
+	p.Close() // 别忘记关闭 statement
+
+}
 func sql() {
 	o1 := orm.NewOrm()
 	o1.Using("default")
 	var maps []orm.Params
 	//num, err := o1.Raw("select * from B_DeviceInfor LIMIT 0,?", 1013).Values(&maps) // 创建天数统计表
-	num, err := o1.Raw("select * from B_DeviceInfor GROUP BY STA_ID").Values(&maps) // 创建月统计表
+	num, err := o1.Raw("select * from B_DeviceInfor GROUP BY STA_ID").Values(&maps) // 创建月，季度，年统计表
 	if err == nil && num > 0 {
-		insert_total_month(maps)
-
+		//insert_total_month(maps) // 月统计
+		//insert_total_season(maps) // 季度统计
+		insert_total_year(maps) // 年统计
 		//for i := 0; i < len(maps); i++ {
 		//	data := maps[i]
 		//	//insert_total_days(data) todo 添加 days表
