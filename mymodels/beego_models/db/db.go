@@ -8,7 +8,7 @@ import (
 
 func Init() {
 	// todo 注册DB
-	models.RegitDB("cmdb:123456@tcp(10.240.81.85:3306)/nodeman?charset=utf8&loc=Asia%2FShanghai")
+	models.RegitDB("root:W3b5Ev!c3@tcp(bi.itma.com.cn:3306)/bi_yunji?charset=utf8&loc=Asia%2FShanghai")
 	// 数据库别名
 	name := "default"
 	// drop table 后再建表
@@ -18,7 +18,7 @@ func Init() {
 	// 遇到错误立即返回
 	err := orm.RunSyncdb(name, force, verbose)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("err:",err)
 	}
 	orm.Debug = false
 }

@@ -4,53 +4,162 @@ import (
 	"github.com/astaxie/beego/orm"
 	"fmt"
 	"godev/mymodels/beego_models/models"
-	"time"
+	"math/rand"
 )
 
-func GetApps() {
-	o1 := orm.NewOrm()
-	o1.Using("default")
-	//fmt.Println(o1.Driver().Name())                // 数据库别名，default  切换不同数据库用
+//func GetApps() {
+//	o1 := orm.NewOrm()
+//	o1.Using("default")
+//	//fmt.Println(o1.Driver().Name())                // 数据库别名，default  切换不同数据库用
+//
+//	//result, err := BaseSelect(tmp)
+//	//tmp = result.(models.Mission)
+//	ct := time.Now().Unix()
+//	fmt.Println(ct)
+//	var tmp []orm.Params
+//	m := new(models.MissionDetail)
+//	num, _ := o1.QueryTable(m).Filter("uuid", "b38ae270-4e5a-4a2f-9ce8-9c49a6c171a1").Filter("installtime__lte", ct).Exclude("appname", "agent").Filter("status__lte", 0).Values(&tmp, "appname", "installpath", "version", "ftpinfo")
+//	if num == 0 {
+//		return
+//	}
+//	//for _,v:=range tmp{
+//	//	for _,vv:=range []string{"vsftpd"}{
+//	//		if ap,_:=v["AppName"];ap == "vsftpd" {
+//	//			if v["Version"] != "v1"{
+//	//				fmt.Println("vsftp add")
+//	//			}
+//	//		}
+//	//	}
+//	//
+//	//}
+//	//fmt.Println(num,err)
+//	fmt.Println(tmp)
+//}
 
-	//result, err := BaseSelect(tmp)
-	//tmp = result.(models.Mission)
-	ct := time.Now().Unix()
-	fmt.Println(ct)
-	var tmp []orm.Params
-	m := new(models.MissionDetail)
-	num, _ := o1.QueryTable(m).Filter("uuid", "b38ae270-4e5a-4a2f-9ce8-9c49a6c171a1").Filter("installtime__lte", ct).Exclude("appname", "agent").Filter("status__lte", 0).Values(&tmp, "appname", "installpath", "version", "ftpinfo")
-	if num == 0 {
-		return
+var years []int = []int{2016, 2017, 2018}
+var month []int = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+var result []string = []string{"良好", "合格"}
+var days []int
+var itemName = []string{"油饰不良，号码不明", "熔丝容量不符规定", "盘面铭牌缺失，字迹不清", "插接器材不良、焊点不良或脱焊", "移位器安装不良，挤岔功能失灵"}
+
+func return_s(s interface{}) string {
+	if (s == nil || s.(string) == "") {
+		return ""
 	}
-	//for _,v:=range tmp{
-	//	for _,vv:=range []string{"vsftpd"}{
-	//		if ap,_:=v["AppName"];ap == "vsftpd" {
-	//			if v["Version"] != "v1"{
-	//				fmt.Println("vsftp add")
-	//			}
-	//		}
-	//	}
-	//
-	//}
-	//fmt.Println(num,err)
-	fmt.Println(tmp)
+	return s.(string)
 }
 
-func sql()  {
+func insert_total_days(m map[string]interface{}) {
+	o := orm.NewOrm()
+	var d models.TotalDayDevice
+
+	Score := rand.Intn(15) - 10
+	d.Score = Score
+	d.Year = years[rand.Intn(len(years))]
+	d.Month = month[rand.Intn(len(month))]
+	d.Days = days[rand.Intn(len(days))]
+	if Score < 0 {
+		d.Result = "不合格"
+		if Score < -5 {
+			d.ItemClassName = itemName[rand.Intn(len(itemName))] + "," + itemName[rand.Intn(len(itemName))]
+		} else {
+			d.ItemClassName = itemName[rand.Intn(len(itemName))]
+		}
+
+	} else {
+		d.Result = result[rand.Intn(len(result))]
+	}
+	d.DeviceId = m["DeviceId"].(string)
+
+	//fmt.Printf("%T,%v\n",m,m)
+	d.DeviceName = return_s(m["DeviceName"])
+	d.DeviceType = return_s(m["DeviceType"])
+	d.DeviceId = m["DeviceId"].(string)
+
+	d.ORG1ID = m["ORG1_ID"].(string)
+	d.ORG1NAME = m["ORG1_NAME"].(string)
+	d.ORG2ID = m["ORG2_ID"].(string)
+	d.ORG2NAME = m["ORG2_NAME"].(string)
+	d.ORG3ID = m["ORG3_ID"].(string)
+	d.ORG3NAME = m["ORG3_NAME"].(string)
+	d.STAID = m["STA_ID"].(string)
+	d.STANAME = m["STA_NAME"].(string)
+
+	_, err := o.Insert(&d)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func insert_total_month(maps []orm.Params) {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("INSERT INTO `Total_Month_Device` " +
+		"(`YEAR`, `MONTH`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(maps); i++ {
+		m := maps[i]
+		Total_Dev := 1000 // 每个车站 设备总数固定,
+		for _, y := range years { // 遍历年
+			for im, mo := range month { // 遍历月
+				Total_Dev = Total_Dev + (y - 2000)*2 + im
+				total_good := rand.Intn(88)
+				total_Qualified := rand.Intn(88)
+				total_unQualified := rand.Intn(88)
+				total_Appraisal := total_good + total_Qualified + total_unQualified
+
+				total_workbase := total_Appraisal * 3 //工单数
+				Total_Work_People := rand.Intn(100)   // 相关人员
+				_, err := p.Exec(y, mo, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
+	}
+	p.Close() // 别忘记关闭 statement
+
+}
+
+func sql() {
 	o1 := orm.NewOrm()
 	o1.Using("default")
-	res, err := o1.Raw("UPDATE missiondetail SET status=?,success=?,lasttime=?,stdout=?,stderr=? where id=?",
-		1,1,1551152139000,"","",89).Exec()
-	if err == nil {
-		num, err := res.RowsAffected()
-		fmt.Println(err)
-		fmt.Println("mysql row affected nums: ", num)
+	var maps []orm.Params
+	//num, err := o1.Raw("select * from B_DeviceInfor LIMIT 0,?", 1013).Values(&maps) // 创建天数统计表
+	num, err := o1.Raw("select * from B_DeviceInfor GROUP BY STA_ID").Values(&maps) // 创建月统计表
+	if err == nil && num > 0 {
+		insert_total_month(maps)
+
+		//for i := 0; i < len(maps); i++ {
+		//	data := maps[i]
+		//	//insert_total_days(data) todo 添加 days表
+		//}
+	} else {
+		fmt.Println("sql err:", err)
 	}
-	fmt.Println("111",err)
 }
 
 func CRUD(ver, appname, uuid string) { // 查询任务表 ,判断是否执行
 	//GetApps()
+
+	for i := 1; i < 30; i++ {
+		days = append(days, i)
+	}
+
+	//for i := 0; i < 100; i++ {
+	//	fmt.Println("随机总分数", rand.Intn(15)-10)
+	//	fmt.Println("随机年", years[rand.Intn(len(years))])
+	//	fmt.Println("随机月", month[rand.Intn(len(years))])
+	//	fmt.Println("随机日", days[rand.Intn(len(years))])
+	//	fmt.Println("随机结果", result[rand.Intn(len(result))])
+	//}
 	sql()
 
 	//currt := time.Now().Unix()

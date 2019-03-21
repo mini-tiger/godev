@@ -5,7 +5,7 @@ import (
 )
 
 func RegitDB(dbstr string) {
-	orm.RegisterModel(new(MissionDetail))
+	orm.RegisterModel(new(TotalDayDevice))
 	orm.RegisterDriver("mysql", orm.DRMySQL)
 	// 参数1        数据库的别名，用来在 ORM 中切换数据库使用
 	// 参数2        driverName
@@ -20,35 +20,65 @@ func RegitDB(dbstr string) {
 		maxIdle, maxConn)
 }
 
-type MissionDetail struct {
-	Id          int    `orm:"pk;auto"`
-	AppName     string `orm:"index;column(appname);size(20)"` // 应用名字
-	Version     string `orm:"column(version);size(20)"`       //版本
-	Ip          string `orm:"column(ip);size(32)"`           //IP
-	UUID        string `orm:"column(uuid);size(60);index"`    // agent uuid
-	Status      uint   `orm:"column(status);default(0)"`      // 是否安装过   0 没有 1 有
-	Count       uint   `orm:"column(count);default(0)"`       // 安装过的次数
-	Success     bool   `orm:"column(success);default(false)"` // 安装是否成功
-	CreateTime  int64  `orm:"column(createtime)"`             // 创建时间 unix time
-	LastTime    int64  `orm:"column(lasttime)"`               // 最后一次安装时间
-	InstallTime int64  `orm:"column(installtime)"`            // 计划安装时间
-	FtpInfo string `orm:"column(ftpinfo)"`   // FTP 信息，json格式
-	InstallPath string `orm:"column(installpath)"`   // 安装路径
+type TotalDayDevice struct {
+	Id             int    `orm:"pk;auto"`
+	Year           int    `orm:"column(year);size(4)"`
+	Month          int    `orm:"column(month);size(2)"`
+	Days           int    `orm:"column(days);size(2)"`
+	DeviceId       string `orm:"column(DeviceId);size(36)"`       //IP
+	DeviceTypeName string `orm:"column(DeviceTypeName);size(36)"` //IP
+	DeviceName     string `orm:"column(DeviceName);size(36)"`     //IP
+	DeviceType     string `orm:"column(DeviceType);size(36)"`     //IP
+	OUCode         string `orm:"column(OUCode);size(30)"`         //IP
+	ORG1ID         string `orm:"column(ORG1_ID);size(30)"`        //IP
+	ORG1NAME       string `orm:"column(ORG1_NAME);size(30)"`      //IP
+	ORG2ID         string `orm:"column(ORG2_ID);size(30)"`        //IP
+	ORG2NAME       string `orm:"column(ORG2_NAME);size(30)"`      //IP
+	ORG3ID         string `orm:"column(ORG3_ID);size(30)"`        //IP
+	ORG3NAME       string `orm:"column(ORG3_NAME);size(30)"`
+	STAID          string `orm:"column(STA_ID);size(30)"`
+	STANAME        string `orm:"column(STA_NAME);size(30)"`
+	Score          int    `orm:"column(Score);size(10)"`
+	Result         string `orm:"column(Result);size(12)"`
+	ItemClassName  string `orm:"column(ItemClassName);size(255)"`
 }
+
+//type BDeviceInfor struct {
+//	Id          int       `orm:"pk;auto"`
+//	BusinessId  string    `orm:"column(BusinessId);size(36)"`
+//	DeviceId    string    `orm:"column(DeviceId);size(36)"`
+//	DeviceName  string    `orm:"column(DeviceName);size(36)"` //IP
+//	DeviceType  string    `orm:"column(DeviceType);size(36)"` //IP\
+//	CreatedBy   string    `orm:"column(CreatedBy);size(36)"`  //IP
+//	CreatedDate time.Time `orm:"column(CreatedDate);type(datetime)"`
+//	Status      int       `orm:"column(Status);size(11)"`
+//	TaskId      string    `orm:"column(TaskId);size(36)"` //IP
+//	Remark      string    `orm:"column(Remark);size(36)"` //IP
+//
+//	OUCode        string `orm:"column(OUCode);size(30)"`    //IP
+//	ORG1ID        string `orm:"column(ORG1_ID);size(30)"`   //IP
+//	ORG1NAME      string `orm:"column(ORG1_NAME);size(30)"` //IP
+//	ORG2ID        string `orm:"column(ORG2_ID);size(30)"`   //IP
+//	ORG2NAME      string `orm:"column(ORG2_NAME);size(30)"` //IP
+//	ORG3ID        string `orm:"column(ORG3_ID);size(30)"`   //IP
+//	ORG3NAME      string `orm:"column(ORG3_NAME);size(30)"`
+//	STAID         string `orm:"column(STA_ID);size(30)"`
+//	STANAME       string `orm:"column(STA_NAME);size(30)"`
+//	Score         int    `orm:"column(Score);size(10)"`
+//	Result        string `orm:"column(Result);size(12)"`
+//	ItemClassName string `orm:"column(ItemClassName);size(255)"`
+//}
 
 //自定义表名
-func (m *MissionDetail) TableName() string {
-	return "missiondetail"
+func (m *TotalDayDevice) TableName() string {
+	return "Total_day_Device"
 }
 
-// 多字段唯一键
-func (u *MissionDetail) TableUnique() [][]string {
-	return [][]string{
-		[]string{"AppName", "Version", "UUID","Ip"},
-	}
-}
+//func (b *BDeviceInfor) TableName() string {
+//	return "B_DeviceInfor"
+//}
 
 // 设置引擎为 INNODB
-func (u *MissionDetail) TableEngine() string {
+func (m *TotalDayDevice) TableEngine() string {
 	return "INNODB"
 }
