@@ -109,7 +109,7 @@ func insert_total_days(maps []orm.Params) {
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 266 // 每个车站 设备总数固定,
+		Total_Dev := 666 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for _, mo := range month { // 遍历月
 				for _, day := range days {
@@ -148,7 +148,7 @@ func insert_total_month(maps []orm.Params) {
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 266 // 每个车站 设备总数固定,
+		Total_Dev := 666 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for _, mo := range month { // 遍历月
 				//Total_Dev = Total_Dev + (y-2000)*2 + im
@@ -186,7 +186,7 @@ func insert_total_season(maps []orm.Params) {
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 266 // 每个车站 设备总数固定,
+		Total_Dev := 666 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for _, season := range []int{1, 2, 3, 4} { // 遍历季度
 				//Total_Dev = Total_Dev + (y-2000)*2 + im //每过一段时间 加一些设备
@@ -223,7 +223,7 @@ func insert_total_year(maps []orm.Params) {
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 266 // 每个车站 设备总数固定,
+		Total_Dev := 666 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 
 			//Total_Dev = Total_Dev + (y-2000)*3 //每过一段时间 加一些设备
@@ -244,8 +244,36 @@ func insert_total_year(maps []orm.Params) {
 		}
 	}
 	p.Close() // 别忘记关闭 statement
-
 }
+
+func insert_total_dev(maps []orm.Params) {
+	o := orm.NewOrm()
+
+	p, err := o.Raw("INSERT INTO `Total_Device` " +
+		"(`DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`) " +
+		"VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(maps); i++ {
+		m := maps[i]
+		Total_Dev := 222 // 每种设备222，车站 设备总数固定,
+		for _, y := range []string{"道岔","信号机","轨道电路"} { // 遍历年
+
+			_, err := p.Exec(y, return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+				Total_Dev)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+		}
+	}
+	p.Close() // 别忘记关闭 statement
+}
+
 func sql() {
 	o1 := orm.NewOrm()
 	o1.Using("default")
@@ -258,6 +286,7 @@ func sql() {
 		insert_total_season(maps) // 季度统计
 		insert_total_year(maps) // 年统计
 
+		//insert_total_dev(maps)
 
 
 		//for i := 0; i < len(maps); i++ {
