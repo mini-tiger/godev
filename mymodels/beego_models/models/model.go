@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/astaxie/beego/orm"
+	"time"
 )
 
 func RegitDB(dbstr string) {
@@ -41,6 +42,7 @@ type TotalDayDevice struct {
 	Score          int    `orm:"column(Score);size(10)"`
 	Result         string `orm:"column(Result);size(12)"`
 	ItemClassName  string `orm:"column(ItemClassName);size(255)"`
+	DateTime 	time.Time  `orm:"column(datetime)"`
 }
 
 //type BDeviceInfor struct {
@@ -71,7 +73,7 @@ type TotalDayDevice struct {
 
 //自定义表名
 func (m *TotalDayDevice) TableName() string {
-	return "Total_day_Device"
+	return "Total_day_Device11"
 }
 
 //func (b *BDeviceInfor) TableName() string {

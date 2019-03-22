@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"github.com/astaxie/beego/orm"
-	"godev/mymodels/beego_models/models"
 	"math/rand"
 )
 
@@ -49,46 +48,91 @@ func return_s(s interface{}) string {
 	return s.(string)
 }
 
-func insert_total_days(m map[string]interface{}) {
+//func insert_total_days(m map[string]interface{}) {
+//	o := orm.NewOrm()
+//	var d models.TotalDayDevice
+//
+//	Score := rand.Intn(15) - 10
+//	d.Score = Score
+//	y := years[rand.Intn(len(years))]
+//	mm := month[rand.Intn(len(month))]
+//	dd := days[rand.Intn(len(days))]
+//	d.Year = y
+//	d.Month = mm
+//	d.Days = dd
+//
+//	tm2, _ := time.Parse("2006-01-02 15:04:05", fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mm, dd))
+//	d.DateTime = tm2
+//	if Score < 0 {
+//		d.Result = "不合格"
+//		if Score < -5 {
+//			d.ItemClassName = itemName[rand.Intn(len(itemName))] + "," + itemName[rand.Intn(len(itemName))]
+//		} else {
+//			d.ItemClassName = itemName[rand.Intn(len(itemName))]
+//		}
+//
+//	} else {
+//		d.Result = result[rand.Intn(len(result))]
+//	}
+//	d.DeviceId = m["DeviceId"].(string)
+//
+//	//fmt.Printf("%T,%v\n",m,m)
+//	d.DeviceName = return_s(m["DeviceName"])
+//	d.DeviceType = return_s(m["DeviceType"])
+//	d.DeviceId = m["DeviceId"].(string)
+//
+//	d.ORG1ID = m["ORG1_ID"].(string)
+//	d.ORG1NAME = m["ORG1_NAME"].(string)
+//	d.ORG2ID = m["ORG2_ID"].(string)
+//	d.ORG2NAME = m["ORG2_NAME"].(string)
+//	d.ORG3ID = m["ORG3_ID"].(string)
+//	d.ORG3NAME = m["ORG3_NAME"].(string)
+//	d.STAID = m["STA_ID"].(string)
+//	d.STANAME = m["STA_NAME"].(string)
+//
+//	_, err := o.Insert(&d)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//}
+
+func insert_total_days(maps []orm.Params) {
 	o := orm.NewOrm()
-	var d models.TotalDayDevice
 
-	Score := rand.Intn(15) - 10
-	d.Score = Score
-	d.Year = years[rand.Intn(len(years))]
-	d.Month = month[rand.Intn(len(month))]
-	d.Days = days[rand.Intn(len(days))]
-	if Score < 0 {
-		d.Result = "不合格"
-		if Score < -5 {
-			d.ItemClassName = itemName[rand.Intn(len(itemName))] + "," + itemName[rand.Intn(len(itemName))]
-		} else {
-			d.ItemClassName = itemName[rand.Intn(len(itemName))]
-		}
-
-	} else {
-		d.Result = result[rand.Intn(len(result))]
-	}
-	d.DeviceId = m["DeviceId"].(string)
-
-	//fmt.Printf("%T,%v\n",m,m)
-	d.DeviceName = return_s(m["DeviceName"])
-	d.DeviceType = return_s(m["DeviceType"])
-	d.DeviceId = m["DeviceId"].(string)
-
-	d.ORG1ID = m["ORG1_ID"].(string)
-	d.ORG1NAME = m["ORG1_NAME"].(string)
-	d.ORG2ID = m["ORG2_ID"].(string)
-	d.ORG2NAME = m["ORG2_NAME"].(string)
-	d.ORG3ID = m["ORG3_ID"].(string)
-	d.ORG3NAME = m["ORG3_NAME"].(string)
-	d.STAID = m["STA_ID"].(string)
-	d.STANAME = m["STA_NAME"].(string)
-
-	_, err := o.Insert(&d)
+	p, err := o.Raw("INSERT INTO `Total_day_Device` " +
+		"(`YEAR`, `MONTH`,`Day`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	for i := 0; i < len(maps); i++ {
+		m := maps[i]
+		Total_Dev := 2000 // 每个车站 设备总数固定,
+		for _, y := range years { // 遍历年
+			for _, mo := range month { // 遍历月
+				for _, day := range days {
+					//Total_Dev = Total_Dev + (y-2000)*2 + im
+					total_good := rand.Intn(30)
+					total_Qualified := rand.Intn(30)
+					total_unQualified := rand.Intn(30)
+					total_Appraisal := total_good + total_Qualified + total_unQualified
+
+					total_workbase := total_Appraisal * 3 //工单数
+					Total_Work_People := rand.Intn(100)   // 相关人员
+					_, err := p.Exec(y, mo,day, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+						m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+						Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo,day))
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+			}
+		}
+	}
+	p.Close() // 别忘记关闭 statement
+
 }
 
 func insert_total_month(maps []orm.Params) {
@@ -96,28 +140,29 @@ func insert_total_month(maps []orm.Params) {
 
 	p, err := o.Raw("INSERT INTO `Total_Month_Device` " +
 		"(`YEAR`, `MONTH`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 1000         // 每个车站 设备总数固定,
+		Total_Dev := 2000 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
-			for im, mo := range month { // 遍历月
-				Total_Dev = Total_Dev + (y-2000)*2 + im
+			for _, mo := range month { // 遍历月
+				//Total_Dev = Total_Dev + (y-2000)*2 + im
 				total_good := rand.Intn(88)
 				total_Qualified := rand.Intn(88)
 				total_unQualified := rand.Intn(88)
 				total_Appraisal := total_good + total_Qualified + total_unQualified
 
+
 				total_workbase := total_Appraisal * 3 //工单数
 				Total_Work_People := rand.Intn(100)   // 相关人员
 				_, err := p.Exec(y, mo, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-%02d-01 00:00:01", y, mo))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -133,18 +178,18 @@ func insert_total_season(maps []orm.Params) {
 
 	p, err := o.Raw("INSERT INTO `Total_Season_Device` " +
 		"(`YEAR`, `season`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 1000         // 每个车站 设备总数固定,
+		Total_Dev := 2000 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
-			for im, season := range []int{1, 2, 3, 4} { // 遍历季度
-				Total_Dev = Total_Dev + (y-2000)*2 + im //每过一段时间 加一些设备
+			for _, season := range []int{1, 2, 3, 4} { // 遍历季度
+				//Total_Dev = Total_Dev + (y-2000)*2 + im //每过一段时间 加一些设备
 				total_good := rand.Intn(300)
 				total_Qualified := rand.Intn(300)
 				total_unQualified := rand.Intn(300)
@@ -154,7 +199,7 @@ func insert_total_season(maps []orm.Params) {
 				Total_Work_People := rand.Intn(100)   // 相关人员
 				_, err := p.Exec(y, season, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-%02d-30 23:59:59", y,season*3 ))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -170,18 +215,18 @@ func insert_total_year(maps []orm.Params) {
 
 	p, err := o.Raw("INSERT INTO `Total_Year_Device` " +
 		"(`YEAR`,`DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`,`datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 1000         // 每个车站 设备总数固定,
+		Total_Dev := 2000 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 
-			Total_Dev = Total_Dev + (y-2000)*3 //每过一段时间 加一些设备
+			//Total_Dev = Total_Dev + (y-2000)*3 //每过一段时间 加一些设备
 			total_good := rand.Intn(500)
 			total_Qualified := rand.Intn(250)
 			total_unQualified := rand.Intn(250)
@@ -191,7 +236,7 @@ func insert_total_year(maps []orm.Params) {
 			Total_Work_People := rand.Intn(100)   // 相关人员
 			_, err := p.Exec(y, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People)
+				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-12-31 23:59:59", y ))
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -208,12 +253,16 @@ func sql() {
 	//num, err := o1.Raw("select * from B_DeviceInfor LIMIT 0,?", 1013).Values(&maps) // 创建天数统计表
 	num, err := o1.Raw("select * from B_DeviceInfor GROUP BY STA_ID").Values(&maps) // 创建月，季度，年统计表
 	if err == nil && num > 0 {
-		//insert_total_month(maps) // 月统计
-		//insert_total_season(maps) // 季度统计
+		//insert_total_days(maps) // 日统计
+		insert_total_month(maps) // 月统计
+		insert_total_season(maps) // 季度统计
 		insert_total_year(maps) // 年统计
+
+
+
 		//for i := 0; i < len(maps); i++ {
 		//	data := maps[i]
-		//	//insert_total_days(data) todo 添加 days表
+		//	insert_total_days(data) //todo 添加 days表
 		//}
 	} else {
 		fmt.Println("sql err:", err)
