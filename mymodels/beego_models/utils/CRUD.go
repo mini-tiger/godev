@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/orm"
 	"math/rand"
+	"strings"
 )
 
 //func GetApps() {
@@ -96,7 +97,7 @@ func return_s(s interface{}) string {
 //	}
 //}
 
-func insert_total_days(maps []orm.Params) {
+func insert_total_days(maps []orm.Params,list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_day_Device` " +
@@ -120,10 +121,10 @@ func insert_total_days(maps []orm.Params) {
 					total_Appraisal := total_good + total_Qualified + total_unQualified
 
 					total_workbase := total_Appraisal * 3 //工单数
-					Total_Work_People := rand.Intn(10)   // 相关人员
-					_, err := p.Exec(y, mo,day, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+					Total_Work_People := rand.Intn(10)    // 相关人员
+					_, err := p.Exec(y, mo, day, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 						m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-						Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo,day))
+						Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo, day))
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -135,13 +136,13 @@ func insert_total_days(maps []orm.Params) {
 
 }
 
-func insert_total_month(maps []orm.Params) {
+func insert_total_month(maps []orm.Params, list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_Month_Device` " +
 		"(`YEAR`, `MONTH`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`,`score`,`ItemNames`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -157,12 +158,13 @@ func insert_total_month(maps []orm.Params) {
 				total_unQualified := rand.Intn(20)
 				total_Appraisal := total_good + total_Qualified + total_unQualified
 
-
 				total_workbase := total_Appraisal * 3 //工单数
 				Total_Work_People := rand.Intn(100)   // 相关人员
+				score := 0 - rand.Intn(10)
+
 				_, err := p.Exec(y, mo, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-%02d-01 00:00:01", y, mo))
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-01 00:00:01", y, mo,),score, GetRndItemNames(list))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -173,13 +175,13 @@ func insert_total_month(maps []orm.Params) {
 
 }
 
-func insert_total_season(maps []orm.Params) {
+func insert_total_season(maps []orm.Params, list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_Season_Device` " +
 		"(`YEAR`, `season`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`,`score`,`ItemNames`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -197,9 +199,11 @@ func insert_total_season(maps []orm.Params) {
 
 				total_workbase := total_Appraisal * 3 //工单数
 				Total_Work_People := rand.Intn(100)   // 相关人员
+				score := 0 - rand.Intn(10)
+
 				_, err := p.Exec(y, season, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-%02d-30 23:59:59", y,season*3 ))
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-30 23:59:59", y, season*3),score, GetRndItemNames(list))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -210,13 +214,26 @@ func insert_total_season(maps []orm.Params) {
 
 }
 
-func insert_total_year(maps []orm.Params) {
+func GetRndItemNames(list orm.ParamsList) string {
+	num := rand.Intn(3) //随机几个 扣分项
+	num += 1            // 至少 一个，车站为单位 ，不能没有扣分项
+	var tmpStrList = make([]string, 0)
+	for i := 0; i < num; i++ {
+		tmp := rand.Intn(len(list) - 1)
+		tmpStrList = append(tmpStrList, list[tmp].(string))
+	}
+
+	return strings.Join(tmpStrList, ";;")
+
+}
+
+func insert_total_year(maps []orm.Params, list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_Year_Device` " +
 		"(`YEAR`,`DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`,`datetime`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`,`datetime`,`score`,`ItemNames`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -234,9 +251,11 @@ func insert_total_year(maps []orm.Params) {
 
 			total_workbase := total_Appraisal * 3 //工单数
 			Total_Work_People := rand.Intn(100)   // 相关人员
+			score := 0 - rand.Intn(10)
+
 			_, err := p.Exec(y, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People,fmt.Sprintf("%d-12-31 23:59:59", y ))
+				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-12-31 23:59:59", y), score, GetRndItemNames(list))
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -260,7 +279,7 @@ func insert_total_dev(maps []orm.Params) {
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
 		Total_Dev := 222 // 每种设备222，车站 设备总数固定,
-		for _, y := range []string{"道岔","信号机","轨道电路"} { // 遍历年
+		for _, y := range []string{"道岔", "信号机", "轨道电路"} { // 遍历年
 
 			_, err := p.Exec(y, return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
@@ -280,21 +299,22 @@ func sql() {
 	var maps []orm.Params
 	//num, err := o1.Raw("select * from B_DeviceInfor LIMIT 0,?", 1013).Values(&maps) // 创建天数统计表
 	num, err := o1.Raw("select * from B_DeviceInfor GROUP BY STA_NAME").Values(&maps) // 创建月，季度，年统计表
+
+	var list orm.ParamsList
+	num, err = o1.Raw("select ItemName from B_AppraisalItems GROUP BY ItemName").ValuesFlat(&list)
+
+
+	//fmt.Println(list[0])
 	if err == nil && num > 0 {
-		insert_total_days(maps) // 日统计
-		insert_total_month(maps) // 月统计
-		insert_total_season(maps) // 季度统计
-		insert_total_year(maps) // 年统计
-
-		//insert_total_dev(maps)
-
-
-		//for i := 0; i < len(maps); i++ {
-		//	data := maps[i]
-		//	insert_total_days(data) //todo 添加 days表
-		//}
+		//insert_total_days(maps,list)       // 日统计,暂时不使用，没增加 分数和 扣分项
+		insert_total_month(maps,list)      // 月统计
+		insert_total_season(maps,list)     // 季度统计
+		insert_total_year(maps, list) // 年统计
+		//
+		//	//insert_total_dev(maps)
+		//
 	} else {
-		fmt.Println("sql err:", err)
+		//	fmt.Println("sql err:", err)
 	}
 }
 

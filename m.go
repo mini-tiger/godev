@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
-func A()  {
-	fmt.Println("abc")
+func main()  {
+	fmt.Println(0-rand.Intn(5))
 }
