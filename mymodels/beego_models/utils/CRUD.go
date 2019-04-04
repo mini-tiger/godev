@@ -97,20 +97,27 @@ func return_s(s interface{}) string {
 //	}
 //}
 
-func insert_total_days(maps []orm.Params,list orm.ParamsList) {
+func Decimal(value float64) string {
+	//value, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
+	//return value
+	return fmt.Sprintf("%.2f", value)
+}
+
+func insert_total_days(maps []orm.Params, list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_day_Device` " +
 		"(`YEAR`, `MONTH`,`Day`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`,`Total_excellent`, `Total_excellentRate`,`Total_Appraisal`,`Total_AppraisalRate`, `Total_Good`,`Total_GoodRate`, " +
+		"`Total_Qualified`,`Total_QualifiedRate`, `Total_UnQualified`,`Total_UnQualifiedRate`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 666 // 每个车站 设备总数固定,
+		Total_Dev := 50 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for _, mo := range month { // 遍历月
 				for _, day := range days {
@@ -118,13 +125,20 @@ func insert_total_days(maps []orm.Params,list orm.ParamsList) {
 					total_good := rand.Intn(2)
 					total_Qualified := rand.Intn(2)
 					total_unQualified := rand.Intn(2)
-					total_Appraisal := total_good + total_Qualified + total_unQualified
+					total_excelllent := rand.Intn(2)
+					total_Appraisal := total_good + total_Qualified + total_unQualified + total_excelllent
+					total_goodRate := Decimal(rand.Float64())
+					total_excelllentRate:=Decimal(rand.Float64())
+					total_QualifiedRate:=Decimal(rand.Float64())
+					total_unQualifiedRate:=Decimal(rand.Float64())
+					total_AppraisalRate:=Decimal(rand.Float64())
 
 					total_workbase := total_Appraisal * 3 //工单数
 					Total_Work_People := rand.Intn(10)    // 相关人员
-					_, err := p.Exec(y, mo, day, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+					_, err := p.Exec(fmt.Sprintf("%d",y), fmt.Sprintf("%d%02d",y,mo),fmt.Sprintf("%d%02d%02d",y,mo,day) , return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 						m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-						Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo, day))
+						Total_Dev, total_excelllent,total_excelllentRate,total_Appraisal,total_AppraisalRate, total_good,total_goodRate, total_Qualified,total_QualifiedRate,
+						total_unQualified,total_unQualifiedRate, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo, day))
 					if err != nil {
 						fmt.Println(err)
 					}
@@ -141,33 +155,41 @@ func insert_total_month(maps []orm.Params, list orm.ParamsList) {
 
 	p, err := o.Raw("INSERT INTO `Total_Month_Device` " +
 		"(`YEAR`, `MONTH`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`, `datetime`,`score`,`ItemNames`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)").Prepare()
+		" `ORG3_NAME`, `Total_DEV`,`Total_excellent`, `Total_excellentRate`,`Total_Appraisal`,`Total_AppraisalRate`, `Total_Good`,`Total_GoodRate`, " +
+		"`Total_Qualified`,`Total_QualifiedRate`, `Total_UnQualified`,`Total_UnQualifiedRate`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 666 // 每个车站 设备总数固定,
+		Total_Dev := 50 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 			for _, mo := range month { // 遍历月
-				//Total_Dev = Total_Dev + (y-2000)*2 + im
-				total_good := rand.Intn(21)
-				total_Qualified := rand.Intn(21)
-				total_unQualified := rand.Intn(20)
-				total_Appraisal := total_good + total_Qualified + total_unQualified
 
-				total_workbase := total_Appraisal * 3 //工单数
-				Total_Work_People := rand.Intn(100)   // 相关人员
-				score := 0 - rand.Intn(10)
+					//Total_Dev = Total_Dev + (y-2000)*2 + im
+					total_good := rand.Intn(2)
+					total_Qualified := rand.Intn(2)
+					total_unQualified := rand.Intn(2)
+					total_excelllent := rand.Intn(2)
+					total_Appraisal := total_good + total_Qualified + total_unQualified + total_excelllent
+					total_goodRate := Decimal(rand.Float64())
+					total_excelllentRate:=Decimal(rand.Float64())
+					total_QualifiedRate:=Decimal(rand.Float64())
+					total_unQualifiedRate:=Decimal(rand.Float64())
+					total_AppraisalRate:=Decimal(rand.Float64())
 
-				_, err := p.Exec(y, mo, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
-					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-01 00:00:01", y, mo,),score, GetRndItemNames(list))
-				if err != nil {
-					fmt.Println(err)
-				}
+					total_workbase := total_Appraisal * 3 //工单数
+					Total_Work_People := rand.Intn(10)    // 相关人员
+					_, err := p.Exec(fmt.Sprintf("%d",y), fmt.Sprintf("%d%02d",y,mo) , return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+						m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+						Total_Dev, total_excelllent,total_excelllentRate,total_Appraisal,total_AppraisalRate, total_good,total_goodRate, total_Qualified,total_QualifiedRate,
+						total_unQualified,total_unQualifiedRate, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, mo,1))
+					if err != nil {
+						fmt.Println(err)
+					}
+
 			}
 		}
 	}
@@ -203,7 +225,7 @@ func insert_total_season(maps []orm.Params, list orm.ParamsList) {
 
 				_, err := p.Exec(y, season, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
 					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-30 23:59:59", y, season*3),score, GetRndItemNames(list))
+					Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-30 23:59:59", y, season*3), score, GetRndItemNames(list))
 				if err != nil {
 					fmt.Println(err)
 				}
@@ -231,38 +253,47 @@ func insert_total_year(maps []orm.Params, list orm.ParamsList) {
 	o := orm.NewOrm()
 
 	p, err := o.Raw("INSERT INTO `Total_Year_Device` " +
-		"(`YEAR`,`DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
-		" `ORG3_NAME`, `Total_DEV`, `Total_Appraisal`, `Total_Good`, `Total_Qualified`, `Total_UnQualified`, `Total_WorkBase`, `Total_Work_People`,`datetime`,`score`,`ItemNames`) " +
-		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)").Prepare()
+		"(`YEAR`, `DeviceType`, `DeviceName`, `DeviceID`, `STA_NAME`, `STA_ID`, `ORG1_ID`, `ORG1_NAME`, `ORG2_ID`, `ORG2_NAME`, `ORG3_ID`," +
+		" `ORG3_NAME`, `Total_DEV`,`Total_excellent`, `Total_excellentRate`,`Total_Appraisal`,`Total_AppraisalRate`, `Total_Good`,`Total_GoodRate`, " +
+		"`Total_Qualified`,`Total_QualifiedRate`, `Total_UnQualified`,`Total_UnQualifiedRate`, `Total_WorkBase`, `Total_Work_People`, `datetime`) " +
+		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)").Prepare()
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for i := 0; i < len(maps); i++ {
 		m := maps[i]
-		Total_Dev := 666 // 每个车站 设备总数固定,
+		Total_Dev := 50 // 每个车站 设备总数固定,
 		for _, y := range years { // 遍历年
 
-			//Total_Dev = Total_Dev + (y-2000)*3 //每过一段时间 加一些设备
-			total_good := rand.Intn(223)
-			total_Qualified := rand.Intn(223)
-			total_unQualified := rand.Intn(223)
-			total_Appraisal := total_good + total_Qualified + total_unQualified
 
-			total_workbase := total_Appraisal * 3 //工单数
-			Total_Work_People := rand.Intn(100)   // 相关人员
-			score := 0 - rand.Intn(10)
+				//Total_Dev = Total_Dev + (y-2000)*2 + im
+				total_good := rand.Intn(2)
+				total_Qualified := rand.Intn(2)
+				total_unQualified := rand.Intn(2)
+				total_excelllent := rand.Intn(2)
+				total_Appraisal := total_good + total_Qualified + total_unQualified + total_excelllent
+				total_goodRate := Decimal(rand.Float64())
+				total_excelllentRate:=Decimal(rand.Float64())
+				total_QualifiedRate:=Decimal(rand.Float64())
+				total_unQualifiedRate:=Decimal(rand.Float64())
+				total_AppraisalRate:=Decimal(rand.Float64())
 
-			_, err := p.Exec(y, return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
-				m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
-				Total_Dev, total_Appraisal, total_good, total_Qualified, total_unQualified, total_workbase, Total_Work_People, fmt.Sprintf("%d-12-31 23:59:59", y), score, GetRndItemNames(list))
-			if err != nil {
-				fmt.Println(err)
-			}
+				total_workbase := total_Appraisal * 3 //工单数
+				Total_Work_People := rand.Intn(10)    // 相关人员
+				_, err := p.Exec(fmt.Sprintf("%d",y) , return_s(m["DeviceType"]), return_s(m["DeviceName"]), m["DeviceId"].(string), m["STA_NAME"].(string),
+					m["STA_ID"].(string), m["ORG1_ID"].(string), m["ORG1_NAME"].(string), m["ORG2_ID"].(string), m["ORG2_NAME"].(string), m["ORG3_ID"].(string), m["ORG3_NAME"].(string),
+					Total_Dev, total_excelllent,total_excelllentRate,total_Appraisal,total_AppraisalRate, total_good,total_goodRate, total_Qualified,total_QualifiedRate,
+					total_unQualified,total_unQualifiedRate, total_workbase, Total_Work_People, fmt.Sprintf("%d-%02d-%02d 00:00:01", y, 1,1))
+				if err != nil {
+					fmt.Println(err)
+				}
+
 
 		}
 	}
 	p.Close() // 别忘记关闭 statement
+
 }
 
 func insert_total_dev(maps []orm.Params) {
@@ -303,13 +334,12 @@ func sql() {
 	var list orm.ParamsList
 	num, err = o1.Raw("select ItemName from B_AppraisalItems GROUP BY ItemName").ValuesFlat(&list)
 
-
 	//fmt.Println(list[0])
 	if err == nil && num > 0 {
-		//insert_total_days(maps,list)       // 日统计,暂时不使用，没增加 分数和 扣分项
-		insert_total_month(maps,list)      // 月统计
-		insert_total_season(maps,list)     // 季度统计
-		insert_total_year(maps, list) // 年统计
+		insert_total_days(maps, list) // 日统计,暂时不使用，没增加 分数和 扣分项
+		//insert_total_month(maps,list)      // 月统计
+		//insert_total_season(maps,list)     // 暂时不用季度统计
+		//insert_total_year(maps, list) // 年统计
 		//
 		//	//insert_total_dev(maps)
 		//
