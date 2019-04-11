@@ -442,11 +442,11 @@ func ParseConfig(cfg string) {
 func main() {
 	ParseConfig("cfg.json") // todo 解析配置文件
 	MasterUrl_custom := flag.String("url", "", "url")
-	use_proxy_custom := flag.Bool("proxy", false, "proxy")
+	use_proxy_custom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
 
 	flag.Parse() // todo 优先使用命令行参数
-	//fmt.Println(*MasterUrl_custom,*maxold,*use_proxy_custom)
+	log.Println(*MasterUrl_custom, *maxold, *use_proxy_custom)
 	if *maxold != 0 {
 		MaxOld = *maxold
 	}
