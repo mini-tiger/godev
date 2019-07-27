@@ -1,4 +1,4 @@
 @echo off
 pushd D:\work\project-dev\src\godev\mymodels\爬虫
-桃花族.exe -url http://thz33.com/ -maxold 10  
+桃花族.exe -url http://thz88.cc/ -maxold 20
 pause
