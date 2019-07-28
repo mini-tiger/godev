@@ -1,8 +1,10 @@
 syntax = "proto3";
 
+//注意包名，上一级文件夹名
 package hellow;
 
-//
+
+// 服务名 与 方法名 用于 代码中创建服务
 service GreeterAbc {
   // Sends a greeting
   rpc SayHello11 (HelloRequest) returns (HelloReply) {}
