@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
 	pb "godev/mymodels/grpc/CutstomTLS/proto"
 	"path"
 	"google.golang.org/grpc/credentials"
@@ -23,6 +22,7 @@ func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.Se
 	if err := s.auth.Check(ctx); err != nil {
 		return nil, err
 	}
+
 	return &pb.SearchResponse{Response: r.GetRequest() + " Token Server"}, nil
 }
 
@@ -48,8 +48,10 @@ func main() {
 		log.Fatalf("net.Listen err: %v", err)
 	}
 
+
 	server.Serve(lis)
 }
+
 
 type Auth struct {
 	appKey    string

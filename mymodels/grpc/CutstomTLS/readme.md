@@ -1,4 +1,4 @@
-
+生成 私钥
 cd /home/go/src/godev/mymodels/grpc/CutstomTLS/perm
 openssl genrsa -out server.key 2048
 
@@ -11,3 +11,7 @@ Organization Name (eg, company) [Default Company Ltd]:
 Organizational Unit Name (eg, section) []:
 Common Name (eg, your name or your server's hostname) []:tj-test todo 这里是 认证时候的名字
 Email Address []:
+
+运行
+go run  server.go
+go run client.go
