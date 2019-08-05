@@ -22,7 +22,7 @@ func (s *SearchService) Search(ctx context.Context, r *pb.SearchRequest) (*pb.Se
 	if err := s.auth.Check(ctx); err != nil {
 		return nil, err
 	}
-
+	log.Printf("Recv Client Message:%s\n",r.GetRequest())
 	return &pb.SearchResponse{Response: r.GetRequest() + " Token Server"}, nil
 }
 
@@ -48,8 +48,9 @@ func main() {
 		log.Fatalf("net.Listen err: %v", err)
 	}
 
-
+	log.Printf("Start Listen PORT:%s\n",PORT)
 	server.Serve(lis)
+
 }
 
 

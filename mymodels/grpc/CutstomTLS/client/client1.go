@@ -51,6 +51,7 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewSearchServiceClient(conn)
+	// todo 调用服务端search方法
 	resp, err := client.Search(context.Background(), &pb.SearchRequest{
 		Request: "tj gRPC",
 	})
