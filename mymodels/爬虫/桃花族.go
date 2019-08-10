@@ -224,7 +224,7 @@ func UrlDomGet(url string) *goquery.Document {
 
 	if response.StatusCode != 200 {
 		//log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-		log.Printf("status code error: %d %s", response.StatusCode, response.Status)
+		log.Printf("url :%s,status code error: %d %s", url, response.StatusCode, response.Status)
 	}
 
 	// Load the HTML document
@@ -358,7 +358,9 @@ func exist(file string) bool {
 }
 func downloadall() {
 	makedir()
+	imgIndex := 1
 	for k, v := range dirImageUrls { //一级目录
+		log.Printf("正在下载第 %d 个页面的图片，共有%d个页面\n", imgIndex, len(dirImageUrls))
 		tmpC := make(chan struct{}, len(v)) //控制下载 并发，每个一级子目录 下的图片为一次并发
 		mDir := filepath.Join(filepath.Join(MasterDir, k))
 		for i := 0; i < len(v); i++ {
@@ -380,8 +382,11 @@ func downloadall() {
 		for i := 0; i < len(v); i++ { //控制并发
 			<-tmpC
 		}
+		imgIndex = imgIndex + 1
 	}
+	torrentIndex := 1
 	for k, v := range dirTorrentUrls {
+		log.Printf("正在下载第 %d 个页面的种子，共有%d个页面\n", torrentIndex, len(dirTorrentUrls))
 		tmpC := make(chan struct{}, len(v))
 		mDir := filepath.Join(filepath.Join(MasterDir, k))
 		for i := 0; i < len(v); i++ {
@@ -402,6 +407,7 @@ func downloadall() {
 		for i := 0; i < len(v); i++ {
 			<-tmpC
 		}
+		torrentIndex = torrentIndex + 1
 	}
 	tmpChan <- struct{}{}
 }
@@ -440,7 +446,11 @@ func ParseConfig(cfg string) {
 }
 
 func main() {
-	ParseConfig("cfg.json") // todo 解析配置文件
+	//_, filename, _, _ := runtime.Caller(0)
+	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+
+	ParseConfig("cfg.json") //
+	//ParseConfig(devJson)
 	MasterUrl_custom := flag.String("url", "", "url")
 	use_proxy_custom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
