@@ -78,10 +78,10 @@ func InitRootDir() {
 //
 //var log11 Logstruct
 
-func InitLog(f *os.File) *nxlog.Logger{
+func InitLog() *nxlog.Logger{
 
 	fileName:=filepath.Join(Root,Config().Logfile)
-	f.WriteString(fileName)
+	//f.WriteString(fileName)
 
 
 	nxlog.FileFlushDefault = 5 // 修改默认写入硬盘时间

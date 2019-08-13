@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/toolkits/file"
-	"tjtools/utils"
+
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -18,6 +18,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"crypto/md5"
+	"encoding/hex"
+	"tjtools/utils"
+	"strconv"
 )
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
@@ -75,7 +79,7 @@ func checkTime(ts, baseFormat string) bool {
 	}
 }
 
-func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
+func imagesUrl(url, dir string) (tmpSlice []string, tmpSlice1 []string) {
 	//tmpSlice := make([]string, 0)
 	//tmpSlice1 := make([]string, 0)
 
@@ -88,6 +92,9 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 		img, ok := s.Attr("file")
 		if ok {
 			tmpSlice = append(tmpSlice, img)
+
+			fileChan <- map[string]string{dir: img}
+
 		}
 	})
 
@@ -102,6 +109,7 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 			torrent, ok := initHref.Attr("href")
 			if ok {
 				tmpSlice1 = append(tmpSlice1, torrent)
+				fileChan <- map[string]string{dir: torrent}
 
 			}
 		}
@@ -138,7 +146,7 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 				w.Add(1)
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
 				//tmpImageUrl[dir_string]=url_string
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
+				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string, dir_string) //不加go 并发太大可能会503拒绝连接
 
 			}
 		} else {
@@ -151,7 +159,7 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 				w.Add(1)
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
 				//tmpImageUrl[dir_string]=url_string
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 否则可能会503拒绝连接
+				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string, dir_string) //不加go 否则可能会503拒绝连接
 			}
 		}
 	})
@@ -256,7 +264,7 @@ func UrlDomGet(url string) *goquery.Document {
 	//}
 }
 
-func DownFile(url, fp string, c chan struct{}) {
+func DownFile(url, fp string) {
 	log.Printf("开始 download %s,url:%s", fp, url)
 	//resp, err := http.Get(url)
 	//if err != nil {
@@ -307,14 +315,13 @@ func DownFile(url, fp string, c chan struct{}) {
 			log.Printf("[Error]:图片请求失败%s, url:%s", err, url)
 		}
 
-		c <- struct{}{}
 		return
 	}
 
 	if response.StatusCode != 200 {
 		//log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
 		log.Printf("status code error: %d %s", response.StatusCode, response.Status)
-		c <- struct{}{}
+
 		return
 	}
 
@@ -322,7 +329,7 @@ func DownFile(url, fp string, c chan struct{}) {
 	if err != nil {
 		f := filepath.Dir(fp)
 		fmt.Printf("body err: %s,dir: %s, url:%s\n", err.Error(), f, url)
-		c <- struct{}{}
+
 		return
 	}
 
@@ -331,11 +338,11 @@ func DownFile(url, fp string, c chan struct{}) {
 	err = ioutil.WriteFile(fp, body, 0777)
 	if err != nil {
 		fmt.Printf("%v fp:[%v]\n", err.Error(), fp)
-		c <- struct{}{}
+
 		return
 	}
 	fmt.Printf("Download 成功: %+v\n", fp)
-	c <- struct{}{}
+
 }
 
 func makedir() {
@@ -361,15 +368,32 @@ func makedir() {
 //
 //	return false
 //}
-
-func downloadAnyFile()  {
+func Md5(raw string) string {
+	h := md5.Sum([]byte(raw))
+	return hex.EncodeToString(h[:])
+}
+func mkdir(m string) {
+	if b, _ := utils.PathExists(m); !b {
+		os.Mkdir(m, os.ModePerm)
+	}
+}
+func downloadAnyFile() {
 	for {
 		select {
 		case FileMap, ok := <-fileChan:
 			if ok {
 				//w.Add(1)                 // todo 阻塞 二级以下页面解析
 				//tmpChanWeb <- struct{}{} //todo 阻塞一级页面解析
-				go ParsMasterWeb(dom)
+				for k, v := range FileMap {
+					mDir := filepath.Join(filepath.Join(MasterDir, k))
+					mkdir(mDir)
+					fmt.Println(filepath.Join(mDir,
+						Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
+						strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
+						v)
+					//go DownFile(v,filepath.Join(mDir,Md5(time.Now().String()),".jpg"))
+				}
+
 			} else {
 				break
 			}
@@ -377,66 +401,61 @@ func downloadAnyFile()  {
 	}
 }
 
-func downloadSub(filemap map[string]string)  {
-
-}
-
-
-func downloadall() {
-	makedir()
-	imgIndex := 1
-	for k, v := range dirImageUrls { //一级目录
-		log.Printf("正在下载第 %d 个页面的图片，共有%d个页面\n", imgIndex, len(dirImageUrls))
-		tmpC := make(chan struct{}, len(v)) //控制下载 并发，每个一级子目录 下的图片为一次并发
-		mDir := filepath.Join(filepath.Join(MasterDir, k))
-		for i := 0; i < len(v); i++ {
-			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
-			tmpFile := fmt.Sprintf("%d.jpg", i)
-
-			if utils.Exist(filepath.Join(mDir, tmpFile)) {
-				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
-					go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
-				} else {
-					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
-					tmpC <- struct{}{}
-					continue
-				}
-			} else {
-				go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
-			}
-		}
-		for i := 0; i < len(v); i++ { //控制并发
-			<-tmpC
-		}
-		imgIndex = imgIndex + 1
-	}
-	torrentIndex := 1
-	for k, v := range dirTorrentUrls {
-		log.Printf("正在下载第 %d 个页面的种子，共有%d个页面\n", torrentIndex, len(dirTorrentUrls))
-		tmpC := make(chan struct{}, len(v))
-		mDir := filepath.Join(filepath.Join(MasterDir, k))
-		for i := 0; i < len(v); i++ {
-			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
-			tmp_file := fmt.Sprintf("%d.torrent", i)
-			if utils.Exist(filepath.Join(mDir, tmp_file)) {
-				if ExistCover { //存在且常量定义为覆盖，覆盖
-					go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
-				} else {
-					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
-					tmpC <- struct{}{}
-					continue
-				}
-			} else {
-				go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
-			}
-		}
-		for i := 0; i < len(v); i++ {
-			<-tmpC
-		}
-		torrentIndex = torrentIndex + 1
-	}
-	tmpChan <- struct{}{}
-}
+//func downloadall() {
+//	makedir()
+//	imgIndex := 1
+//	for k, v := range dirImageUrls { //一级目录
+//		log.Printf("正在下载第 %d 个页面的图片，共有%d个页面\n", imgIndex, len(dirImageUrls))
+//		tmpC := make(chan struct{}, len(v)) //控制下载 并发，每个一级子目录 下的图片为一次并发
+//		mDir := filepath.Join(filepath.Join(MasterDir, k))
+//		for i := 0; i < len(v); i++ {
+//			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
+//			tmpFile := fmt.Sprintf("%d.jpg", i)
+//
+//			if utils.Exist(filepath.Join(mDir, tmpFile)) {
+//				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
+//					go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
+//				} else {
+//					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
+//					tmpC <- struct{}{}
+//					continue
+//				}
+//			} else {
+//				go DownFile(v[i], filepath.Join(mDir, tmpFile), tmpC)
+//			}
+//		}
+//		for i := 0; i < len(v); i++ { //控制并发
+//			<-tmpC
+//		}
+//		imgIndex = imgIndex + 1
+//	}
+//	torrentIndex := 1
+//	for k, v := range dirTorrentUrls {
+//		log.Printf("正在下载第 %d 个页面的种子，共有%d个页面\n", torrentIndex, len(dirTorrentUrls))
+//		tmpC := make(chan struct{}, len(v))
+//		mDir := filepath.Join(filepath.Join(MasterDir, k))
+//		for i := 0; i < len(v); i++ {
+//			//u:=fmt.Sprintf("%s%s", MasterUrl, v[i])
+//			tmp_file := fmt.Sprintf("%d.torrent", i)
+//			if utils.Exist(filepath.Join(mDir, tmp_file)) {
+//				if ExistCover { //存在且常量定义为覆盖，覆盖
+//					go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
+//				} else {
+//					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
+//					tmpC <- struct{}{}
+//					continue
+//				}
+//			} else {
+//				go DownFile(v[i], filepath.Join(mDir, tmp_file), tmpC)
+//			}
+//		}
+//		for i := 0; i < len(v); i++ {
+//			<-tmpC
+//		}
+//		torrentIndex = torrentIndex + 1
+//	}
+//	tmpChan <- struct{}{}
+//}
 
 func ParseConfig(cfg string) {
 	if cfg == "" {
@@ -472,11 +491,11 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	//_, filename, _, _ := runtime.Caller(0)
-	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	_, filename, _, _ := runtime.Caller(0)
+	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	ParseConfig("cfg.json") //
-	//ParseConfig(devJson)
+	//ParseConfig("cfg.json") //
+	ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
