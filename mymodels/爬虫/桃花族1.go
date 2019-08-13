@@ -61,6 +61,8 @@ var userAgentSlice = []string{
 var dirImageUrls map[string][]string = make(map[string][]string)   // 下载图片目录  链接地址
 var dirTorrentUrls map[string][]string = make(map[string][]string) // 下载种子  链接地址
 
+var fileChan chan map[string]string = make(chan map[string]string, 0)
+
 func checkTime(ts, baseFormat string) bool {
 	//base_format := "2006-01-02 15:04"
 	parseStrTime, _ := time.Parse(baseFormat, ts) // todo 字符串转时间
@@ -100,6 +102,7 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 			torrent, ok := initHref.Attr("href")
 			if ok {
 				tmpSlice1 = append(tmpSlice1, torrent)
+
 			}
 		}
 	})
@@ -358,6 +361,27 @@ func makedir() {
 //
 //	return false
 //}
+
+func downloadAnyFile()  {
+	for {
+		select {
+		case FileMap, ok := <-fileChan:
+			if ok {
+				//w.Add(1)                 // todo 阻塞 二级以下页面解析
+				//tmpChanWeb <- struct{}{} //todo 阻塞一级页面解析
+				go ParsMasterWeb(dom)
+			} else {
+				break
+			}
+		}
+	}
+}
+
+func downloadSub(filemap map[string]string)  {
+
+}
+
+
 func downloadall() {
 	makedir()
 	imgIndex := 1
@@ -477,17 +501,19 @@ func main() {
 	// todo 读取并配置参数
 	SetupCfg()
 
-
 	time.Sleep(time.Duration(2) * time.Second)
 
 	_now := time.Now().Unix()
 	runtime.GOMAXPROCS(1)
 	go UnLinks()
+
+	go downloadAnyFile()
+
 	ForumGet()
 	log.Printf("当前进程PID:%d\n", os.Getpid())
 	w.Wait()
 
-	downloadall()
+	//downloadall()
 
 	<-tmpChan
 	//for k, v := range dirImageUrls {
