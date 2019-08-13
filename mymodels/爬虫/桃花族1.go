@@ -272,6 +272,9 @@ func DownFile(url, fp string) {
 	//	return
 	//}
 	//defer resp.Body.Close()
+	defer func() {
+		w.Done()
+	}()
 	client := &http.Client{}
 	if useProxy {
 		proxy := func(_ *http.Request) (*neturl.URL, error) {
@@ -374,7 +377,7 @@ func Md5(raw string) string {
 }
 func mkdir(m string) {
 	if b, _ := utils.PathExists(m); !b {
-		os.Mkdir(m, os.ModePerm)
+		log.Printf("创建文件夹%s,err:%t\n", m, os.Mkdir(m, os.ModePerm) != nil)
 	}
 }
 func downloadAnyFile() {
@@ -387,11 +390,22 @@ func downloadAnyFile() {
 				for k, v := range FileMap {
 					mDir := filepath.Join(filepath.Join(MasterDir, k))
 					mkdir(mDir)
-					fmt.Println(filepath.Join(mDir,
-						Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
-						strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
-						v)
-					//go DownFile(v,filepath.Join(mDir,Md5(time.Now().String()),".jpg"))
+					//fmt.Println(filepath.Join(mDir,
+					//	Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
+					//	strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
+					//	v)
+					// todo 不用考虑 是否覆盖，每次文件名不一样
+					w.Add(1)
+					if (strings.Contains(v[len(v)-3:],"jpg")){
+						go DownFile(v,
+							filepath.Join(mDir,
+								Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"))
+					}else{
+						go DownFile(v,
+							filepath.Join(mDir,
+								Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".torrent"))
+					}
+
 				}
 
 			} else {
@@ -519,7 +533,7 @@ func main() {
 
 	// todo 读取并配置参数
 	SetupCfg()
-
+	mkdir(MasterDir)
 	time.Sleep(time.Duration(2) * time.Second)
 
 	_now := time.Now().Unix()
@@ -534,7 +548,7 @@ func main() {
 
 	//downloadall()
 
-	<-tmpChan
+	//<-tmpChan
 	//for k, v := range dirImageUrls {
 	//	fmt.Println(k, len(v))
 	//}
