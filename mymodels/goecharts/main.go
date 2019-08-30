@@ -1,7 +1,7 @@
 // example.go
 package main
 // todo https://github.com/chenjiandongx/go-echarts/
-
+// https://go-echarts.chenjiandongx.com/docs
 
 import (
 	"math/rand"
