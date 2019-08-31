@@ -7,6 +7,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/toolkits/file"
 
+	"crypto/md5"
+	"encoding/hex"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -15,13 +17,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"crypto/md5"
-	"encoding/hex"
 	"tjtools/utils"
-	"strconv"
 )
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
@@ -337,7 +337,7 @@ func DownFile(url, fp string) {
 
 	err = ioutil.WriteFile(fp, body, 0777)
 	if err != nil {
-		fmt.Printf("%v fp:[%v]\n", err.Error(), fp)
+		fmt.Printf("====Downfile Err:%v ,fp: %v \n", err.Error(), fp)
 
 		return
 	}
@@ -387,11 +387,11 @@ func downloadAnyFile() {
 				for k, v := range FileMap {
 					mDir := filepath.Join(filepath.Join(MasterDir, k))
 					mkdir(mDir)
-					fmt.Println(filepath.Join(mDir,
-						Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
-						strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
-						v)
-					//go DownFile(v,filepath.Join(mDir,Md5(time.Now().String()),".jpg"))
+					//fmt.Println(filepath.Join(mDir,
+					//	Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
+					//	strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
+					//	v)
+					go DownFile(v, filepath.Join(mDir, Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"))
 				}
 
 			} else {
