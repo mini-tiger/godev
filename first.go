@@ -1,14 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
-func main()  {
-	for i,v:=range []int{1,2,3}{
-		fmt.Println(v,i)
-	}
-	a([]int{1,2,3}...)
+func main() {
+	fmt.Println(time.Now())
 }
 
-func a(i ...int)  {
+func a(i ...int) {
 	fmt.Println(i)
 }

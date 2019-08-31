@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/toolkits/file"
+	"golang.org/x/text/encoding/simplifiedchinese"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -61,11 +62,22 @@ var userAgentSlice = []string{
 var dirImageUrls map[string][]string = make(map[string][]string)   // 下载图片目录  链接地址
 var dirTorrentUrls map[string][]string = make(map[string][]string) // 下载种子  链接地址
 
+func DecodeToGBK(text string) (string, error) {
+
+	dst := make([]byte, len(text)*2)
+	tr := simplifiedchinese.GB18030.NewDecoder()
+	nDst, _, err := tr.Transform(dst, []byte(text), true)
+	if err != nil {
+		return text, err
+	}
+
+	return string(dst[:nDst]), nil
+}
+
 func checkTime(ts, baseFormat string) bool {
 	//base_format := "2006-01-02 15:04"
 	parseStrTime, _ := time.Parse(baseFormat, ts) // todo 字符串转时间
 	todayStrTime, _ := time.Parse("2006-1-2", fmt.Sprintf("%d-%d-%d", now.Year(), now.Month(), now.Day()))
-
 	if todayStrTime.Unix() < MaxOld*86400+parseStrTime.Unix() {
 		return true
 	} else {
@@ -74,35 +86,32 @@ func checkTime(ts, baseFormat string) bool {
 }
 
 func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
-	//tmpSlice := make([]string, 0)
-	//tmpSlice1 := make([]string, 0)
-
 	dom := UrlDomGet(fmt.Sprintf("%s%s", MasterUrl, url))
-	td := dom.Find("table>tbody td.t_f") //todo 子元素选择器 不是直接上下级关系 的 中间有空格
+	//td := dom.Find("table>tbody td.t_f") //todo 子元素选择器 不是直接上下级关系 的 中间有空格
 	//td:=dom.Find("table>tbody>tr>td.t_f")//todo 子元素选择器 是直接上下级关系 的 > 号
 
 	// 查找图片
-	td.Find("img ").Each(func(i int, s *goquery.Selection) {
-		img, ok := s.Attr("file")
+
+	dom.Find("#read_tpc > img").Each(func(i int, s *goquery.Selection) {
+		img, ok := s.Attr("src")
+		//log.Println("11111111112222222222",img)
 		if ok {
 			tmpSlice = append(tmpSlice, img)
 		}
 	})
-
-	//查找种子链接
-	td = dom.Find("p.attnm > a")
-	td.Each(func(i int, s *goquery.Selection) {
-		torrentParentUrl, ok := s.Attr("href")
+	dom.Find("#read_tpc > a > img").Each(func(i int, s *goquery.Selection) {
+		img, ok := s.Attr("src")
+		//log.Println("11111111113333333",img)
 		if ok {
-			tmpDom := UrlDomGet(fmt.Sprintf("%s%s", MasterUrl, torrentParentUrl)) //再次请求种子页面
-			initHref := tmpDom.Find("div.f_c div[style^=padding-left] a")         //在种子下载页面查找
-			//fmt.Println(init_href.Html())
-			torrent, ok := initHref.Attr("href")
-			if ok {
-				tmpSlice1 = append(tmpSlice1, torrent)
-			}
+			tmpSlice = append(tmpSlice, img)
 		}
 	})
+	//查找种子链接
+	torrent, e := dom.Find("#main > form > div > table > tbody > tr.r_one > td > div[id] > a").Attr("href")
+	if e {
+		tmpSlice1 = append(tmpSlice1, fmt.Sprintf("%s%s", MasterUrl, torrent))
+		//log.Println("111111111144444444444",torrent)
+	}
 
 	w.Done()
 	return
@@ -116,42 +125,41 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 		}
 	}()
 	//tmpImageUrl := make(map[string]string, 0)
-	t_tbody := dom.Find("table[summary]").Find("tbody")
-	//log.Printf("request url:%s, tbody math:%d 个",dom.Url,t_tbody.Length())
-	t_tbody.Each(func(i int, s *goquery.Selection) {
-		sa := s.Find("tr>td.by").First().Find("em").Children()
-		/*
-			一种是
-			<em><span><span title="2018-9-20">7&nbsp;天前</span></span></em>
-			一种是
-			<em><span>2018-9-13</span></em>
-		*/
-		if v, b := sa.Find("span").Attr("title"); b { //需要两种判断日期的DOM结构，是否span 下是否有title
-			if checkTime(v, "2006-1-2") { //时间是否在范围内
-				dir_string := s.Find("tr>th>a").Text()
-				//fmt.Println(dir_string)
-				url_string, _ := s.Find("tr>th>a.s.xst").Attr("href")
-				//fmt.Println(url_string)
-				w.Add(1)
-				log.Printf("开始解析url:%s 的图片和种子", url_string)
-				//tmpImageUrl[dir_string]=url_string
-				//fmt.Println("------------",strings.Contains(dom.Url.String(),"forum-181"))
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
+	t_tbody_rows := dom.Find("#ajaxtable").Find("tbody:nth-child(2)").Find("tr[align]")
+	//log.Printf("request url:%s, tbody math:%d 个",dom.Url,t_tbody_rows.Length())
+	//dd,e:=t_tbody_rows.Html()
+	//time.Sleep(time.Duration(2*time.Second))
+	//fmt.Println("111111111111111",dd,e)
 
-			}
-		} else {
-			aa, _ := sa.Html()
-			if checkTime(aa, "2006-1-2") {
-				dir_string := s.Find("tr>th>a").Text()
-				//fmt.Println(dir_string)
-				url_string, _ := s.Find("tr>th>a.s.xst").Attr("href")
-				//fmt.Println(url_string)
+	t_tbody_rows.Each(func(i int, s *goquery.Selection) {
+		childTime := s.Find("td:nth-child(5)").Find("span").Text()
+		//v := sa.Find(" td:last-child>span").Text() //需要两种判断日期的DOM结构，是否span 下是否有title
+		if checkTime(childTime, "2006-1-2 15:04") { //时间是否在范围内
+			sa := s.Find("td[id]").Find(".subject")
+			childHref, exist := sa.Attr("href")
+			if exist {
 				w.Add(1)
+				dir_string, e := DecodeToGBK(sa.Text())
+				dir_string = strings.Replace(dir_string, "/", "", -1)
+				if e != nil {
+					log.Printf("目录中文名转换失败%s\n", e)
+				}
+				//fmt.Println(dir_string)
+				url_string := childHref
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
-				//tmpImageUrl[dir_string]=url_string
-				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 否则可能会503拒绝连接
+				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
 			}
+
+			//fmt.Println(url_string)
+
+			//log.Printf("开始解析url:%s 的图片和种子", url_string)
+			//fmt.Println("==========",url_string)
+			//fmt.Println("==========",dir_string)
+			//tmpImageUrl[dir_string]=url_string
+			//fmt.Println("------------",strings.Contains(dom.Url.String(),"forum-181"))
+
 		}
+
 	})
 	//for dirString,urlString:=range tmpImageUrl{
 	//	w.Add(1)
@@ -179,21 +187,35 @@ func UnLinks() {
 func ForumGet() {
 
 	for i := 1; i <= PAGES; i++ {
-		url := fmt.Sprintf("%sforum-181-%d.html", MasterUrl, i)
-		log.Printf("亚洲 request : %s\n", url)
+		url := fmt.Sprintf("%sthread-htm-fid-4-page-%d.html", MasterUrl, i) // 亚洲小格式
+		log.Printf("亚洲小格式 request : %s\n", url)
 		go func() {
 			masterChan <- UrlDomGet(url)
 		}()
 	}
 	for i := 1; i <= PAGES; i++ {
-		url := fmt.Sprintf("%sforum-182-%d.html", MasterUrl, i)
-		log.Printf("欧美 request : %s\n", url)
+		url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
+		log.Printf("亚洲原创 request : %s\n", url)
 		go func() {
 			masterChan <- UrlDomGet(url)
 		}()
 	}
 
-	for i := 1; i <= PAGES*2; i++ {
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
+		log.Printf("欧美 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-5-page-%d.html", MasterUrl, i) // 亚洲无码
+		log.Printf("亚洲无码 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+	for i := 1; i <= PAGES*4; i++ {
 		<-tmpChanWeb
 	}
 	//time.Sleep(10 * time.Second)
@@ -203,7 +225,7 @@ func ForumGet() {
 func UrlDomGet(url string) *goquery.Document {
 
 	client := &http.Client{
-		Timeout: 15 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	request, _ := http.NewRequest("GET", url, nil)
@@ -226,6 +248,7 @@ func UrlDomGet(url string) *goquery.Document {
 	response, err := client.Do(request)
 	if err != nil {
 		log.Printf("[Error]:%s, url:%s", err, url)
+		return UrlDomGet(url)
 	}
 
 	//if response.StatusCode == 200 {
@@ -315,11 +338,11 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup) {
 	if err != nil {
 		if strings.Contains(fp, "torrent") {
 			log.Printf("[Error]:种子请求失败%s, url:%s", err, url)
-
+			//DownFile(url, fp, wdownload, true)
 		}
 		if strings.Contains(fp, "jpg") {
 			log.Printf("[Error]:图片请求失败%s, url:%s", err, url)
-
+			//DownFile(url, fp, wdownload, true)
 		}
 
 		//c <- struct{}{}
@@ -338,7 +361,7 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		f := filepath.Dir(fp)
-		fmt.Printf("body err: %s,dir: %s, url:%s\n", err.Error(), f, url)
+		fmt.Printf("body err: %s,dir: %s,file: %s, url:%s\n", err.Error(), f, fp, url)
 		//c <- struct{}{}
 		//wdownload.Done()
 		return
@@ -476,13 +499,13 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	_, filename, _, _ := runtime.Caller(0)
-	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	//_, filename, _, _ := runtime.Caller(0)
+	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	//ParseConfig("cfg.json") //
-	ParseConfig(devJson)
+	ParseConfig("cfg.json") //
+	//ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
-	UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
+	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
 
 	flag.Parse() // todo 优先使用命令行参数
@@ -490,9 +513,9 @@ func SetupCfg() {
 	if *maxold != 0 {
 		MaxOld = *maxold
 	}
-	if !*UseProxyCustom {
-		useProxy = false
-	}
+	//if !*UseProxyCustom {
+	//	useProxy = false
+	//}
 	if *MasterUrlCustom != "" {
 		MasterUrl = *MasterUrlCustom
 	}
@@ -505,7 +528,7 @@ func main() {
 	// todo 读取并配置参数
 	SetupCfg()
 
-	time.Sleep(time.Duration(2) * time.Second)
+	time.Sleep(time.Duration(1) * time.Second)
 
 	_now := time.Now().Unix()
 	runtime.GOMAXPROCS(1)
