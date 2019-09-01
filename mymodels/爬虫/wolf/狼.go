@@ -106,6 +106,20 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 			tmpSlice = append(tmpSlice, img)
 		}
 	})
+	dom.Find("#read_tpc > font > a > img").Each(func(i int, s *goquery.Selection) {
+		img, ok := s.Attr("src")
+		//log.Println("11111111113333333",img)
+		if ok {
+			tmpSlice = append(tmpSlice, img)
+		}
+	})
+	dom.Find("#read_tpc > font > img").Each(func(i int, s *goquery.Selection) {
+		img, ok := s.Attr("src")
+		//log.Println("11111111113333333",img)
+		if ok {
+			tmpSlice = append(tmpSlice, img)
+		}
+	})
 	//查找种子链接
 	torrent, e := dom.Find("#main > form > div > table > tbody > tr.r_one > td > div[id] > a").Attr("href")
 	if e {
@@ -286,14 +300,14 @@ func UrlDomGet(url string) *goquery.Document {
 	//}
 }
 
-func DownFile(url, fp string, wdownload *sync.WaitGroup) {
+func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 
 	defer func() {
 		//c <- struct{}{}
 		wdownload.Done()
 	}()
 
-	log.Printf("开始 download %s,url:%s", fp, url)
+	//log.Printf("开始 download %s,url:%s", fp, url)
 	//resp, err := http.Get(url)
 	//if err != nil {
 	//	fmt.Printf("%v\n", err.Error())
@@ -301,17 +315,17 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup) {
 	//}
 	//defer resp.Body.Close()
 	client := &http.Client{}
-	if useProxy {
+	if useProxy || tmpUseProxy {
 		proxy := func(_ *http.Request) (*neturl.URL, error) {
 			return neturl.Parse(proxyUrl)
 		}
 
 		transport := &http.Transport{Proxy: proxy}
 
-		client = &http.Client{Transport: transport, Timeout: 60 * time.Second}
+		client = &http.Client{Transport: transport, Timeout: 300 * time.Second}
 	} else {
 		client = &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 300 * time.Second,
 		}
 	}
 
@@ -360,10 +374,16 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup) {
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		f := filepath.Dir(fp)
-		fmt.Printf("body err: %s,dir: %s,file: %s, url:%s\n", err.Error(), f, fp, url)
+		//f := filepath.Dir(fp)
+		log.Printf("Download 失败 body err: %s,file: %s, url:%s\n", err.Error(), fp, url)
 		//c <- struct{}{}
 		//wdownload.Done()
+		if tmpUseProxy || useProxy { // 如果没有使用过 代码下载， 重新使用代码下载一次
+			return
+		} else {
+			wdownload.Add(1)
+			DownFile(url, fp, wdownload, true)
+		}
 		return
 	}
 
@@ -371,12 +391,12 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup) {
 
 	err = ioutil.WriteFile(fp, body, 0777)
 	if err != nil {
-		fmt.Printf("%v fp:[%v]\n", err.Error(), fp)
+		log.Printf("Download 失败 %v fp:[%v]\n", err.Error(), fp)
 		//c <- struct{}{}
 		//wdownload.Done()
 		return
 	}
-	fmt.Printf("Download 成功: %+v\n", fp)
+	//log.Printf("Download 成功: %+v\n", fp)
 	//c <- struct{}{}
 	//wdownload.Done()
 }
@@ -418,7 +438,7 @@ func downloadall() {
 			wDownload.Add(1)
 			if utils.Exist(filepath.Join(mDir, tmpFile)) {
 				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
-					go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload)
+					go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
 					//tmpC <- struct{}{}
@@ -426,7 +446,7 @@ func downloadall() {
 					continue
 				}
 			} else {
-				go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload)
+				go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
 			}
 		}
 		//for i := 0; i < len(v); i++ { //控制并发
@@ -445,7 +465,7 @@ func downloadall() {
 			tmp_file := fmt.Sprintf("%d.torrent", i)
 			if utils.Exist(filepath.Join(mDir, tmp_file)) {
 				if ExistCover { //存在且常量定义为覆盖，覆盖
-					go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload)
+					go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
 				} else {
 					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
 					//tmpC <- struct{}{}
@@ -453,7 +473,7 @@ func downloadall() {
 					continue
 				}
 			} else {
-				go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload)
+				go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
 			}
 		}
 		//for i := 0; i < len(v); i++ {
