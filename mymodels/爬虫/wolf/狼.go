@@ -154,7 +154,7 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 			if exist {
 				w.Add(1)
 				dir_string, e := DecodeToGBK(sa.Text())
-				dir_string = strings.Replace(dir_string, "/", "", -1)
+				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "/", "", -1)
 				if e != nil {
 					log.Printf("目录中文名转换失败%s\n", e)
 				}
@@ -320,7 +320,7 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 			return neturl.Parse(proxyUrl)
 		}
 
-		transport := &http.Transport{Proxy: proxy}
+		transport := &http.Transport{Proxy: proxy, TLSHandshakeTimeout: 30 * time.Second}
 
 		client = &http.Client{Transport: transport, Timeout: 300 * time.Second}
 	} else {
