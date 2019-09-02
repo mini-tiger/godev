@@ -7,6 +7,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/toolkits/file"
 
+	"crypto/md5"
+	"encoding/hex"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -15,13 +17,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"crypto/md5"
-	"encoding/hex"
 	"tjtools/utils"
-	"strconv"
 )
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
@@ -272,9 +272,6 @@ func DownFile(url, fp string) {
 	//	return
 	//}
 	//defer resp.Body.Close()
-	defer func() {
-		w.Done()
-	}()
 	client := &http.Client{}
 	if useProxy {
 		proxy := func(_ *http.Request) (*neturl.URL, error) {
@@ -340,7 +337,7 @@ func DownFile(url, fp string) {
 
 	err = ioutil.WriteFile(fp, body, 0777)
 	if err != nil {
-		fmt.Printf("%v fp:[%v]\n", err.Error(), fp)
+		fmt.Printf("====Downfile Err:%v ,fp: %v \n", err.Error(), fp)
 
 		return
 	}
@@ -377,7 +374,7 @@ func Md5(raw string) string {
 }
 func mkdir(m string) {
 	if b, _ := utils.PathExists(m); !b {
-		log.Printf("创建文件夹%s,err:%t\n", m, os.Mkdir(m, os.ModePerm) != nil)
+		os.Mkdir(m, os.ModePerm)
 	}
 }
 func downloadAnyFile() {
@@ -394,18 +391,7 @@ func downloadAnyFile() {
 					//	Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"),
 					//	strconv.Itoa(time.Now().Nanosecond()+rand.Int()),
 					//	v)
-					// todo 不用考虑 是否覆盖，每次文件名不一样
-					w.Add(1)
-					if (strings.Contains(v[len(v)-3:],"jpg")){
-						go DownFile(v,
-							filepath.Join(mDir,
-								Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"))
-					}else{
-						go DownFile(v,
-							filepath.Join(mDir,
-								Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".torrent"))
-					}
-
+					go DownFile(v, filepath.Join(mDir, Md5(strconv.Itoa(time.Now().Nanosecond()+rand.Int()))+".jpg"))
 				}
 
 			} else {
@@ -533,7 +519,7 @@ func main() {
 
 	// todo 读取并配置参数
 	SetupCfg()
-	mkdir(MasterDir)
+
 	time.Sleep(time.Duration(2) * time.Second)
 
 	_now := time.Now().Unix()
@@ -548,7 +534,7 @@ func main() {
 
 	//downloadall()
 
-	//<-tmpChan
+	<-tmpChan
 	//for k, v := range dirImageUrls {
 	//	fmt.Println(k, len(v))
 	//}

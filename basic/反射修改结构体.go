@@ -3,6 +3,7 @@ package main
 import (
 	"reflect"
 	"fmt"
+	"log"
 )
 
 type A struct {
@@ -32,6 +33,7 @@ func main() {
 	var b B
 	b.BB = 2
 	b.BBB = []int{4, 5, 6}
+	fmt.Println(GetFieldName(a))
 	gen(&a) // todo 通过反射函数的方法名，调用方法，传入实参，方法名必须大写，struct属性名必须大写
 	fmt.Println(a)
 	gen1(&b)  // todo 通过反射 操作结构体变量，必须传入指针
@@ -39,6 +41,24 @@ func main() {
 	//aa:=(*A)(b.A)
 	//fmt.Println(aa)
 
+}
+
+
+func GetFieldName(structName interface{}) []string {
+	t := reflect.TypeOf(structName)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		log.Println("Check type error not Struct")
+		return nil
+	}
+	fieldNum := t.NumField()
+	result := make([]string, 0, fieldNum)
+	for i := 0; i < fieldNum; i++ {
+		result = append(result, t.Field(i).Name)
+	}
+	return result
 }
 
 func gen(s interface{})  {

@@ -16,7 +16,7 @@ func main() {
 	a:=new(int)
 	fmt.Printf("%T,%T\n",a,*a)
 	fmt.Println(a)
-	aa:=uintptr(*a)
+	aa:=uintptr(*a) // 通过内存地址 拷贝
 	fmt.Println(aa)
 	fmt.Printf("%T,%v\n",aa,aa)
 	}
