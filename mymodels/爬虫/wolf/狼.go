@@ -32,17 +32,6 @@ type Config struct {
 	UseProxy   bool   `json:"use_proxy"`
 	ProxyUrl   string `json:"proxy_url"`
 }
-
-//const (
-//	MasterUrl  = "http://thzbt.co/"
-//	MasterDir  = "g:\\image\\"
-//	PAGES      = 3     //最多看3页的数据，3
-//	MaxOld     = 7     //最大几天前
-//	ExistCover = false //存在是否覆盖
-//	useProxy   = true  // 使用ssr翻墙，本地1080端口
-//	proxyUrl   = "http://192.168.1.100:1080"
-//)
-
 var MasterUrl, MasterDir, proxyUrl string
 var PAGES int
 var MaxOld int64
@@ -63,14 +52,12 @@ var dirImageUrls map[string][]string = make(map[string][]string)   // 下载图�
 var dirTorrentUrls map[string][]string = make(map[string][]string) // 下载种子  链接地址
 
 func DecodeToGBK(text string) (string, error) {
-
 	dst := make([]byte, len(text)*2)
 	tr := simplifiedchinese.GB18030.NewDecoder()
 	nDst, _, err := tr.Transform(dst, []byte(text), true)
 	if err != nil {
 		return text, err
 	}
-
 	return string(dst[:nDst]), nil
 }
 
@@ -87,11 +74,8 @@ func checkTime(ts, baseFormat string) bool {
 
 func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 	dom := UrlDomGet(fmt.Sprintf("%s%s", MasterUrl, url))
-	//td := dom.Find("table>tbody td.t_f") //todo 子元素选择器 不是直接上下级关系 的 中间有空格
-	//td:=dom.Find("table>tbody>tr>td.t_f")//todo 子元素选择器 是直接上下级关系 的 > 号
 
 	// 查找图片
-
 	dom.Find("#read_tpc > img").Each(func(i int, s *goquery.Selection) {
 		img, ok := s.Attr("src")
 		//log.Println("11111111112222222222",img)
@@ -130,7 +114,7 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 	w.Done()
 	return
 }
-func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
+func ParsMasterWeb(dom *goquery.Document) {
 	defer func() { //url  不能打开的 恢复机制
 		if err := recover(); err != nil {
 			//log.Printf("跳过err:%s \n",err)
@@ -163,24 +147,8 @@ func ParsMasterWeb(dom *goquery.Document) { //解析第一层主页
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
 				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
 			}
-
-			//fmt.Println(url_string)
-
-			//log.Printf("开始解析url:%s 的图片和种子", url_string)
-			//fmt.Println("==========",url_string)
-			//fmt.Println("==========",dir_string)
-			//tmpImageUrl[dir_string]=url_string
-			//fmt.Println("------------",strings.Contains(dom.Url.String(),"forum-181"))
-
 		}
-
 	})
-	//for dirString,urlString:=range tmpImageUrl{
-	//	w.Add(1)
-	//	go func() {
-	//		dirImageUrls[dirString], dirTorrentUrls[dirString] = imagesUrl(urlString)
-	//	}()
-	//}
 	w.Done()
 }
 
@@ -189,9 +157,9 @@ func UnLinks() {
 		select {
 		case dom, ok := <-masterChan:
 			if ok {
-				w.Add(1)                 // todo 阻塞 二级以下页面解析
-				tmpChanWeb <- struct{}{} //todo 阻塞一级页面解析
-				go ParsMasterWeb(dom)
+				w.Add(1)//
+				tmpChanWeb <- struct{}{} // 阻塞 向下运行，
+				go ParsMasterWeb(dom)  //解析每行 的地址，并通过地址 解析出 图片和种子地址
 			} else {
 				break
 			}
@@ -283,21 +251,6 @@ func UrlDomGet(url string) *goquery.Document {
 	}
 	//fmt.Println(dom)
 	return dom
-
-	//// Find the review items // 同级元素连接写， 父子级中间有空格
-	//doc.Find("ul.BookList.PubIndex-recommends li").Each(func(i int, s *goquery.Selection) {
-	//	// For each item found, get the band and title
-	//	link, _ := s.Find("a").Attr("href") //获取属性值
-	//	sonel := s.Find("a .Image")
-	//	imagelink, _ := sonel.Attr("src")
-	//	imagelinks = append(imagelinks, imagelink)
-	//	//title, _ := sonel.Attr("alt")
-	//	title := s.Find(".BookItem-title").Text() //获取文本
-	//	fmt.Printf("NO.%d: link:%s - title:%-16s - imagelink:%-50s\n", i+1, link, title, imagelink)
-	//})
-	//for _, url := range imagelinks {
-	//	downfile(url)
-	//}
 }
 
 func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
@@ -307,13 +260,6 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 		wdownload.Done()
 	}()
 
-	//log.Printf("开始 download %s,url:%s", fp, url)
-	//resp, err := http.Get(url)
-	//if err != nil {
-	//	fmt.Printf("%v\n", err.Error())
-	//	return
-	//}
-	//defer resp.Body.Close()
 	client := &http.Client{}
 	if useProxy || tmpUseProxy {
 		proxy := func(_ *http.Request) (*neturl.URL, error) {
@@ -519,11 +465,11 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	//_, filename, _, _ := runtime.Caller(0)
-	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	_, filename, _, _ := runtime.Caller(0)
+	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	ParseConfig("cfg.json") //
-	//ParseConfig(devJson)
+	//ParseConfig("cfg.json") //
+	ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
@@ -560,13 +506,5 @@ func main() {
 	downloadall()
 
 	<-tmpChan
-	//for k, v := range dirImageUrls {
-	//	fmt.Println(k, len(v))
-	//}
-	//fmt.Println(len(dirImageUrls))
-	//for k, v := range dirTorrentUrls {
-	//	fmt.Println(k, len(v))
-	//}
-	//fmt.Println(len(dirTorrentUrls))
 	fmt.Printf("总共用时%d秒", time.Now().Unix()-_now)
 }
