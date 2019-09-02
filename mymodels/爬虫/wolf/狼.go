@@ -32,6 +32,7 @@ type Config struct {
 	UseProxy   bool   `json:"use_proxy"`
 	ProxyUrl   string `json:"proxy_url"`
 }
+
 var MasterUrl, MasterDir, proxyUrl string
 var PAGES int
 var MaxOld int64
@@ -72,6 +73,10 @@ func checkTime(ts, baseFormat string) bool {
 	}
 }
 
+func split(any string) string {
+	return strings.Replace(any, ":", "", -1)
+}
+
 func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 	dom := UrlDomGet(fmt.Sprintf("%s%s", MasterUrl, url))
 
@@ -80,34 +85,34 @@ func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
 		img, ok := s.Attr("src")
 		//log.Println("11111111112222222222",img)
 		if ok {
-			tmpSlice = append(tmpSlice, img)
+			tmpSlice = append(tmpSlice, strings.TrimSpace(img))
 		}
 	})
 	dom.Find("#read_tpc > a > img").Each(func(i int, s *goquery.Selection) {
 		img, ok := s.Attr("src")
 		//log.Println("11111111113333333",img)
 		if ok {
-			tmpSlice = append(tmpSlice, img)
+			tmpSlice = append(tmpSlice, strings.TrimSpace(img))
 		}
 	})
 	dom.Find("#read_tpc > font > a > img").Each(func(i int, s *goquery.Selection) {
 		img, ok := s.Attr("src")
 		//log.Println("11111111113333333",img)
 		if ok {
-			tmpSlice = append(tmpSlice, img)
+			tmpSlice = append(tmpSlice, strings.TrimSpace(img))
 		}
 	})
 	dom.Find("#read_tpc > font > img").Each(func(i int, s *goquery.Selection) {
 		img, ok := s.Attr("src")
 		//log.Println("11111111113333333",img)
 		if ok {
-			tmpSlice = append(tmpSlice, img)
+			tmpSlice = append(tmpSlice, strings.TrimSpace(img))
 		}
 	})
 	//查找种子链接
 	torrent, e := dom.Find("#main > form > div > table > tbody > tr.r_one > td > div[id] > a").Attr("href")
 	if e {
-		tmpSlice1 = append(tmpSlice1, fmt.Sprintf("%s%s", MasterUrl, torrent))
+		tmpSlice1 = append(tmpSlice1, fmt.Sprintf("%s%s", MasterUrl, strings.TrimSpace(torrent)))
 		//log.Println("111111111144444444444",torrent)
 	}
 
@@ -138,10 +143,14 @@ func ParsMasterWeb(dom *goquery.Document) {
 			if exist {
 				w.Add(1)
 				dir_string, e := DecodeToGBK(sa.Text())
-				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "/", "", -1)
+
 				if e != nil {
 					log.Printf("目录中文名转换失败%s\n", e)
 				}
+
+				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "/", "", -1)
+				dir_string = split(strings.TrimSpace(dir_string))
+
 				//fmt.Println(dir_string)
 				url_string := childHref
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
@@ -157,9 +166,9 @@ func UnLinks() {
 		select {
 		case dom, ok := <-masterChan:
 			if ok {
-				w.Add(1)//
+				w.Add(1)                 //
 				tmpChanWeb <- struct{}{} // 阻塞 向下运行，
-				go ParsMasterWeb(dom)  //解析每行 的地址，并通过地址 解析出 图片和种子地址
+				go ParsMasterWeb(dom)    //解析每行 的地址，并通过地址 解析出 图片和种子地址
 			} else {
 				break
 			}
@@ -168,28 +177,28 @@ func UnLinks() {
 }
 func ForumGet() {
 
-	for i := 1; i <= PAGES; i++ {
-		url := fmt.Sprintf("%sthread-htm-fid-4-page-%d.html", MasterUrl, i) // 亚洲小格式
-		log.Printf("亚洲小格式 request : %s\n", url)
-		go func() {
-			masterChan <- UrlDomGet(url)
-		}()
-	}
-	for i := 1; i <= PAGES; i++ {
-		url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
-		log.Printf("亚洲原创 request : %s\n", url)
-		go func() {
-			masterChan <- UrlDomGet(url)
-		}()
-	}
+	//for i := 1; i <= PAGES; i++ {
+	//	url := fmt.Sprintf("%sthread-htm-fid-4-page-%d.html", MasterUrl, i) // 亚洲小格式
+	//	log.Printf("亚洲小格式 request : %s\n", url)
+	//	go func() {
+	//		masterChan <- UrlDomGet(url)
+	//	}()
+	//}
+	//for i := 1; i <= PAGES; i++ {
+	//	url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
+	//	log.Printf("亚洲原创 request : %s\n", url)
+	//	go func() {
+	//		masterChan <- UrlDomGet(url)
+	//	}()
+	//}
 
-	for i := 1; i <= PAGES; i++ {
-		url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
-		log.Printf("欧美 request : %s\n", url)
-		go func() {
-			masterChan <- UrlDomGet(url)
-		}()
-	}
+	//for i := 1; i <= PAGES; i++ {
+	//	url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
+	//	log.Printf("欧美 request : %s\n", url)
+	//	go func() {
+	//		masterChan <- UrlDomGet(url)
+	//	}()
+	//}
 	for i := 1; i <= PAGES; i++ {
 		url := fmt.Sprintf("%sthread-htm-fid-5-page-%d.html", MasterUrl, i) // 亚洲无码
 		log.Printf("亚洲无码 request : %s\n", url)
@@ -197,7 +206,7 @@ func ForumGet() {
 			masterChan <- UrlDomGet(url)
 		}()
 	}
-	for i := 1; i <= PAGES*4; i++ {
+	for i := 1; i <= PAGES; i++ {
 		<-tmpChanWeb
 	}
 	//time.Sleep(10 * time.Second)
@@ -351,7 +360,9 @@ func makedir() {
 	for k, _ := range dirImageUrls {
 		err := os.MkdirAll(filepath.Join(MasterDir, k), 0777)
 		if err != nil {
-			log.Println("mkdirerr %s err:%s", k, err)
+
+			log.Printf("mkdir Error DIR: %s, err:%s", k, err)
+			time.Sleep(100 * time.Second)
 		}
 	}
 }
@@ -465,11 +476,11 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	_, filename, _, _ := runtime.Caller(0)
-	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	//_, filename, _, _ := runtime.Caller(0)
+	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	//ParseConfig("cfg.json") //
-	ParseConfig(devJson)
+	ParseConfig("cfg.json") //
+	//ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
