@@ -1,0 +1,7 @@
+{
+  "htmlfileReg": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\*.html",
+  "htmlBakDir": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\bak\\",
+  "logfile": "run.log",
+  "logMaxDays": 7,
+  "timeinter": 10
+}
