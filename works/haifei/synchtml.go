@@ -14,7 +14,6 @@ import (
 	"strings"
 	"database/sql"
 	_ "github.com/mattn/go-oci8"
-
 )
 
 //https://github.com/360EntSecGroup-Skylar/excelize
@@ -44,7 +43,7 @@ type Config struct {
 }
 
 func readconfig() {
-	cfgstr := g.ParseConfig("C:\\work\\go-dev\\src\\godev\\works\\haifei\\synchtml.json")
+	cfgstr := g.ParseConfig("/home/go/src/godev/works/haifei/synchtml.json")
 	err := json.Unmarshal([]byte(cfgstr), &c)
 	if err != nil {
 		log.Fatalln("parse config file fail:", err)
@@ -77,13 +76,13 @@ func main() {
 func MoveFile(file string) {
 	err := os.MkdirAll(c.HtmlBakDir, 0777)
 	if err != nil {
-		Log.Printf("mkdir htmlbak Error DIR: %s, err:%s", c.HtmlBakDir, err)
+		Log.Error("mkdir htmlbak Error DIR: %s, err:%s", c.HtmlBakDir, err)
 	}
 	_, fileName := filepath.Split(file)
-	Log.Printf("move file old:%s,new:%s\n", file, filepath.Join(c.HtmlBakDir, "\\", fileName))
-	err = os.Rename(file, filepath.Join(c.HtmlBakDir, "\\", fileName))
+	Log.Printf("move file old:%s,new:%s\n", file, filepath.Join(c.HtmlBakDir, string(os.PathSeparator), fileName))
+	err = os.Rename(file, filepath.Join(c.HtmlBakDir, string(os.PathSeparator), fileName))
 	if err != nil {
-		Log.Printf("osRename htmlbak Error DIR: %s, err:%s", c.HtmlBakDir, err)
+		Log.Error("osRename htmlbak Error DIR: %s, err:%s", c.HtmlBakDir, err)
 	}
 }
 
@@ -171,12 +170,12 @@ func ReadHtml(htmlfile string) {
 }
 
 func sliceToString(sl []string) (returnstring string) {
-	sl1:=sl[0:3]
+	sl1 := sl[0:4]
 	for i := 0; i < len(sl1); i++ {
 		if i == len(sl1)-1 {
-			returnstring = returnstring + sl1[i] + ")"
+			returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
 		} else {
-			returnstring = returnstring + sl1[i] + ","
+			returnstring = returnstring + "\"" + sl1[i] + "\"" + ","
 		}
 	}
 	return
@@ -187,41 +186,52 @@ func genSql(Data [][]string, header []string) {
 	baseSql := "insert into BCD(" + sliceToString(header) + " values("
 
 	//fmt.Println(baseSql)
-	for index, value := range Data {
-		fmt.Println(index, baseSql+sliceToString(value))
+	sqlArr := make([]string, 0)
+	for _, value := range Data {
+		//fmt.Println(index, baseSql+sliceToString(value))
+		valueStr := strings.Replace(sliceToString(value), "\"", "'", -1)
+		sqlArr = append(sqlArr, baseSql+valueStr)
 	}
 
-	stmtSql()
+	stmtSql(sqlArr)
 }
 
-func stmtSql()  {
-		os.Setenv("NLS_LANG", "")
-		//if len(os.Args) != 2 {
-		//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
-		//}
+func stmtSql(sqlArr []string) {
+	os.Setenv("NLS_LANG", "")
+	//if len(os.Args) != 2 {
+	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
+	//}
 
-		db, err := sql.Open("oci8", "test/test@192.168.43.22:1521/orcl")
-		//fmt.Printf("%+v\n",db)
+	db, err := sql.Open("oci8", "test/test@192.168.43.22:1521/orcl")
+	//fmt.Printf("%+v\n",db)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer db.Close()
+
+	for _, sql := range sqlArr {
+		fmt.Println(sql)
+		//r,err:=db.Exec(fmt.Sprintf("insert into BCD(\"Client\",\"AgentInstance\",\"BackupSetSubclient\") values('a','b',%d)", 1))
+		_, err := db.Exec(sql)
 		if err != nil {
-			log.Fatalln(err)
+			Log.Error("Sql Exec Err:%s", err)
 		}
-
-		defer db.Close()
-
-		rows, err := db.Query("select 'Client' from BCD")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		defer rows.Close()
-
-		for rows.Next() {
-			var data string
-			rows.Scan(&data)
-			fmt.Println(data)
-		}
-		if err = rows.Err(); err != nil {
-			log.Fatalln(err)
-		}
+	}
+	//rows, err := db.Query("select 'Client' from BCD")
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//defer rows.Close()
+	//
+	//for rows.Next() {
+	//	var data string
+	//	rows.Scan(&data)
+	//	fmt.Println(data)
+	//}
+	//if err = rows.Err(); err != nil {
+	//	log.Fatalln(err)
+	//}
 
 }
