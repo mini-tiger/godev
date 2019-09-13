@@ -177,28 +177,28 @@ func UnLinks() {
 }
 func ForumGet() {
 
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-4-page-%d.html", MasterUrl, i) // 亚洲小格式
-	//	log.Printf("亚洲小格式 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
-	//	log.Printf("亚洲原创 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-4-page-%d.html", MasterUrl, i) // 亚洲小格式
+		log.Printf("亚洲小格式 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
+		log.Printf("亚洲原创 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
 
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
-	//	log.Printf("欧美 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
+		log.Printf("欧美 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
 	for i := 1; i <= PAGES; i++ {
 		url := fmt.Sprintf("%sthread-htm-fid-5-page-%d.html", MasterUrl, i) // 亚洲无码
 		log.Printf("亚洲无码 request : %s\n", url)
@@ -206,7 +206,7 @@ func ForumGet() {
 			masterChan <- UrlDomGet(url)
 		}()
 	}
-	for i := 1; i <= PAGES; i++ {
+	for i := 1; i <= PAGES*4; i++ {
 		<-tmpChanWeb
 	}
 	//time.Sleep(10 * time.Second)
