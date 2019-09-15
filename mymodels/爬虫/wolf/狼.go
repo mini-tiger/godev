@@ -184,29 +184,29 @@ func ForumGet() {
 			masterChan <- UrlDomGet(url)
 		}()
 	}
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
-	//	log.Printf("亚洲原创 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
-	//
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
-	//	log.Printf("欧美 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
-	//for i := 1; i <= PAGES; i++ {
-	//	url := fmt.Sprintf("%sthread-htm-fid-5-page-%d.html", MasterUrl, i) // 亚洲无码
-	//	log.Printf("亚洲无码 request : %s\n", url)
-	//	go func() {
-	//		masterChan <- UrlDomGet(url)
-	//	}()
-	//}
 	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
+		log.Printf("亚洲原创 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-21-page-%d.html", MasterUrl, i) // 欧美
+		log.Printf("欧美 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+	for i := 1; i <= PAGES; i++ {
+		url := fmt.Sprintf("%sthread-htm-fid-5-page-%d.html", MasterUrl, i) // 亚洲无码
+		log.Printf("亚洲无码 request : %s\n", url)
+		go func() {
+			masterChan <- UrlDomGet(url)
+		}()
+	}
+	for i := 1; i <= PAGES*4; i++ {
 		<-tmpChanWeb
 	}
 	//time.Sleep(10 * time.Second)
@@ -476,11 +476,11 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	_, filename, _, _ := runtime.Caller(0)
-	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	//_, filename, _, _ := runtime.Caller(0)
+	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	//ParseConfig("cfg.json") //
-	ParseConfig(devJson)
+	ParseConfig("cfg.json") //
+	//ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
