@@ -259,7 +259,11 @@ func ReadHtml(htmlfile string) {
 
 	FiledsHeader := make([]string, 0) // 列头，序号为KEY
 	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
-	//fmt.Println(t_tbody.Html())
+
+	//有两种格式的HTML
+	if len(t_tbodyHeader.Nodes) == 0{
+		t_tbodyHeader = dom.Find("body > table:nth-child(12) > tbody > tr:nth-child(1) > td")
+	}
 
 	t_tbodyHeader.Each(func(i int, s *goquery.Selection) {
 		sa := s.Text()
@@ -416,9 +420,9 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) {
 	}
 	Log.Printf("htmlfile : %s ,total sql:%d,success update sql:%d,insert sql:%d\n", htmlfile, len(sqlArr), updatenum, insertnum)
 
-	//if err == nil{
-	//	MoveFileChan <- htmlfile
-	//}
+	if err == nil{
+		MoveFileChan <- htmlfile
+	}
 
 	//rows, err := db.Query("select 'Client' from BCD")
 	//if err != nil {
