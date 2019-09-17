@@ -3,5 +3,6 @@
   "htmlBakDir": "/home/go/src/godev/works/haifei/htmlData/bak/",
   "logfile": "/home/go/src/godev/works/haifei/run.log",
   "logMaxDays": 7,
-  "timeinter": 10
+  "timeinter": 10,
+  "oracledsn": "test/test@192.168.43.22:1521/orcl"
 }
