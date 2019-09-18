@@ -27,6 +27,7 @@ const (
 	//htmlBakDir  = "C:\\work\\go-dev\\src\\godev\\works\\haifei\\bak\\"
 	//timeinter   = 10
 	timeLayout = "2006-01-02 15:04:05"
+	FieldsLen  = 21 // 列一共有几列,使用时 要 减一
 )
 
 var MoveFileChan chan string = make(chan string, 0)
@@ -109,9 +110,22 @@ func waitMovefile() {
 
 func waitHtmlFile(files []string) {
 	for _, file := range files {
-		Log.Printf("covert file:%s\n", file)
-		ReadHtml(file)
-		Log.Printf("finish covert file:%s\n", file)
+		Log.Printf("begin covert file:%s\n", file)
+		resultNum := ReadHtml(file)
+		switch resultNum {
+		case 1:
+			Log.Error("htmlFile %s, ERR:%s", file, "col not enough")
+		case 2:
+			Log.Error("htmlFile %s, ERR:%s", file, "col not English")
+		case 3:
+			Log.Error("htmlFile %s, ERR:%s", file, "sql Gen err,sqlarr len is 0")
+		case 4:
+			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
+		default:
+			MoveFileChan <- file
+			Log.Printf("finish covert file:%s\n", file)
+		}
+
 	}
 
 }
@@ -145,17 +159,26 @@ func formatFields(index int, s string) (rstr string) {
 
 func formatValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
-	rstr = s
-	switch true {
-	case strings.Contains(s, "N/A"):
+	if  strings.Contains(s, "N/A"){
 		rstr = strings.Replace(s, "N/A", "", -1)
-		break
+		s = rstr
+	}else{
+		rstr = s
+	}
+
+
+	switch true {
+	//case strings.Contains(s, "N/A"):
+	//	rstr = strings.Replace(s, "N/A", "", -1)
+	//	s = rstr
 	case index == 2: // subclient
+
 		if strings.Contains(s, "/") {
 			Subclient = strings.Split(s, "/")[1]
 		} else {
 			Subclient = s
 		}
+		//fmt.Println("333333333333",index, s, Subclient)
 		break
 
 	case index == 6: // starttime 赋值 全局变量，对应自定义列
@@ -215,7 +238,7 @@ func formatValues(index int, s string) (rstr string) {
 			}
 			ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
 		case strings.Contains(as, "Not Run because of another job running for the same subclient"):
-				break
+			break
 		default:
 
 			application, e := strconv.Atoi(strings.TrimSpace(as))
@@ -233,7 +256,7 @@ func formatValues(index int, s string) (rstr string) {
 	return
 }
 
-func ReadHtml(htmlfile string) {
+func ReadHtml(htmlfile string) (resultNum int) {
 
 	f, err := os.OpenFile(htmlfile, os.O_RDONLY, 0755)
 	if err != nil {
@@ -257,36 +280,66 @@ func ReadHtml(htmlfile string) {
 
 	})
 
-	FiledsHeader := make([]string, 0) // 列头，序号为KEY
+	FiledsHeader := new([]string) // 列头，序号为KEY
 	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
 
-	//有两种格式的HTML
-	if len(t_tbodyHeader.Nodes) == 0{
+	cv8 := false
+	//有两种格式的HTML ,代表是CV8
+	if len(t_tbodyHeader.Nodes) == 0 {
+		cv8 = true
 		t_tbodyHeader = dom.Find("body > table:nth-child(12) > tbody > tr:nth-child(1) > td")
 	}
 
+	// 循环找出列头
 	t_tbodyHeader.Each(func(i int, s *goquery.Selection) {
 		sa := s.Text()
-		//switch sa {
-		//case "Agent /Instance":
-		//	sa = "AgentInstance"
-		//case "Backup Set /Subclient":
-		//	sa = "BackupSetSubclient"
-		//default:
-		//	sa = strings.TrimSpace(sa)
-		//}
 		sa = formatFields(i, sa)
-		FiledsHeader = append(FiledsHeader, sa)
+		*FiledsHeader = append(*FiledsHeader, sa)
 	})
 
-	//fmt.Println(FiledsHeader)
-	t_tbodyData := dom.Find("body > table:nth-child(13) > tbody > tr")
-	//fmt.Println(t_tbody.Html())
+	// 如果是CV8版本，手动修改列名, del size of Backup cols
+	if cv8 {
+		tmp := make([]string, 16)
+		copy(tmp[:], (*FiledsHeader)[:])
 
-	FiledsHeader = append(FiledsHeader, []string{"START TIME", "COMMCELL", "APPLICATIONSIZE", "subclient"}...)
-	headlen := len(FiledsHeader)
+		*FiledsHeader = tmp[0:9]
+		//fmt.Println(*FiledsHeader)
+		//*FiledsHeader = append(*FiledsHeader, []string{"Data Transferred", "Data Written"}...)
+		//fmt.Println(*FiledsHeader)
+		*FiledsHeader = append(*FiledsHeader, tmp[10:]...)
+		//fmt.Println(*FiledsHeader)
+		(*FiledsHeader)[3] = "Job ID (CommCell)(Status)"
+	}
+	//fmt.Println("222222222",*FiledsHeader)
+	//for i := 0; i < len(*FiledsHeader); i++ {
+	//	fmt.Printf("%d, value:%s\n", i, (*FiledsHeader)[i])
+	//}
+
+	switch true {
+	case len(*FiledsHeader) < FieldsLen-6: // col not enough
+		//fmt.Println(FiledsHeader)
+		//fmt.Println(len(*FiledsHeader))
+		return 1
+	case (*FiledsHeader)[0] != "Client": // col not English
+		return 2
+	}
+
+	//添加自定义列
+	*FiledsHeader = append(*FiledsHeader, []string{"START TIME", "COMMCELL", "APPLICATIONSIZE", "subclient"}...)
+
+	var t_tbodyData *goquery.Selection
+
+	if cv8 {
+		t_tbodyData = dom.Find("body > table:nth-child(12) > tbody > tr")
+	} else {
+		t_tbodyData = dom.Find("body > table:nth-child(13) > tbody > tr")
+	}
+
+	//fmt.Println(t_tbodyData.Html())
+
+	headlen := len(*FiledsHeader)
 	Data := make([][]string, 0)
-
+	//循环表格数据
 	t_tbodyData.Each(func(i int, s *goquery.Selection) {
 		if i == 0 { // 0行是列名
 			return
@@ -304,21 +357,36 @@ func ReadHtml(htmlfile string) {
 			//fmt.Println(i,ss1)
 		})
 		tmpSubData = append(tmpSubData, []string{StartTime, CommCell, ApplicationSize, Subclient}...)
-		if len(tmpSubData) == headlen { // 数据列数要与 列头一样长
-			Data = append(Data, tmpSubData)
+
+		if cv8 {
+			//fmt.Printf("%d,%d\n",len(tmpSubData),len(*FiledsHeader))
+			if len(tmpSubData) == headlen+1 { // 因为列头删除了一列
+				tmp := tmpSubData[:]
+				tmpSubData = tmp[0:9]
+				//tmpSubData = append(tmpSubData, []string{"", ""}...)
+				tmpSubData = append(tmpSubData, tmp[10:]...)
+				//fmt.Printf("%d,%v\n",len(tmpSubData),tmpSubData)
+				Data = append(Data, tmpSubData)
+			}
+
+		} else {
+
+			if len(tmpSubData) == headlen { // 数据列数要与 列头一样长
+				Data = append(Data, tmpSubData)
+			}
 		}
 
 	})
-	//fmt.Println(Data)
-	f.Close()
-	// todo 列头加入三列
 
-	genSql(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
+	f.Close()
+	//fmt.Println(FiledsHeader)
+
+	return GenSqls(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
 
 }
 
 func sliceToString(sl []string) (returnstring string) {
-	sl1 := sl[0:21]
+	sl1 := sl[0:len(sl)]
 	for i := 0; i < len(sl1); i++ {
 		if i == len(sl1)-1 {
 			returnstring = returnstring
@@ -352,11 +420,11 @@ func updatesliceToString(sl []string, value []string) (returnstring string) {
 	return
 }
 
-func genSql(Data [][]string, header []string, htmlfile string) {
+func GenSqls(Data [][]string, header *[]string, htmlfile string) (resultNum int) {
 
-	baseSql := "insert into HF_BACKUPDETAIL(" + sliceToString(header) + " values("
+	baseSql := "insert into HF_BACKUPDETAIL(" + sliceToString(*header) + " values("
 	updateSql := "update HF_BACKUPDETAIL set "
-
+	//fmt.Println(Data)
 	//fmt.Println(updateSql)
 	//fmt.Println(baseSql)
 	sqlArr := make([]map[string]string, 0)
@@ -367,14 +435,14 @@ func genSql(Data [][]string, header []string, htmlfile string) {
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
-		tmpmap["update"] = updateSql + updatesliceToString(header, value)
+		tmpmap["update"] = updateSql + updatesliceToString(*header, value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
 
-	stmtSql(sqlArr, htmlfile)
+	return stmtSql(sqlArr, htmlfile)
 }
 
-func stmtSql(sqlArr []map[string]string, htmlfile string) {
+func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	os.Setenv("NLS_LANG", "")
 	//if len(os.Args) != 2 {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
@@ -390,6 +458,9 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) {
 
 	updatenum := 0
 	insertnum := 0
+	if len(sqlArr) == 0 {
+		return 3
+	}
 	for _, sql := range sqlArr {
 		//fmt.Println(sql["update"])
 		//fmt.Println(sql["insert"])
@@ -399,12 +470,14 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) {
 		//fmt.Println(Result.RowsAffected())
 		if err != nil {
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
+			resultNum = 4
 			continue
 		}
 		updatenum = updatenum + 1
 		r, e := Result.RowsAffected()
 		if err != nil {
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, e)
+			resultNum = 4
 			continue
 		}
 
@@ -412,6 +485,7 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) {
 			_, err := db.Exec(sql["insert"])
 			if err != nil {
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
+				resultNum = 4
 				continue
 			}
 			insertnum = insertnum + 1
@@ -419,25 +493,6 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) {
 
 	}
 	Log.Printf("htmlfile : %s ,total sql:%d,success update sql:%d,insert sql:%d\n", htmlfile, len(sqlArr), updatenum, insertnum)
-
-	if err == nil{
-		MoveFileChan <- htmlfile
-	}
-
-	//rows, err := db.Query("select 'Client' from BCD")
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//defer rows.Close()
-	//
-	//for rows.Next() {
-	//	var data string
-	//	rows.Scan(&data)
-	//	fmt.Println(data)
-	//}
-	//if err = rows.Err(); err != nil {
-	//	log.Fatalln(err)
-	//}
+	return
 
 }
