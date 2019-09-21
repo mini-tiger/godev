@@ -74,8 +74,8 @@ func checkTime(ts, baseFormat string) bool {
 	}
 }
 
-func split(any string) string {
-	return strings.Replace(any, ":", "", -1)
+func split(any string, old string) string {
+	return strings.Replace(any, old, "", -1)
 }
 
 func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
@@ -150,10 +150,10 @@ func ParsMasterWeb(dom *goquery.Document) {
 				}
 
 				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "/", "", -1)
-				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "?", "", -1)
-				dir_string = split(strings.TrimSpace(dir_string))
 
-				//fmt.Println(dir_string)
+				dir_string = split(strings.TrimSpace(dir_string), ":")
+				dir_string = split(strings.TrimSpace(dir_string), "?")
+
 				url_string := childHref
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
 				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
@@ -383,6 +383,9 @@ func makedir() {
 //
 //	return false
 //}
+func jiange() {
+	time.Sleep(time.Duration(DownloadInterval) * time.Millisecond)
+}
 func downloadall() {
 	makedir()
 	imgIndex := 1
@@ -398,7 +401,7 @@ func downloadall() {
 			if utils.Exist(filepath.Join(mDir, tmpFile)) {
 				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
 					go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
-					time.Sleep(time.Duration(DownloadInterval) * time.Second) // todo 下载间隔
+					jiange() // todo 下载间隔
 				} else {
 					//log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
 					//tmpC <- struct{}{}
@@ -407,7 +410,7 @@ func downloadall() {
 				}
 			} else {
 				go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
-				time.Sleep(time.Duration(DownloadInterval) * time.Second) // todo 下载间隔
+				jiange() // todo 下载间隔
 			}
 		}
 		//for i := 0; i < len(v); i++ { //控制并发
@@ -428,7 +431,7 @@ func downloadall() {
 			if utils.Exist(filepath.Join(mDir, tmp_file)) {
 				if ExistCover { //存在且常量定义为覆盖，覆盖
 					go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
-					time.Sleep(time.Duration(DownloadInterval) * time.Second) // todo 下载间隔
+					jiange() // todo 下载间隔
 				} else {
 					//log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
 					//tmpC <- struct{}{}
@@ -437,7 +440,7 @@ func downloadall() {
 				}
 			} else {
 				go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
-				time.Sleep(time.Duration(DownloadInterval) * time.Second) // todo 下载间隔
+				jiange() // todo 下载间隔
 			}
 		}
 		//for i := 0; i < len(v); i++ {
@@ -484,11 +487,11 @@ func ParseConfig(cfg string) {
 }
 
 func SetupCfg() {
-	//_, filename, _, _ := runtime.Caller(0)
-	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	_, filename, _, _ := runtime.Caller(0)
+	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	ParseConfig("cfg.json") //
-	//ParseConfig(devJson)
+	//ParseConfig("cfg.json") //
+	ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
