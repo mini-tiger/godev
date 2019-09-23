@@ -132,6 +132,9 @@ func waitHtmlFile(files []string) {
 
 func formatFields(index int, s string) (rstr string) {
 	switch true {
+	case index == 0 && strings.Contains(s,"Client"):
+		rstr = "DATACLIENT"
+		break
 	case strings.Contains(s, "Phase(Write End Time)"):
 		rstr = strings.Replace(s, "(Write End Time)", "", -1)
 		break
@@ -320,12 +323,12 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		//fmt.Println(FiledsHeader)
 		//fmt.Println(len(*FiledsHeader))
 		return 1
-	case (*FiledsHeader)[0] != "Client": // col not English
+	case (*FiledsHeader)[0] != "DATACLIENT": // col not English
 		return 2
 	}
 
 	//添加自定义列
-	*FiledsHeader = append(*FiledsHeader, []string{"START TIME", "COMMCELL", "APPLICATIONSIZE", "subclient"}...)
+	*FiledsHeader = append(*FiledsHeader, []string{"START TIME", "COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT"}...)
 
 	var t_tbodyData *goquery.Selection
 
