@@ -3,6 +3,7 @@
   "master_dir": "g:\\image_wolf\\",
   "pages": 2,
   "max_old": 5,
+  "downloadInterval":200,
   "exist_cover": false,
   "use_proxy": false,
   "proxy_url": "http://127.0.0.1:1080"

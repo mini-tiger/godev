@@ -24,18 +24,19 @@ import (
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
 
 type Config struct {
-	MasterUrl  string `json:"master_url"`
-	MasterDir  string `json:"master_dir"`
-	Pages      int    `json:"pages"`
-	MaxOld     int64  `json:"max_old"`
-	ExistCover bool   `json:"exist_cover"`
-	UseProxy   bool   `json:"use_proxy"`
-	ProxyUrl   string `json:"proxy_url"`
+	MasterUrl        string `json:"master_url"`
+	MasterDir        string `json:"master_dir"`
+	Pages            int    `json:"pages"`
+	MaxOld           int64  `json:"max_old"`
+	ExistCover       bool   `json:"exist_cover"`
+	UseProxy         bool   `json:"use_proxy"`
+	ProxyUrl         string `json:"proxy_url"`
+	DownloadInterval int64  `json:"downloadInterval"`
 }
 
 var MasterUrl, MasterDir, proxyUrl string
 var PAGES int
-var MaxOld int64
+var MaxOld, DownloadInterval int64
 var ExistCover, useProxy bool
 
 var tmpChanWeb chan struct{} = make(chan struct{}, PAGES) //主页退出 通道
@@ -44,7 +45,7 @@ var now = time.Now()
 var w *sync.WaitGroup = new(sync.WaitGroup)
 var masterChan chan *goquery.Document = make(chan *goquery.Document, PAGES)
 var userAgentSlice = []string{
-	"chrome 67",
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36",
 	"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)",
 	"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:2.0b13pre) Gecko/20110307 Firefox/4.0b13pre"}
 
@@ -73,8 +74,8 @@ func checkTime(ts, baseFormat string) bool {
 	}
 }
 
-func split(any string) string {
-	return strings.Replace(any, ":", "", -1)
+func split(any string, old string) string {
+	return strings.Replace(any, old, "", -1)
 }
 
 func imagesUrl(url string) (tmpSlice []string, tmpSlice1 []string) {
@@ -149,9 +150,10 @@ func ParsMasterWeb(dom *goquery.Document) {
 				}
 
 				dir_string = strings.Split(childTime, " ")[0] + "_" + strings.Replace(dir_string, "/", "", -1)
-				dir_string = split(strings.TrimSpace(dir_string))
 
-				//fmt.Println(dir_string)
+				dir_string = split(strings.TrimSpace(dir_string), ":")
+				dir_string = split(strings.TrimSpace(dir_string), "?")
+
 				url_string := childHref
 				log.Printf("开始解析url:%s 的图片和种子", url_string)
 				dirImageUrls[dir_string], dirTorrentUrls[dir_string] = imagesUrl(url_string) //不加go 并发太大可能会503拒绝连接
@@ -290,7 +292,7 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 	//request.Header.Set("Accept-Charset","GBK,utf-8;q=0.7,*;q=0.3")
 	//request.Header.Set("Accept-Encoding","gzip,deflate,sdch")
 	//request.Header.Set("Accept-Language","zh-CN,zh;q=0.8")
-	//request.Header.Set("Cache-Control","max-age=0")
+	request.Header.Set("Cache-Control", "max-age=0")
 	request.Header.Set("Connection", "keep-alive")
 	request.Header.Set("User-Agent", userAgentSlice[rand.Intn(len(userAgentSlice))])
 
@@ -353,6 +355,7 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 	}
 	//log.Printf("Download 成功: %+v\n", fp)
 	//c <- struct{}{}
+
 	//wdownload.Done()
 }
 
@@ -360,9 +363,8 @@ func makedir() {
 	for k, _ := range dirImageUrls {
 		err := os.MkdirAll(filepath.Join(MasterDir, k), 0777)
 		if err != nil {
-
 			log.Printf("mkdir Error DIR: %s, err:%s", k, err)
-			time.Sleep(100 * time.Second)
+			//time.Sleep(100 * time.Second)
 		}
 	}
 }
@@ -381,6 +383,9 @@ func makedir() {
 //
 //	return false
 //}
+func jiange() {
+	time.Sleep(time.Duration(DownloadInterval) * time.Millisecond)
+}
 func downloadall() {
 	makedir()
 	imgIndex := 1
@@ -396,20 +401,23 @@ func downloadall() {
 			if utils.Exist(filepath.Join(mDir, tmpFile)) {
 				if ExistCover { //存在文件 且常量定义为覆盖，则覆盖
 					go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
+					jiange() // todo 下载间隔
 				} else {
-					log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
+					//log.Printf("file:%s 跳过", filepath.Join(mDir, tmpFile))
 					//tmpC <- struct{}{}
 					wDownload.Done()
 					continue
 				}
 			} else {
 				go DownFile(v[i], filepath.Join(mDir, tmpFile), wDownload, false)
+				jiange() // todo 下载间隔
 			}
 		}
 		//for i := 0; i < len(v); i++ { //控制并发
 		//	<-tmpC
 		//}
 		imgIndex = imgIndex + 1
+
 	}
 	torrentIndex := 1
 	for k, v := range dirTorrentUrls {
@@ -423,14 +431,16 @@ func downloadall() {
 			if utils.Exist(filepath.Join(mDir, tmp_file)) {
 				if ExistCover { //存在且常量定义为覆盖，覆盖
 					go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
+					jiange() // todo 下载间隔
 				} else {
-					log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
+					//log.Printf("file:%s 跳过", filepath.Join(mDir, tmp_file))
 					//tmpC <- struct{}{}
 					wDownload.Done()
 					continue
 				}
 			} else {
 				go DownFile(v[i], filepath.Join(mDir, tmp_file), wDownload, false)
+				jiange() // todo 下载间隔
 			}
 		}
 		//for i := 0; i < len(v); i++ {
@@ -470,17 +480,18 @@ func ParseConfig(cfg string) {
 	ExistCover = c.ExistCover
 	MaxOld = c.MaxOld
 	useProxy = c.UseProxy
+	DownloadInterval = c.DownloadInterval
 
 	log.Println("read config file:", cfg, "successfully")
 	//WLog(fmt.Sprintf("read config file: %s successfully",cfg))
 }
 
 func SetupCfg() {
-	//_, filename, _, _ := runtime.Caller(0)
-	//devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
+	_, filename, _, _ := runtime.Caller(0)
+	devJson := filepath.Join(filepath.Dir(filename), "cfg.json")
 
-	ParseConfig("cfg.json") //
-	//ParseConfig(devJson)
+	//ParseConfig("cfg.json") //
+	ParseConfig(devJson)
 	MasterUrlCustom := flag.String("url", "", "url")
 	//UseProxyCustom := flag.Bool("proxy", false, "proxy") // 只要在命令行 写入 proxy 就是true
 	maxold := flag.Int64("maxold", 0, "MaxOld")
