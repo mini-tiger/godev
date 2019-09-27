@@ -1,14 +1,13 @@
 package main
 
 import (
+	"time"
 	"fmt"
-	"strconv"
 )
 
 func main() {
-	am:=new([]string)
-	for i:=0;i<10;i++{
-		*am=append(*am,strconv.Itoa(i))
-	}
-	fmt.Printf("%+v\n",(*am)[6:])
+	a:=time.Now()
+	time.Sleep(time.Duration(3)*time.Second)
+	fmt.Println(a.Second())
+	fmt.Println(time.Now().Second()-a.Second())
 }

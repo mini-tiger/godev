@@ -1,8 +1,0 @@
-{
-  "htmlfileReg": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\EventReport\\*.html",
-  "htmlBakDir": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\EventReport\\bak\\",
-  "logfile": "/home/go/src/godev/works/haifei/run.log",
-  "logMaxDays": 7,
-  "timeinter": 10,
-  "oracledsn": "test/test@192.168.43.22:1521/orcl"
-}
