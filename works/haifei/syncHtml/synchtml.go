@@ -37,6 +37,7 @@ var (
 	StartTime       string
 	ApplicationSize string
 	Subclient       string
+	StartTimeArr    []string = make([]string, 0)
 )
 
 var Log *logDiy.Log1
@@ -172,6 +173,12 @@ func formatValues(index int, s string) (rstr string) {
 	} else {
 		rstr = s
 	}
+	if strings.Contains(s, "%") {
+		rstr = strings.Replace(s, "%", "%%", -1)
+		s = rstr
+	} else {
+		rstr = s
+	}
 
 	switch true {
 	//case strings.Contains(s, "N/A"):
@@ -198,12 +205,18 @@ func formatValues(index int, s string) (rstr string) {
 		break
 
 	case index == 6: // starttime 赋值 全局变量，对应自定义列
+		StartTimeValue := ""
 		if strings.Contains(s, "(") {
-			StartTime = strings.Split(s, "(")[0]
+			StartTimeValue = strings.Split(s, "(")[0]
 		} else {
-			StartTime = s
+			StartTimeValue = s
 		}
-		StartTime = strings.TrimSpace(StartTime)
+
+		StartTimeValue = strings.TrimSpace(StartTimeValue)
+		StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
+		StartTimeArr = append(StartTimeArr, StartTimeValue)
+		StartTime = "%s"
+
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
 		break
@@ -341,7 +354,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	}
 
 	//添加自定义列
-	*FiledsHeader = append(*FiledsHeader, []string{"START TIME", "COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT"}...)
+	*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
 
 	var t_tbodyData *goquery.Selection
 
@@ -372,11 +385,11 @@ func ReadHtml(htmlfile string) (resultNum int) {
 			tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData = append(tmpSubData, []string{StartTime, CommCell, ApplicationSize, Subclient}...)
+		tmpSubData = append(tmpSubData, []string{CommCell, ApplicationSize, Subclient}...)
 
 		if cv8 {
-			//fmt.Printf("%d,%d\n",len(tmpSubData),len(*FiledsHeader))
-			if len(tmpSubData) == headlen+1 { // 因为列头删除了一列
+			//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
+			if len(tmpSubData) == headlen { // 因为列头删除了一列
 				tmp := tmpSubData[:]
 				tmpSubData = tmp[0:9]
 				//tmpSubData = append(tmpSubData, []string{"", ""}...)
@@ -387,7 +400,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 		} else {
 
-			if len(tmpSubData) == headlen { // 数据列数要与 列头一样长
+			if len(tmpSubData) == headlen-1 { // 数据列数要与 列头一样长,少了start time
 				Data = append(Data, tmpSubData)
 			}
 		}
@@ -404,12 +417,34 @@ func ReadHtml(htmlfile string) (resultNum int) {
 func sliceToString(sl []string) (returnstring string) {
 	sl1 := sl[0:len(sl)]
 	for i := 0; i < len(sl1); i++ {
-		if i == len(sl1)-1 {
+		switch true {
+		case i == len(sl1)-1:
 			returnstring = returnstring
 			returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
-		} else {
+			//returnstring = returnstring + "\"" + sl1[i] + "\""
+			break
+		case i < len(sl)-1:
 			returnstring = returnstring
 			returnstring = returnstring + "\"" + sl1[i] + "\"" + ","
+			break
+		}
+	}
+	return
+}
+
+func sliceToStringValue(sl []string) (returnstring string) {
+	sl1 := sl[0:len(sl)]
+	for i := 0; i < len(sl1); i++ {
+		switch true {
+		case i == len(sl1)-1:
+			returnstring = returnstring
+			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
+			returnstring = returnstring + "\"" + sl1[i] + "\""
+			break
+		case i < len(sl)-1:
+			returnstring = returnstring
+			returnstring = returnstring + "\"" + sl1[i] + "\"" + ","
+			break
 		}
 	}
 	return
@@ -417,14 +452,20 @@ func sliceToString(sl []string) (returnstring string) {
 
 func updatesliceToString(sl []string, value []string) (returnstring string) {
 	wherestring := ""
-	if (len(sl) == len(value)) {
+	//fmt.Println(len(sl),len(value))
+	if (len(sl)-1 == len(value)) { // header  多start time
 		for i := 0; i < len(sl); i++ {
-			if (value[i] == "") { // 空值路过
-				continue
+			if len(value) > i{
+				if (value[i] == "") { // 空值路过
+					continue
+				}
 			}
+
 			if i == len(sl)-1 {
-				returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
-				wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				//returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				//wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				returnstring = returnstring + "\"" + sl[i] + "\"" + "=%s"
+				wherestring = wherestring + "\"" + sl[i] + "\"" + "=%s"
 			} else {
 				returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "',"
 				wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "' and "
@@ -447,7 +488,7 @@ func GenSqls(Data [][]string, header *[]string, htmlfile string) (resultNum int)
 	for _, value := range Data {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
-		valueStr := strings.Replace(sliceToString(value), "\"", "'", -1)
+		valueStr := strings.Replace(sliceToStringValue(value), "\"", "'", -1)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
@@ -477,13 +518,20 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	if len(sqlArr) == 0 {
 		return 3
 	}
-	for _, sql := range sqlArr {
-		//fmt.Println(sql["update"])
-		//fmt.Println(sql["insert"])
-		//r,err:=db.Exec(fmt.Sprintf("insert into BCD(\"Client\",\"AgentInstance\",\"BackupSetSubclient\") values('a','b',%d)", 1))
-		Result, err := db.Exec(sql["update"])
+	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
+	for i := 0; i < len(sqlArr); i++ {
+		//fmt.Println(fmt.Sprintf(sqlArr[i]["update"],  StartTimeArr[i],StartTimeArr[i]))
+		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)",StartTimeArr[i]))
+		//fmt.Println(sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
+		//r, err := db.Exec(fmt.Sprintf("insert into HF_BACKUPDETAIL(\"START TIME\") values(%s)", "to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"))
+		//fmt.Println(r,err)
+		//ctx,cancel:=context.WithTimeout(context.Background(),20*time.Second)
+		//r,err:=db.ExecContext(ctx,sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
+		//cancel()
+		Result, err := db.Exec(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i],StartTimeArr[i]))
 		//fmt.Println(Result.LastInsertId())
 		//fmt.Println(Result.RowsAffected())
+		//fmt.Println("===========", r, err)
 		if err != nil {
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
 			resultNum = 4
@@ -498,7 +546,7 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 		}
 
 		if r == 0 {
-			_, err := db.Exec(sql["insert"])
+			_, err := db.Exec(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
 			if err != nil {
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
 				resultNum = 4

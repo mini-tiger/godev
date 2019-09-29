@@ -14,7 +14,6 @@ import (
 	"strings"
 	"database/sql"
 	_ "github.com/mattn/go-oci8"
-	"strconv"
 )
 
 //https://github.com/360EntSecGroup-Skylar/excelize
@@ -37,6 +36,7 @@ var (
 	StartTime       string
 	ApplicationSize string
 	Subclient       string
+	TimeArr         []string = make([]string, 0)
 )
 
 var Log *logDiy.Log1
@@ -168,6 +168,12 @@ func formatValues(index int, s string) (rstr string) {
 	} else {
 		rstr = s
 	}
+	if strings.Contains(s, "%") {
+		rstr = strings.Replace(s, "%", "%%", -1)
+		s = rstr
+	} else {
+		rstr = s
+	}
 
 	switch true {
 	//case strings.Contains(s, "N/A"):
@@ -183,79 +189,28 @@ func formatValues(index int, s string) (rstr string) {
 		//fmt.Println("333333333333",index, s, Subclient)
 		break
 
-	case index == 6: // starttime 赋值 全局变量，对应自定义列
+	}
+	return
+}
+
+func formatTimeArr(index int, s string) {
+	switch true {
+
+	case index == 3: // time 赋值 全局变量，对应自定义列
 		if strings.Contains(s, "(") {
 			StartTime = strings.Split(s, "(")[0]
 		} else {
 			StartTime = s
 		}
 		StartTime = strings.TrimSpace(StartTime)
+		StartTime = fmt.Sprint("to_date('" + StartTime + "','yyyy/mm/dd hh24:mi:ss')")
+
+		TimeArr = append(TimeArr, StartTime)
+
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
 		break
-	case index == 8: // starttime 赋值 全局变量，对应自定义列
-		as := ""
-		if strings.Contains(s, "(") {
-			as = strings.Split(s, "(")[0]
-		} else {
-			as = s
-		}
-
-		switch true {
-		case strings.Contains(as, "TB"):
-			as = strings.Split(as, " TB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-
-			//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-			ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
-		case strings.Contains(as, "GB"):
-			as = strings.Split(as, " GB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-
-			//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-			ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
-
-		case strings.Contains(as, "MB"):
-			as = strings.Split(as, " MB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-			ApplicationSize = fmt.Sprintf("%.2f", fl)
-		case strings.Contains(as, "KB"):
-			as = strings.Split(as, " KB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-			ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
-		case strings.Contains(as, "Not Run because of another job running for the same subclient"):
-			break
-		default:
-
-			application, e := strconv.Atoi(strings.TrimSpace(as))
-			if e != nil {
-				Log.Error("change type string:%s,err:%s", as, e)
-			}
-			if application == 0 {
-				ApplicationSize = "0"
-			}
-
-		}
-
-		break
 	}
-	return
 }
 
 func ReadHtml(htmlfile string) (resultNum int) {
@@ -329,9 +284,9 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 	//列名从英文 改成中文
 	if cv8 {
-		*FiledsHeader = []string{"SEVERITY", "EVENT ID", "JOB ID", "TIME", "PROGRAM", "COMPUTER", "DESCRIPTION", "COMMCELL"}
+		*FiledsHeader = []string{"COMMCELL", "SEVERITY", "EVENT ID", "JOB ID", "PROGRAM", "COMPUTER", "DESCRIPTION", "TIME"}
 	} else {
-		*FiledsHeader = []string{"SEVERITY", "EVENT ID", "JOB ID", "TIME", "PROGRAM", "COMPUTER", "EVENT CODE", "DESCRIPTION", "COMMCELL"}
+		*FiledsHeader = []string{"COMMCELL", "SEVERITY", "EVENT ID", "JOB ID", "PROGRAM", "COMPUTER", "EVENT CODE", "DESCRIPTION", "TIME"}
 	}
 
 	//fmt.Println(cv8)
@@ -357,6 +312,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 			return
 		}
 		tmpSubData := make([]string, 0)
+		tmpSubData = append(tmpSubData, []string{CommCell}...)
 		sa := s.Find("td")
 		sa.Each(func(i int, selection *goquery.Selection) {
 			ss1 := selection.Text()
@@ -364,12 +320,17 @@ func ReadHtml(htmlfile string) (resultNum int) {
 			//case strings.Contains(ss1,"N/A"):
 			//	ss1=strings.Replace(ss1,"N/A","",-1)
 			//}
-			ss1 = formatValues(i, ss1)
-			tmpSubData = append(tmpSubData, ss1)
+			if i == 3 {
+				formatTimeArr(i, ss1)
+			} else {
+				ss1 = formatValues(i, ss1)
+				tmpSubData = append(tmpSubData, ss1)
+			}
+
+
 			//fmt.Println(i,ss1)
 		})
 		//tmpSubData = append(tmpSubData, []string{StartTime, CommCell, ApplicationSize, Subclient}...)
-		tmpSubData = append(tmpSubData, []string{CommCell}...)
 
 		//if cv8 {
 		//	//fmt.Printf("%d,%d\n",len(tmpSubData),len(*FiledsHeader))
@@ -382,9 +343,9 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		//		Data = append(Data, tmpSubData)
 		//	}
 
-		//} else {
-
-		if len(tmpSubData) == headlen { // 数据列数要与 列头一样长
+		////} else {
+		//fmt.Println(len(tmpSubData),headlen)
+		if len(tmpSubData) +1 == headlen { // 数据列数要与 列头一样长
 			Data = append(Data, tmpSubData)
 		}
 		//}
@@ -412,16 +373,34 @@ func sliceToString(sl []string) (returnstring string) {
 	return
 }
 
+func sliceToStringValue(sl []string) (returnstring string) {
+	sl1 := sl[0:len(sl)]
+	for i := 0; i < len(sl1); i++ {
+		if i == len(sl1)-1 {
+			returnstring = returnstring
+			returnstring = returnstring + "\"" + sl1[i] + "\""
+		} else {
+			returnstring = returnstring
+			returnstring = returnstring + "\"" + sl1[i] + "\"" + ","
+		}
+	}
+	return
+}
+
 func updatesliceToString(sl []string, value []string) (returnstring string) {
 	wherestring := ""
-	if (len(sl) == len(value)) {
+	if (len(sl) -1 == len(value)) {
 		for i := 0; i < len(sl); i++ {
-			if (value[i] == "") { // 空值路过
-				continue
+			if len(value) > i{
+				if (value[i] == "") { // 空值路过
+					continue
+				}
 			}
 			if i == len(sl)-1 {
-				returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
-				wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				//returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				//wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+				returnstring = returnstring + "\"" + sl[i] + "\"" + "=%s"
+				wherestring = wherestring + "\"" + sl[i] + "\"" + "=%s"
 			} else {
 				returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "',"
 				wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "' and "
@@ -443,7 +422,7 @@ func GenSqls(Data [][]string, header *[]string, htmlfile string) (resultNum int)
 	for _, value := range Data {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
-		valueStr := strings.Replace(sliceToString(value), "\"", "'", -1)
+		valueStr := strings.Replace(sliceToStringValue(value), "\"", "'", -1)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
@@ -473,13 +452,14 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	if len(sqlArr) == 0 {
 		return 3
 	}
-	for _, sql := range sqlArr {
-		//fmt.Println(sql["update"])
+	for i := 0; i < len(sqlArr); i++ {
+		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"], TimeArr[i]))
 		//fmt.Println(sql["insert"])
 		//r,err:=db.Exec(fmt.Sprintf("insert into BCD(\"Client\",\"AgentInstance\",\"BackupSetSubclient\") values('a','b',%d)", 1))
-		Result, err := db.Exec(sql["update"])
+		Result, err := db.Exec(fmt.Sprintf(sqlArr[i]["update"], TimeArr[i],TimeArr[i]))
 		//fmt.Println(Result.LastInsertId())
 		//fmt.Println(Result.RowsAffected())
+		//fmt.Println(Result, err)
 		if err != nil {
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
 			resultNum = 4
@@ -494,7 +474,8 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 		}
 
 		if r == 0 {
-			_, err := db.Exec(sql["insert"])
+			//fmt.Println(sqlArr[i]["insert"]+",%s)")
+			_, err := db.Exec(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", TimeArr[i]))
 			if err != nil {
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
 				resultNum = 4
