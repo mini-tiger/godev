@@ -1,20 +1,20 @@
 package main
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	_ "github.com/mattn/go-oci8"
+	"godev/works/haifei/syncHtml/g"
+	"log"
 	"os"
 	"path/filepath"
-	"time"
-	"tjtools/utils"
-	"tjtools/logDiy"
-	"godev/works/haifei/syncHtml/g"
-	"encoding/json"
-	"log"
-	"strings"
-	"database/sql"
-	_ "github.com/mattn/go-oci8"
 	"strconv"
+	"strings"
+	"time"
+	"tjtools/logDiy"
+	"tjtools/utils"
 )
 
 //https://github.com/360EntSecGroup-Skylar/excelize
@@ -34,7 +34,7 @@ var MoveFileChan chan string = make(chan string, 0)
 var startRunTime = time.Now().Unix()
 var (
 	CommCell        string // 客户端名
-	GenTime			string
+	GenTime         string
 	StartTime       string
 	ApplicationSize string
 	Subclient       string
@@ -166,9 +166,15 @@ func formatFields(index int, s string) (rstr string) {
 	return
 }
 
-
-func formatTime(){
-
+func formatTime(toBeCharge string) string {
+	//toBeCharge := "09/04/2019 11:03:16"                             //待转化为时间戳的字符串 注意 这里的小时和分钟还要秒必须写 因为是跟着模板走的 修改模板的话也可以不写
+	timeLayout := "01/02/2006 15:04:05"                             //转化所需模板
+	loc, _ := time.LoadLocation("Local")                            //重要：获取时区
+	theTime, _ := time.ParseInLocation(timeLayout, toBeCharge, loc) //使用模板在对应时区转化为time.time类型
+	sr := theTime.Unix()                                            //转化为时间戳 类型是int64
+	//fmt.Println(theTime)                                            //打印输出theTime 2015-01-01 15:15:00 +0800 CST
+	//fmt.Println(sr)
+	return strconv.FormatInt(sr, 64)
 }
 func formatValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
@@ -218,7 +224,8 @@ func formatValues(index int, s string) (rstr string) {
 		}
 
 		StartTimeValue = strings.TrimSpace(StartTimeValue)
-		StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
+		//StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
+		StartTimeValue = formatTime(StartTimeValue)
 		StartTimeArr = append(StartTimeArr, StartTimeValue)
 		StartTime = "%s"
 
@@ -321,7 +328,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		if i == 0 {
 			//fmt.Println(htmlfile,selection.Text())
 			//fmt.Println(strings.Contains(selection.Text(),"generated"))
-			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1],"Version")[0]
+			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
 			fmt.Println(ss)
 			//fmt.Printf("GenTime :%+v\n", ss)
 			GenTime = strings.TrimSpace(ss)
@@ -474,10 +481,10 @@ func sliceToStringValue(sl []string) (returnstring string) {
 func updatesliceToString(sl []string, value []string) (returnstring string) {
 	wherestring := ""
 	//fmt.Println(len(sl),len(value))
-	if (len(sl)-1 == len(value)) { // header  多start time
+	if len(sl)-1 == len(value) { // header  多start time
 		for i := 0; i < len(sl); i++ {
-			if len(value) > i{
-				if (value[i] == "") { // 空值路过
+			if len(value) > i {
+				if value[i] == "" { // 空值路过
 					continue
 				}
 			}
@@ -541,15 +548,15 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	}
 	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
 	for i := 0; i < len(sqlArr); i++ {
-		fmt.Println(fmt.Sprintf(sqlArr[i]["update"],  StartTimeArr[i],StartTimeArr[i]))
-		fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)",StartTimeArr[i]))
+		fmt.Println(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
+		fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
 		//fmt.Println(sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//r, err := db.Exec(fmt.Sprintf("insert into HF_BACKUPDETAIL(\"START TIME\") values(%s)", "to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"))
 		//fmt.Println(r,err)
 		//ctx,cancel:=context.WithTimeout(context.Background(),20*time.Second)
 		//r,err:=db.ExecContext(ctx,sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//cancel()
-		Result, err := db.Exec(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i],StartTimeArr[i]))
+		Result, err := db.Exec(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
 		//fmt.Println(Result.LastInsertId())
 		//fmt.Println(Result.RowsAffected())
 		//fmt.Println("===========", r, err)
