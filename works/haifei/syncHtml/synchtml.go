@@ -34,6 +34,7 @@ var MoveFileChan chan string = make(chan string, 0)
 var startRunTime = time.Now().Unix()
 var (
 	CommCell        string // 客户端名
+	GenTime			string
 	StartTime       string
 	ApplicationSize string
 	Subclient       string
@@ -165,6 +166,10 @@ func formatFields(index int, s string) (rstr string) {
 	return
 }
 
+
+func formatTime(){
+
+}
 func formatValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
 	if strings.Contains(s, "N/A") {
@@ -302,12 +307,27 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	CommCells := dom.Find("body:contains(CommCell)")
 	CommCells.Each(func(i int, selection *goquery.Selection) {
 		if i == 0 {
+			//fmt.Printf("CommCell :%+v\n", selection.Text())
 			ss := strings.Split(strings.Split(selection.Text(), "CommCell:")[1], "--")[0]
 			//fmt.Printf("CommCell :%+v\n", ss)
 			CommCell = strings.TrimSpace(ss)
 		}
 
 	})
+
+	// 生成的时间
+	GenTimeSource := dom.Find("body:contains(on)")
+	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
+		if i == 0 {
+			//fmt.Println(htmlfile,selection.Text())
+			//fmt.Println(strings.Contains(selection.Text(),"generated"))
+			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1],"Version")[0]
+			fmt.Println(ss)
+			//fmt.Printf("GenTime :%+v\n", ss)
+			GenTime = strings.TrimSpace(ss)
+		}
+	})
+	//fmt.Println(htmlfile,GenTime)
 
 	FiledsHeader := new([]string) // 列头，序号为KEY
 	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
@@ -377,6 +397,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		sa := s.Find("td")
 		sa.Each(func(i int, selection *goquery.Selection) {
 			ss1 := selection.Text()
+			//fmt.Println(selection.Attr("bgcolor"))
 			//switch true {
 			//case strings.Contains(ss1,"N/A"):
 			//	ss1=strings.Replace(ss1,"N/A","",-1)
@@ -520,8 +541,8 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	}
 	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
 	for i := 0; i < len(sqlArr); i++ {
-		//fmt.Println(fmt.Sprintf(sqlArr[i]["update"],  StartTimeArr[i],StartTimeArr[i]))
-		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)",StartTimeArr[i]))
+		fmt.Println(fmt.Sprintf(sqlArr[i]["update"],  StartTimeArr[i],StartTimeArr[i]))
+		fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)",StartTimeArr[i]))
 		//fmt.Println(sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//r, err := db.Exec(fmt.Sprintf("insert into HF_BACKUPDETAIL(\"START TIME\") values(%s)", "to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"))
 		//fmt.Println(r,err)
