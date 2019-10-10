@@ -21,6 +21,15 @@ import (
 // 中文 https://xuri.me/excelize/zh-hans/
 // https://godoc.org/github.com/360EntSecGroup-Skylar/excelize#File.GetSheetName
 
+
+/*
+1.查看 是否包含中文
+2.确认CV8 CV*
+3.找到摘要和报告中下面的颜色规律
+4.生成摘要表 sql
+5.生成详细信息表sql
+
+*/
 const (
 	//ReadFile    = "10.155.2.4_yuebao_English.html"
 	//htmlfileReg = "C:\\work\\go-dev\\src\\godev\\works\\haifei\\*.html"
@@ -39,6 +48,7 @@ var (
 	ApplicationSize string
 	Subclient       string
 	StartTimeArr    []string = make([]string, 0)
+	StatusColors     map[string]string
 )
 
 var Log *logDiy.Log1
@@ -54,7 +64,7 @@ type Config struct {
 }
 
 func readconfig() {
-	cfgstr := g.ParseConfig("/home/go/src/godev/works/haifei/syncHtml/synchtml.json")
+	cfgstr := g.ParseConfig("C:\\work\\go-dev\\src\\godev\\works\\haifei\\syncYWReport\\syncYWReport.json")
 	err := json.Unmarshal([]byte(cfgstr), &c)
 	if err != nil {
 		log.Fatalln("parse config file fail:", err)
@@ -122,7 +132,7 @@ func waitHtmlFile(files []string) {
 		case 1:
 			Log.Error("htmlFile %s, ERR:%s", file, "col not enough")
 		case 2:
-			Log.Error("htmlFile %s, ERR:%s", file, "col not English")
+			Log.Error("htmlFile %s, ERR:%s", file, "col not Chinese")
 		case 3:
 			Log.Error("htmlFile %s, ERR:%s", file, "sql Gen err,sqlarr len is 0")
 		case 4:
@@ -311,17 +321,8 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	}
 	//fmt.Println(dom)
 
-	CommCells := dom.Find("body:contains(CommCell)")
-	CommCells.Each(func(i int, selection *goquery.Selection) {
-		if i == 0 {
-			//fmt.Printf("CommCell :%+v\n", selection.Text())
-			ss := strings.Split(strings.Split(selection.Text(), "CommCell:")[1], "--")[0]
-			//fmt.Printf("CommCell :%+v\n", ss)
-			CommCell = strings.TrimSpace(ss)
-		}
-
-	})
-
+	cvSelection:=dom.Find("body:contains(备份作业摘要报告)")
+	fmt.Println(cvSelection)
 
 	// 生成的时间
 	GenTimeSource := dom.Find("body:contains(on)")
@@ -335,6 +336,20 @@ func ReadHtml(htmlfile string) (resultNum int) {
 			GenTime = strings.TrimSpace(ss)
 		}
 	})
+
+	CommCells := dom.Find("body:contains(CommCell)")
+	CommCells.Each(func(i int, selection *goquery.Selection) {
+		if i == 0 {
+			//fmt.Printf("CommCell :%+v\n", selection.Text())
+			ss := strings.Split(strings.Split(selection.Text(), "CommCell:")[1], "--")[0]
+			//fmt.Printf("CommCell :%+v\n", ss)
+			CommCell = strings.TrimSpace(ss)
+		}
+
+	})
+
+
+
 
 
 	FiledsHeader := new([]string) // 列头，序号为KEY

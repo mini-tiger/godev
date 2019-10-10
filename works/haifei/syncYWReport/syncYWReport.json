@@ -1,0 +1,8 @@
+{
+  "htmlfileReg": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\syncYWReport\\htmlData\\*.html",
+  "htmlBakDir": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\syncYWReport\\htmlData\\bak\\",
+  "logfile": "C:\\work\\go-dev\\src\\godev\\works\\haifei\\syncYWReport\\htmlData\\run.log",
+  "logMaxDays": 7,
+  "timeinter": 10,
+  "oracledsn": "test/test@192.168.43.22:1521/orcl"
+}
