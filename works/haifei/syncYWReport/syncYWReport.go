@@ -15,12 +15,12 @@ import (
 	"time"
 	"tjtools/logDiy"
 	"tjtools/utils"
+	"path"
 )
 
 //https://github.com/360EntSecGroup-Skylar/excelize
 // 中文 https://xuri.me/excelize/zh-hans/
 // https://godoc.org/github.com/360EntSecGroup-Skylar/excelize#File.GetSheetName
-
 
 /*
 1.查看 是否包含中文
@@ -48,7 +48,7 @@ var (
 	ApplicationSize string
 	Subclient       string
 	StartTimeArr    []string = make([]string, 0)
-	StatusColors     map[string]string
+	StatusColors    map[string]string
 )
 
 var Log *logDiy.Log1
@@ -59,21 +59,22 @@ var c Config
 //													"已终止":"TERMINATION","不成功":}
 
 // 摘要表
-var SummaryFieldsMap map[int]string=map[int]string{0:"ReportClient",1:"HOSTNAME",2:"TOTALJOB",
-	3:"COMPLETED",4:"COMPLETEDWITHERRORS",5:"COMPLETEDWITHWARNINGS", 6:"KILLED",7:"UNSUCCESSFUL",8:"RUNNING",9:"DELAYED",
-	10:"NORUN",11:"NOSCHEDULE",12:"COMMITTED",13:"SIZEOFAPPLICATION",14:"DATAWRITTEN",15:"STARTTIME",16:"ENDTIME",17:"PROTECTEDOBJECTS",
-	18:"FAILEDOBJECTS",19:"FAILEDFOLDERS",
-	20:"COMMCELL",21:"REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+var SummaryFieldsMap map[int]string = map[int]string{0: "ReportClient", 1: "HOSTNAME", 2: "TOTALJOB",
+	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
+	10: "NORUN", 11: "NOSCHEDULE", 12: "COMMITTED", 13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
+	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
+	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
 
 // 详细数据表
-var DetailFieldsMap map[int]string=map[int]string{0: "dataclient" ,1:"AgentInstance", 2:"BackupSetSubclient" , 3:"Job ID (CommCell)(Status)",
-	4:"Type", 5:"Scan Type", 6:"Start Time(Write Start Time)", 7:"End Time or Current Phase" ,8:"Size of Application", 9:"Data Transferred",
-	10:"Data Written", 11:"Data Size Change",12:"Transfer Time",13:"Throughput (GB/Hour)", 14:"Protected Objects", 15:"Failed Objects",
-	16:"Failed Folders",
-	17:"COMMCELL",18:"REPORTTIME", // 与摘要表一样
-	19:"START TIME", 20:"DATASUBCLIENT", // 通过开始时间 和 子客户端，格式化出来的字段
-	21:"REASONFORFAILURE",22:"SOLVETIME",23:"ENGINEER",24:"SOLVETYPE"} // 失败原因，解决时间，工程师，解决状态 这几个字段不用插入数据，
-	//todo 有问题的行 解决状态默认是未解决
+var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
+	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
+	10: "Data Written", 11: "Data Size Change", 12: "Transfer Time", 13: "Throughput (GB/Hour)", 14: "Protected Objects", 15: "Failed Objects",
+	16: "Failed Folders",
+	17: "COMMCELL", 18: "REPORTTIME",                       // 与摘要表一样
+	19: "ERRTYPE", 20: "REASONFORFAILURE", 21: "SOLVETYPE", //哪种问题,失败原因，解决状态
+	22: "START TIME", 23: "DATASUBCLIENT",                  // 通过开始时间 和 子客户端，格式化出来的字段
+	24: "SOLVETIME", 25: "ENGINEER",} // 解决时间，工程师， 这几个字段不用插入数据，
+//todo 有问题的行 解决状态默认是未解决
 
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
@@ -343,13 +344,10 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	//fmt.Println(dom)
 
 	// check chinese
-	cvSelection:=dom.Find("body:contains(备份作业摘要报告)")
-	if (cvSelection.Size() < 1){
+	cvSelection := dom.Find("body:contains(备份作业摘要报告)")
+	if (cvSelection.Size() < 1) {
 		return 2
 	}
-
-
-
 
 	CommCells := dom.Find("body:contains(CommCell)")
 	CommCells.Each(func(i int, selection *goquery.Selection) {
@@ -361,7 +359,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		}
 
 	})
-	fmt.Println(CommCell)
+	//fmt.Println(CommCell)
 
 	// 生成的时间
 	//GenTimeSource := dom.Find("body:contains(备份作业摘要报告)")
@@ -377,66 +375,86 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		}
 	})
 
-	fmt.Println(GenTime)
-
-
+	//fmt.Println(GenTime)
 
 	FiledsHeader := new([]string) // 列头，序号为KEY
-	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
 
-	cv8 := false
-	//有两种格式的HTML ,代表是CV8
-	if len(t_tbodyHeader.Nodes) == 0 {
-		cv8 = true
-		t_tbodyHeader = dom.Find("body > table:nth-child(12) > tbody > tr:nth-child(1) > td")
+	SummaryDomFindStr := "body > table:nth-child(10) > tbody > tr"
+	Summary_tbodyHeader := dom.Find(SummaryDomFindStr + ":nth-child(2) > td")
+
+	detailDomFindStr := "body > table:nth-child(13) > tbody > tr"
+	detail_tbodyHeader := dom.Find(detailDomFindStr + ":nth-child(1) > td")
+
+	version := 11
+	//有三种格式的HTML
+	switch true {
+	case len(detail_tbodyHeader.Nodes) == 0:
+		version = 8
+		GenTime = strings.Split(GenTime, "CommCell")[0]
+		GenTime = strings.Split(GenTime, "生成于")[1]
+		GenTime = strings.TrimSpace(GenTime)
+
+		SummaryDomFindStr = "body > table:nth-child(9) > tbody > tr"
+		Summary_tbodyHeader = dom.Find(SummaryDomFindStr + ":nth-child(2) > td")
+		detailDomFindStr = "body > table:nth-child(12) > tbody > tr"
+		detail_tbodyHeader = dom.Find(detailDomFindStr + ":nth-child(1) > td")
+		break
+	case len(Summary_tbodyHeader.Nodes) == 18:
+		version = 10
+		break
+	default:
+		version = 11
 	}
-
+	/*
+	version 10 : summery:18cols,detail: 17cols
+			11 :20 17
+			8 :16 16
+	*/
 
 	// 循环找出列头
-	t_tbodyHeader.Each(func(i int, s *goquery.Selection) {
-		sa := s.Text()
-		sa = formatFields(i, sa) // todo 格式化 列头
-		*FiledsHeader = append(*FiledsHeader, sa)
-	})
+	//detail_tbodyHeader.Each(func(i int, s *goquery.Selection) {
+	//	sa := s.Text()
+	//	sa = formatFields(i, sa) // todo 格式化 列头
+	//	*FiledsHeader = append(*FiledsHeader, sa)
+	//})
 
 	// 如果是CV8版本，手动修改列名, 删除 size of Backup cols 这列
-	if cv8 {
-		tmp := make([]string, 16)
-		copy(tmp[:], (*FiledsHeader)[:])
+	//switch version {
+	//case 8:
+	//
+	//	break
+	//case 10:
+	//	break
+	//case 11:
+	//	break
+	//
+	//}
 
-		*FiledsHeader = tmp[0:9]
-		//fmt.Println(*FiledsHeader)
-		//*FiledsHeader = append(*FiledsHeader, []string{"Data Transferred", "Data Written"}...)
-		//fmt.Println(*FiledsHeader)
-		*FiledsHeader = append(*FiledsHeader, tmp[10:]...)
-		//fmt.Println(*FiledsHeader)
-		(*FiledsHeader)[3] = "Job ID (CommCell)(Status)"
-
-		GenTime = strings.TrimSpace(strings.Split(GenTime,"CommCell")[0])
-	}
 	//fmt.Println("222222222",*FiledsHeader)
 	//for i := 0; i < len(*FiledsHeader); i++ {
 	//	fmt.Printf("%d, value:%s\n", i, (*FiledsHeader)[i])
 	//}
 
-	switch true {
-	case len(*FiledsHeader) < FieldsLen-6: // col not enough,运维报告中不用判断
-		//fmt.Println(FiledsHeader)
-		//fmt.Println(len(*FiledsHeader))
-		return 1
-	case (*FiledsHeader)[0] != "DATACLIENT": // col not English
-		return 2
-	}
-
-	fmt.Println(CommCell)
-	fmt.Println(GenTime)
+	//switch true {
+	//case len(*FiledsHeader) < FieldsLen-6: // col not enough,运维报告中不用判断
+	//	//fmt.Println(FiledsHeader)
+	//	//fmt.Println(len(*FiledsHeader))
+	//	return 1
+	//case (*FiledsHeader)[0] != "DATACLIENT": // col not English
+	//	return 2
+	//}
+	fmt.Printf("htmfile:%s, commcell:%s, GenTime:%s, version:%d,len(sum):%d, len(detail):%d", path.Base(htmlfile), CommCell, GenTime, version, len(Summary_tbodyHeader.Nodes), len(detail_tbodyHeader.Nodes))
+	fmt.Println()
+	//fmt.Println(CommCell)
+	//fmt.Println(GenTime)
+	//fmt.Println(cv8)
 
 	//添加自定义列
-	*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
+	//*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
 
 	var t_tbodyData *goquery.Selection
 
-	if cv8 {
+	if version == 8 {
 		t_tbodyData = dom.Find("body > table:nth-child(12) > tbody > tr")
 	} else {
 		t_tbodyData = dom.Find("body > table:nth-child(13) > tbody > tr")
@@ -466,7 +484,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		})
 		tmpSubData = append(tmpSubData, []string{CommCell, ApplicationSize, Subclient}...)
 
-		if cv8 {
+		if version == 8 {
 			//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
 			if len(tmpSubData) == headlen { // 因为列头删除了一列
 				tmp := tmpSubData[:]
