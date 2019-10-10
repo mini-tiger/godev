@@ -128,7 +128,7 @@ func waitHtmlFile(files []string) {
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
 		default:
-			MoveFileChan <- file
+			//MoveFileChan <- file
 			Log.Printf("finish covert file:%s\n", file)
 		}
 
@@ -174,7 +174,7 @@ func formatTime(toBeCharge string) string {
 	sr := theTime.Unix()                                            //转化为时间戳 类型是int64
 	//fmt.Println(theTime)                                            //打印输出theTime 2015-01-01 15:15:00 +0800 CST
 	//fmt.Println(sr)
-	return strconv.FormatInt(sr, 64)
+	return strconv.FormatInt(sr, 10)
 }
 func formatValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
@@ -322,6 +322,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 	})
 
+
 	// 生成的时间
 	GenTimeSource := dom.Find("body:contains(on)")
 	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
@@ -329,12 +330,12 @@ func ReadHtml(htmlfile string) (resultNum int) {
 			//fmt.Println(htmlfile,selection.Text())
 			//fmt.Println(strings.Contains(selection.Text(),"generated"))
 			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
-			fmt.Println(ss)
+			//fmt.Println(ss)
 			//fmt.Printf("GenTime :%+v\n", ss)
 			GenTime = strings.TrimSpace(ss)
 		}
 	})
-	//fmt.Println(htmlfile,GenTime)
+
 
 	FiledsHeader := new([]string) // 列头，序号为KEY
 	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
@@ -345,6 +346,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		cv8 = true
 		t_tbodyHeader = dom.Find("body > table:nth-child(12) > tbody > tr:nth-child(1) > td")
 	}
+
 
 	// 循环找出列头
 	t_tbodyHeader.Each(func(i int, s *goquery.Selection) {
@@ -365,6 +367,8 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		*FiledsHeader = append(*FiledsHeader, tmp[10:]...)
 		//fmt.Println(*FiledsHeader)
 		(*FiledsHeader)[3] = "Job ID (CommCell)(Status)"
+
+		GenTime = strings.TrimSpace(strings.Split(GenTime,"CommCell")[0])
 	}
 	//fmt.Println("222222222",*FiledsHeader)
 	//for i := 0; i < len(*FiledsHeader); i++ {
@@ -372,13 +376,16 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	//}
 
 	switch true {
-	case len(*FiledsHeader) < FieldsLen-6: // col not enough
+	case len(*FiledsHeader) < FieldsLen-6: // col not enough,运维报告中不用判断
 		//fmt.Println(FiledsHeader)
 		//fmt.Println(len(*FiledsHeader))
 		return 1
 	case (*FiledsHeader)[0] != "DATACLIENT": // col not English
 		return 2
 	}
+
+	fmt.Println(CommCell)
+	fmt.Println(GenTime)
 
 	//添加自定义列
 	*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
@@ -548,8 +555,8 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 	}
 	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
 	for i := 0; i < len(sqlArr); i++ {
-		fmt.Println(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
-		fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
+		//fmt.Println(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
+		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
 		//fmt.Println(sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//r, err := db.Exec(fmt.Sprintf("insert into HF_BACKUPDETAIL(\"START TIME\") values(%s)", "to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"))
 		//fmt.Println(r,err)
