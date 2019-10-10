@@ -53,6 +53,8 @@ var (
 
 var Log *logDiy.Log1
 var c Config
+var FieldsMap map[string]string=map[string]string{""}
+
 
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
@@ -64,7 +66,7 @@ type Config struct {
 }
 
 func readconfig() {
-	cfgstr := g.ParseConfig("C:\\work\\go-dev\\src\\godev\\works\\haifei\\syncYWReport\\syncYWReport.json")
+	cfgstr := g.ParseConfig("/home/go/src/godev/works/haifei/syncYWReport/syncYWReport.json")
 	err := json.Unmarshal([]byte(cfgstr), &c)
 	if err != nil {
 		log.Fatalln("parse config file fail:", err)
@@ -321,21 +323,14 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	}
 	//fmt.Println(dom)
 
+	// check chinese
 	cvSelection:=dom.Find("body:contains(备份作业摘要报告)")
-	fmt.Println(cvSelection)
+	if (cvSelection.Size() < 1){
+		return 2
+	}
 
-	// 生成的时间
-	GenTimeSource := dom.Find("body:contains(on)")
-	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
-		if i == 0 {
-			//fmt.Println(htmlfile,selection.Text())
-			//fmt.Println(strings.Contains(selection.Text(),"generated"))
-			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
-			//fmt.Println(ss)
-			//fmt.Printf("GenTime :%+v\n", ss)
-			GenTime = strings.TrimSpace(ss)
-		}
-	})
+
+
 
 	CommCells := dom.Find("body:contains(CommCell)")
 	CommCells.Each(func(i int, selection *goquery.Selection) {
@@ -347,8 +342,23 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		}
 
 	})
+	fmt.Println(CommCell)
 
+	// 生成的时间
+	//GenTimeSource := dom.Find("body:contains(备份作业摘要报告)")
+	cvSelection.Each(func(i int, selection *goquery.Selection) {
+		if i == 0 {
+			//fmt.Println(htmlfile,selection.Text())
+			//fmt.Println(strings.Contains(selection.Text(),"generated"))
+			ss := strings.Split(strings.Split(selection.Text(), "备份作业摘要报告")[1], "上生成的报表版本")[0]
+			//fmt.Println(strings.Split(selection.Text(), "备份作业摘要报告"))
+			//fmt.Println(ss)
+			//fmt.Printf("GenTime :%+v\n", ss)
+			GenTime = strings.TrimSpace(ss)
+		}
+	})
 
+	fmt.Println(GenTime)
 
 
 

@@ -324,17 +324,17 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 
 	// 生成的时间
-	//GenTimeSource := dom.Find("body:contains(on)")
-	//GenTimeSource.Each(func(i int, selection *goquery.Selection) {
-	//	if i == 0 {
-	//		//fmt.Println(htmlfile,selection.Text())
-	//		//fmt.Println(strings.Contains(selection.Text(),"generated"))
-	//		ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
-	//		//fmt.Println(ss)
-	//		//fmt.Printf("GenTime :%+v\n", ss)
-	//		GenTime = strings.TrimSpace(ss)
-	//	}
-	//})
+	GenTimeSource := dom.Find("body:contains(on)")
+	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
+		if i == 0 {
+			//fmt.Println(htmlfile,selection.Text())
+			//fmt.Println(strings.Contains(selection.Text(),"generated"))
+			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
+			//fmt.Println(ss)
+			//fmt.Printf("GenTime :%+v\n", ss)
+			GenTime = strings.TrimSpace(ss)
+		}
+	})
 
 
 	FiledsHeader := new([]string) // 列头，序号为KEY
@@ -368,7 +368,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		//fmt.Println(*FiledsHeader)
 		(*FiledsHeader)[3] = "Job ID (CommCell)(Status)"
 
-		GenTime = strings.TrimSpace(strings.Split(GenTime,"CommCell")[0])
+		//GenTime = strings.TrimSpace(strings.Split(GenTime,"CommCell")[0])
 	}
 	//fmt.Println("222222222",*FiledsHeader)
 	//for i := 0; i < len(*FiledsHeader); i++ {
