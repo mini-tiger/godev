@@ -128,7 +128,7 @@ func waitHtmlFile(files []string) {
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
 		default:
-			//MoveFileChan <- file
+			MoveFileChan <- file
 			Log.Printf("finish covert file:%s\n", file)
 		}
 
@@ -324,17 +324,17 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 
 	// 生成的时间
-	GenTimeSource := dom.Find("body:contains(on)")
-	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
-		if i == 0 {
-			//fmt.Println(htmlfile,selection.Text())
-			//fmt.Println(strings.Contains(selection.Text(),"generated"))
-			ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
-			//fmt.Println(ss)
-			//fmt.Printf("GenTime :%+v\n", ss)
-			GenTime = strings.TrimSpace(ss)
-		}
-	})
+	//GenTimeSource := dom.Find("body:contains(on)")
+	//GenTimeSource.Each(func(i int, selection *goquery.Selection) {
+	//	if i == 0 {
+	//		//fmt.Println(htmlfile,selection.Text())
+	//		//fmt.Println(strings.Contains(selection.Text(),"generated"))
+	//		ss := strings.Split(strings.Split(selection.Text(), "generated on")[1], "Version")[0]
+	//		//fmt.Println(ss)
+	//		//fmt.Printf("GenTime :%+v\n", ss)
+	//		GenTime = strings.TrimSpace(ss)
+	//	}
+	//})
 
 
 	FiledsHeader := new([]string) // 列头，序号为KEY
@@ -384,8 +384,8 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		return 2
 	}
 
-	fmt.Println(CommCell)
-	fmt.Println(GenTime)
+	//fmt.Println(CommCell)
+	//fmt.Println(GenTime)
 
 	//添加自定义列
 	*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
