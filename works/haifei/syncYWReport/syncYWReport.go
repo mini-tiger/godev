@@ -53,8 +53,27 @@ var (
 
 var Log *logDiy.Log1
 var c Config
-var FieldsMap map[string]string=map[string]string{""}
+// 摘要表
+//var FieldsMap map[string]string=map[string]string{"客户端":"ReportClient","主机名":"HOSTNAME","总作业数":"TOTALJOB",
+//													"已完成":"COMPLETED","完成但有错误":"COMPLETIONERROR","完成但有警告":"COMPLETIONWARN",
+//													"已终止":"TERMINATION","不成功":}
 
+// 摘要表
+var SummaryFieldsMap map[int]string=map[int]string{0:"ReportClient",1:"HOSTNAME",2:"TOTALJOB",
+	3:"COMPLETED",4:"COMPLETEDWITHERRORS",5:"COMPLETEDWITHWARNINGS", 6:"KILLED",7:"UNSUCCESSFUL",8:"RUNNING",9:"DELAYED",
+	10:"NORUN",11:"NOSCHEDULE",12:"COMMITTED",13:"SIZEOFAPPLICATION",14:"DATAWRITTEN",15:"STARTTIME",16:"ENDTIME",17:"PROTECTEDOBJECTS",
+	18:"FAILEDOBJECTS",19:"FAILEDFOLDERS",
+	20:"COMMCELL",21:"REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+
+// 详细数据表
+var DetailFieldsMap map[int]string=map[int]string{0: "dataclient" ,1:"AgentInstance", 2:"BackupSetSubclient" , 3:"Job ID (CommCell)(Status)",
+	4:"Type", 5:"Scan Type", 6:"Start Time(Write Start Time)", 7:"End Time or Current Phase" ,8:"Size of Application", 9:"Data Transferred",
+	10:"Data Written", 11:"Data Size Change",12:"Transfer Time",13:"Throughput (GB/Hour)", 14:"Protected Objects", 15:"Failed Objects",
+	16:"Failed Folders",
+	17:"COMMCELL",18:"REPORTTIME", // 与摘要表一样
+	19:"START TIME", 20:"DATASUBCLIENT", // 通过开始时间 和 子客户端，格式化出来的字段
+	21:"REASONFORFAILURE",22:"SOLVETIME",23:"ENGINEER",24:"SOLVETYPE"} // 失败原因，解决时间，工程师，解决状态 这几个字段不用插入数据，
+	//todo 有问题的行 解决状态默认是未解决
 
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
