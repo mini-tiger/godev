@@ -48,7 +48,7 @@ var (
 	ApplicationSize string
 	Subclient       string
 	StartTimeArr    []string = make([]string, 0)
-	StatusColors    map[string]string
+
 )
 
 var Log *logDiy.Log1
@@ -76,6 +76,9 @@ var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentIn
 	24: "SOLVETIME", 25: "ENGINEER",} // 解决时间，工程师， 这几个字段不用插入数据，
 //todo 有问题的行 解决状态默认是未解决
 
+var StatusColors    map[string]string =map[string]string{"#66ABDD":"运行中","#CC99FF":"已延迟","#CCFFCC":"已完成","#FFCC99":"完成但有错误",
+														"#00FFCC":"完成但有警告","#FF99CC":"已终止","#FF3366":"失败",
+											"#CC9999":"过时","#FFFFFF":"无计划","#FF9999":"未运行","93C54B":"提交","#CCFFFF":"数据大小按 10% 或更多增加/减少"}
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
 	HtmlBakDir  string `json:"htmlBakDir"`
