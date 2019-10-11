@@ -76,6 +76,20 @@ var DetailFieldsMapPlus map[int]string = g.DetailFieldsMapPlus
 var StatusColors map[string]g.StatusColor = g.StatusColors
 var StatusColorsCv8 map[string]g.StatusColor = g.StatusColorsCv8
 
+type VerCol struct {
+	SummaryCol int
+	DetailCol  int
+}
+
+/*
+	版本 说明version 10 : summery:18cols,detail: 17cols
+			11 :20 17
+			8 :16 16
+*/
+var VersionCols map[int]VerCol = map[int]VerCol{11: VerCol{20, 17},
+	10: VerCol{18, 17},
+	8:  VerCol{16, 16}}
+
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
 	HtmlBakDir  string `json:"htmlBakDir"`
@@ -160,6 +174,8 @@ func waitHtmlFile(files []string) {
 			Log.Error("htmlFile %s, ERR:%s", file, "sql Gen err,sqlarr len is 0")
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
+		case 5:
+			Log.Error("htmlFile %s, ERR:%s", file, "摘要列数或详细列数与定义好的不一致")
 		default:
 			MoveFileChan <- file
 			Log.Printf("finish covert file:%s\n", file)
@@ -256,70 +272,8 @@ func formatDetailValues(index int, s string) (rstr string) {
 		//StartTimeArr = append(StartTimeArr, StartTimeValue)
 		StartTime = StartTimeValue
 
-		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
-		//StartTime = "2019-08-12 04:00:00"
 		break
-		//case index == 8: // starttime 赋值 全局变量，对应自定义列
-		//	as := ""
-		//	if strings.Contains(s, "(") {
-		//		as = strings.Split(s, "(")[0]
-		//	} else {
-		//		as = s
-		//	}
-		//
-		//	switch true {
-		//	case strings.Contains(as, "TB"):
-		//		as = strings.Split(as, " TB")[0]
-		//		fl, err := strconv.ParseFloat(as, 64)
-		//		if err != nil {
-		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-		//			break
-		//		}
-		//
-		//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-		//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
-		//	case strings.Contains(as, "GB"):
-		//		as = strings.Split(as, " GB")[0]
-		//		fl, err := strconv.ParseFloat(as, 64)
-		//		if err != nil {
-		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-		//			break
-		//		}
-		//
-		//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-		//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
-		//
-		//	case strings.Contains(as, "MB"):
-		//		as = strings.Split(as, " MB")[0]
-		//		fl, err := strconv.ParseFloat(as, 64)
-		//		if err != nil {
-		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-		//			break
-		//		}
-		//		ApplicationSize = fmt.Sprintf("%.2f", fl)
-		//	case strings.Contains(as, "KB"):
-		//		as = strings.Split(as, " KB")[0]
-		//		fl, err := strconv.ParseFloat(as, 64)
-		//		if err != nil {
-		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-		//			break
-		//		}
-		//		ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
-		//	case strings.Contains(as, "Not Run because of another job running for the same subclient"):
-		//		break
-		//	default:
-		//
-		//		application, e := strconv.Atoi(strings.TrimSpace(as))
-		//		if e != nil {
-		//			Log.Error("change type string:%s,err:%s", as, e)
-		//		}
-		//		if application == 0 {
-		//			ApplicationSize = "0"
-		//		}
-		//
-		//	}
 
-		//break
 	}
 	return
 }
@@ -330,7 +284,9 @@ func ReadHtml() (resultNum int) {
 	if err != nil {
 		Log.Println(err)
 	}
-
+	defer func() {
+		f.Close()
+	}()
 	dom, err := goquery.NewDocumentFromReader(f)
 	if err != nil {
 		//log.Fatal(err)
@@ -410,101 +366,75 @@ func ReadHtml() (resultNum int) {
 	Version = version
 
 	GenTime = g.FormatTime(GenTime)
-	/*
-		version 10 : summery:18cols,detail: 17cols
-				11 :20 17
-				8 :16 16
-	*/
 
-	// 循环找出列头
-	//detail_tbodyHeader.Each(func(i int, s *goquery.Selection) {
-	//	sa := s.Text()
-	//	sa = formatFields(i, sa) // todo 格式化 列头
-	//	*FiledsHeader = append(*FiledsHeader, sa)
-	//})
-
-	// 如果是CV8版本，手动修改列名, 删除 size of Backup cols 这列
-	//switch version {
-	//case 8:
-	//
-	//	break
-	//case 10:
-	//	break
-	//case 11:
-	//	break
-	//
-	//}
-
-	//fmt.Println("222222222",*FiledsHeader)
-	//for i := 0; i < len(*FiledsHeader); i++ {
-	//	fmt.Printf("%d, value:%s\n", i, (*FiledsHeader)[i])
-	//}
-
-	//switch true {
-	//case len(*FiledsHeader) < FieldsLen-6: // col not enough,运维报告中不用判断
-	//	//fmt.Println(FiledsHeader)
-	//	//fmt.Println(len(*FiledsHeader))
-	//	return 1
-	//case (*FiledsHeader)[0] != "DATACLIENT": // col not English
-	//	return 2
-	//}
 	fmt.Printf("htmfile:%s, commcell:%s, GenTime:%s, version:%d,len(sum):%d, len(detail):%d", path.Base(HtmlFile), CommCell, GenTime, version, len(Summary_tbodyHeader.Nodes), len(detail_tbodyHeader.Nodes))
 	fmt.Println()
 	//fmt.Println(CommCell)
 	//fmt.Println(GenTime)
 	//fmt.Println(cv8)
 
-	//添加自定义列
-	//*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
 	var rn int
-	switch version {
 
-	case 11:
+	// 先插入detail数据
+	//比对是不是与定义好的 列数一样
 
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap)            // 生成 详细数据,version 11 使用默认DetailFieldsMap
-
-		rn = GenSqls(DetailSqlArr, DetailTable)
-		//if rn > 0 {
-		//	return rn
-		//}
-		rn = GenSqls(SummarySqlArr, SummaryTable)
-		//fmt.Println(SummarySqlArr)
-		//if rn > 0 {
-		//	return rn
-		//}
-
-	case 10:
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10)        // 生成 详细数据,version 10 使用默认DetailFieldsMap
-
-		rn = GenSqls(DetailSqlArr, DetailTable)
-		//if rn > 0 {
-		//	return rn
-		//}
-		rn = GenSqls(SummarySqlArr, SummaryTable)
-		//fmt.Println(SummarySqlArr)
-		//if rn > 0 {
-		//	return rn
-		//}
-	case 8:
-
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8)               // 生成 详细数据,version 8 使用默认DetailFieldsMap
-
-		rn = GenSqls(DetailSqlArr, DetailTable)
-		//if rn > 0 {
-		//	return rn
-		//}
-		rn = GenSqls(SummarySqlArr, SummaryTable)
-		//fmt.Println(SummarySqlArr)
-		//if rn > 0 {
-		//	return rn
-		//}
+	if len(detail_tbodyHeader.Nodes) != VersionCols[Version].DetailCol {
+		return 5
 	}
 
-	f.Close()
+	switch version {
+	case 11:
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
+			return rn
+		}
+	case 10:
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
+			return rn
+		}
+	case 8:
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
+			return rn
+		}
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+	}
+
+	// 清空数据
 	DetailSqlArr = make([]map[string]string, 0)
+
+	// 摘要数据
+	if len(Summary_tbodyHeader.Nodes) != VersionCols[Version].SummaryCol {
+		return 5
+	}
+	switch version {
+	case 11:
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		fmt.Println(SummarySqlArr)
+		if rn > 0 {
+			return rn
+		}
+	case 10:
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		fmt.Println(SummarySqlArr)
+		if rn > 0 {
+			return rn
+		}
+	case 8:
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		fmt.Println(SummarySqlArr)
+		if rn > 0 {
+			return rn
+		}
+	}
+
 	SummarySqlArr = make([]map[string]string, 0)
 	//fmt.Println(FiledsHeader)
 
