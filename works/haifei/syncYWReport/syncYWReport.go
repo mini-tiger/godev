@@ -47,12 +47,12 @@ var (
 	GenTime   string
 	StartTime string
 	//ApplicationSize string
-	Subclient     string
+	Subclient string
 	//StartTimeArr  []string = make([]string, 0)
 	HtmlFile      string
 	DetailSqlArr  []map[string]string
-	SummerySqlArr []map[string]string
-	Version 		int
+	SummarySqlArr []map[string]string
+	Version       int
 )
 
 var Log *logDiy.Log1
@@ -66,23 +66,21 @@ var c Config
 var SummaryFieldsMap map[int]string = map[int]string{0: "ReportClient", 1: "HOSTNAME", 2: "TOTALJOB",
 	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
 	10: "NORUN", 11: "NOSCHEDULE", 12: "COMMITTED", 13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
-	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
-	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS"}
 
 // 摘要表cv10    缺少 1，12
-var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "ReportClient",  2: "TOTALJOB",
-	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
-	10: "NORUN", 11: "NOSCHEDULE",  13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
-	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
-	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "ReportClient", 1: "TOTALJOB",
+	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "COMPLETEDWITHWARNINGS", 5: "KILLED", 6: "UNSUCCESSFUL", 7: "RUNNING", 8: "DELAYED",
+	9: "NORUN", 10: "NOSCHEDULE", 11: "SIZEOFAPPLICATION", 12: "DATAWRITTEN", 13: "STARTTIME", 14: "ENDTIME", 15: "PROTECTEDOBJECTS",
+	16: "FAILEDOBJECTS", 17: "FAILEDFOLDERS"}
 
 // 摘要表cv8   缺少 1，5，9，12
-var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "ReportClient",  2: "TOTALJOB",
-	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING",
-	10: "NORUN", 11: "NOSCHEDULE",  13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
-	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
-	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "ReportClient", 1: "TOTALJOB",
+	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "KILLED", 5: "UNSUCCESSFUL", 6: "RUNNING",
+	7: "NORUN", 8: "NOSCHEDULE", 9: "SIZEOFAPPLICATION", 10: "DATAWRITTEN", 11: "STARTTIME", 12: "ENDTIME", 13: "PROTECTEDOBJECTS",
+	14: "FAILEDOBJECTS", 15: "FAILEDFOLDERS"}
 
+var SummaryFieldsMapPlus map[int]string = map[int]string{20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
 
 // 详细数据表
 var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
@@ -259,6 +257,11 @@ func formatFields(index int, s string) (rstr string) {
 
 func formatTime(toBeCharge string) string {
 	//toBeCharge := "09/04/2019 11:03:16"
+	// 如果不是时间格式
+	if _, err := strconv.Atoi(strings.Split(toBeCharge, "/")[0]); err != nil {
+		return toBeCharge
+	}
+
 	// 待转化为时间戳的字符串 注意 这里的小时和分钟还要秒必须写 因为是跟着模板走的 修改模板的话也可以不写
 	timeLayout := "2006/01/02 15:04:05" // 中英文 时间格式不一样
 	if ii, _ := strconv.Atoi(strings.Split(toBeCharge, "/")[0]); ii <= 12 {
@@ -518,20 +521,48 @@ func ReadHtml() (resultNum int) {
 
 	//添加自定义列
 	//*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
-
+	var rn int
 	switch version {
 
 	case 11:
 
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMap,StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
-		return GenSqls(DetailSqlArr)
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+
+		rn=GenSqls(DetailSqlArr)
+		if rn>0 {
+			return rn
+		}
+		rn = GenSqls(SummarySqlArr)
+		fmt.Println(SummarySqlArr)
+		if rn>0{
+			return rn
+		}
+
 	case 10:
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMap,StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
-		return GenSqls(DetailSqlArr)
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+
+		rn=GenSqls(DetailSqlArr)
+		if rn>0 {
+			return rn
+		}
+		rn = GenSqls(SummarySqlArr)
+		fmt.Println(SummarySqlArr)
+		if rn>0{
+			return rn
+		}
 	case 8:
 
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8,StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
-		return GenSqls(DetailSqlArr)
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		rn=GenSqls(DetailSqlArr)
+		if rn>0 {
+			return rn
+		}
+		rn = GenSqls(SummarySqlArr)
+		fmt.Println(SummarySqlArr)
+		if rn>0{
+			return rn
+		}
 	}
 
 	f.Close()
@@ -541,11 +572,59 @@ func ReadHtml() (resultNum int) {
 	return 1
 }
 
+func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
+	var t_tbodyData *goquery.Selection
+
+	t_tbodyData = dom.Find(domstr)
+	//Data = make([][]string, 0)
+	Log.Printf("HtmlFile:%s,Summary rows:%d \n", HtmlFile, len(t_tbodyData.Nodes))
+	t_tbodyData.Each(func(i int, rowsele *goquery.Selection) {
+		if i < 2 { // 0行是 摘要 1行是列名
+			return
+		}
+
+		tmpSubData := make(map[string]string, 0)
+		cols := rowsele.Find("td")
+		if (len(FiledsHeader) != len(cols.Nodes)) { //
+			Log.Error("htmfile:%s ,summary no eq rows:%d", HtmlFile, i)
+			return
+		}
+		cols.Each(func(colnum int, colsele *goquery.Selection) {
+			ss1 := colsele.Text()
+			//fmt.Println(selection.Attr("bgcolor"))
+			//switch true {
+			//case strings.Contains(ss1,"N/A"):
+			//	ss1=strings.Replace(ss1,"N/A","",-1)
+			//}
+
+			//ss1 = formatDetailValues(colnum, ss1) // todo 格式化 数据
+			ss1 = strings.TrimSpace(ss1)
+			if strings.Contains(FiledsHeader[colnum], "STARTTIME") {
+				ss1 = formatTime(ss1)
+			}
+
+			//fmt.Println(i,colnum,FiledsHeader[colnum],strings.Contains(FiledsHeader[colnum],"Failed Folder"))
+			//
+			//fmt.Println(strings.Split())
+			tmpSubData[FiledsHeader[colnum]] = ss1
+			//tmpSubData = append(tmpSubData, ss1)
+			//fmt.Println(i,ss1)
+		})
+		tmpSubData[DetailFieldsMapPlus[20]] = CommCell
+		tmpSubData[DetailFieldsMapPlus[21]] = GenTime
+
+		SummarySqlArr = append(SummarySqlArr,tmpSubData)
+	})
+
+	return
+
+}
+
 //func VersionDetailFields(mapFields map[int]string ,max int) (DetailFields []string) {
 //
 //}
 
-func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string,StatusColors map[string]StatusColor) (Data [][]string) {
+func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, StatusColors map[string]StatusColor) (Data [][]string) {
 	var t_tbodyData *goquery.Selection
 
 	t_tbodyData = dom.Find(domstr)
@@ -606,22 +685,21 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		tmpSubData := make(map[string]string, 0)
 		cols := rowsele.Find("td")
 
-
-		if Version != 8{
-			if (len(FiledsHeader) != len(cols.Nodes) ) {
-				Log.Error("htmfile:%s ,no eq rows:%d",HtmlFile, i)
+		if Version != 8 {
+			if (len(FiledsHeader) != len(cols.Nodes)) {
+				Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
 				return
 			}
-		}else{
-			if (len(FiledsHeader) != len(cols.Nodes) -1  ) { // 备份大小列 跳过
-				Log.Error("htmfile:%s ,no eq rows:%d",HtmlFile, i)
+		} else {
+			if (len(FiledsHeader) != len(cols.Nodes)-1) { // 备份大小列 跳过
+				Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
 				return
 			}
 
 		}
 
 		cols.Each(func(colnum int, colsele *goquery.Selection) {
-			if Version ==8 && colnum == 9{
+			if Version == 8 && colnum == 9 {
 				return
 			}
 			ss1 := colsele.Text()
@@ -634,8 +712,8 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 			ss1 = formatDetailValues(colnum, ss1) // todo 格式化 数据
 
 			//fmt.Println(i,colnum,FiledsHeader[colnum],strings.Contains(FiledsHeader[colnum],"Failed Folder"))
-			if strings.Contains(FiledsHeader[colnum],"Failed Object")|| strings.Contains(FiledsHeader[colnum],"Failed Folder") {
-				ss1 = strings.Join(strings.Split(ss1,","),"")
+			if strings.Contains(FiledsHeader[colnum], "Failed Object") || strings.Contains(FiledsHeader[colnum], "Failed Folder") {
+				ss1 = strings.Join(strings.Split(ss1, ","), "")
 				if sslvalue, err := strconv.Atoi(ss1); err == nil && sslvalue > 0 {
 					rowjobtype = "失败"
 					rowsolvetype = "未解决"
@@ -643,12 +721,12 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 
 			}
 
-			if strings.Contains(FiledsHeader[colnum],"Data Size Change"){
-				if cv,ce:=colsele.Attr("bgcolor");ce{
+			if strings.Contains(FiledsHeader[colnum], "Data Size Change") {
+				if cv, ce := colsele.Attr("bgcolor"); ce {
 					tmpStatcolor, ee := StatusColors[cv]
 					//fmt.Println(i,colnum,ee,cv,tmpStatcolor,strings.Contains(tmpStatcolor.ColorStatus,"数据大小按 10% 或更多增加/减少"))
-					if ee{
-						if strings.Contains(tmpStatcolor.ColorStatus,"数据大小按 10% 或更多增加/减少"){
+					if ee {
+						if strings.Contains(tmpStatcolor.ColorStatus, "数据大小按 10% 或更多增加/减少") {
 							rowjobtype = tmpStatcolor.ColorStatus
 						}
 					}
@@ -824,10 +902,10 @@ func GenSqls(DetailSqlArrCopy []map[string]string) (resultNum int) {
 		tmpmap["update"] = updateSql + updatesliceToString(value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
-	//for _, v := range sqlArr {
-		//fmt.Println(v["insert"])
-		//fmt.Println(v["update"])
-	//}
+	for _, v := range sqlArr {
+	fmt.Println(v["insert"])
+	fmt.Println(v["update"])
+	}
 	//return stmtSql(sqlArr)
 	return 1
 }
