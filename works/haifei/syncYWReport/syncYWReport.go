@@ -45,10 +45,12 @@ var (
 	CommCell        string // 客户端名
 	GenTime         string
 	StartTime       string
-	ApplicationSize string
+	//ApplicationSize string
 	Subclient       string
 	StartTimeArr    []string = make([]string, 0)
 	HtmlFile        string
+	DetailSqlArr    []map[string]string
+	SummerySqlArr   []map[string]string
 )
 
 var Log *logDiy.Log1
@@ -69,11 +71,14 @@ var SummaryFieldsMap map[int]string = map[int]string{0: "ReportClient", 1: "HOST
 var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
 	10: "Data Written", 11: "Data Size Change", 12: "Transfer Time", 13: "Throughput (GB/Hour)", 14: "Protected Objects", 15: "Failed Objects",
-	16: "Failed Folders",
+	16: "Failed Folders"}
+
+var DetailFieldsMapPlus map[int]string = map[int]string{
 	17: "COMMCELL", 18: "REPORTTIME",                     // 与摘要表一样
-	19: "JOBTYPE", 22: "START TIME", 23: "DATASUBCLIENT", //哪种问题  ,通过开始时间 和 子客户端，格式化出来的字段
-	20: "REASONFORFAILURE", 21: "SOLVETYPE",              //失败原因，解决状态
+	19: "JOBTYPE", 20: "START TIME", 21: "DATASUBCLIENT", //哪种问题  ,通过开始时间 和 子客户端，格式化出来的字段
+	22: "REASONFORFAILURE", 23: "SOLVETYPE",              //失败原因，解决状态
 	24: "SOLVETIME", 25: "ENGINEER",} // 解决时间，工程师， 这几个字段不用插入数据，
+
 //todo 有问题的行 解决状态默认是未解决
 
 type StatusColor struct {
@@ -219,8 +224,13 @@ func formatFields(index int, s string) (rstr string) {
 }
 
 func formatTime(toBeCharge string) string {
-	//toBeCharge := "09/04/2019 11:03:16"                             //待转化为时间戳的字符串 注意 这里的小时和分钟还要秒必须写 因为是跟着模板走的 修改模板的话也可以不写
-	timeLayout := "01/02/2006 15:04:05"                             //转化所需模板
+	//toBeCharge := "09/04/2019 11:03:16"
+	// 待转化为时间戳的字符串 注意 这里的小时和分钟还要秒必须写 因为是跟着模板走的 修改模板的话也可以不写
+	timeLayout := "2006/01/02 15:04:05" // 中英文 时间格式不一样
+	if ii,_:=strconv.Atoi(strings.Split(toBeCharge,"/")[0]);ii<=12{
+		timeLayout = "01/02/2006 15:04:05"                           //转化所需模板
+	}
+
 	loc, _ := time.LoadLocation("Local")                            //重要：获取时区
 	theTime, _ := time.ParseInLocation(timeLayout, toBeCharge, loc) //使用模板在对应时区转化为time.time类型
 	sr := theTime.Unix()                                            //转化为时间戳 类型是int64
@@ -228,7 +238,7 @@ func formatTime(toBeCharge string) string {
 	//fmt.Println(sr)
 	return strconv.FormatInt(sr, 10)
 }
-func formatValues(index int, s string) (rstr string) {
+func formatDetailValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
 	if strings.Contains(s, "N/A") {
 		rstr = strings.Replace(s, "N/A", "", -1)
@@ -278,73 +288,73 @@ func formatValues(index int, s string) (rstr string) {
 		StartTimeValue = strings.TrimSpace(StartTimeValue)
 		//StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
 		StartTimeValue = formatTime(StartTimeValue)
-		StartTimeArr = append(StartTimeArr, StartTimeValue)
-		StartTime = "%s"
+		//StartTimeArr = append(StartTimeArr, StartTimeValue)
+		StartTime = StartTimeValue
 
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
 		break
-	case index == 8: // starttime 赋值 全局变量，对应自定义列
-		as := ""
-		if strings.Contains(s, "(") {
-			as = strings.Split(s, "(")[0]
-		} else {
-			as = s
-		}
+	//case index == 8: // starttime 赋值 全局变量，对应自定义列
+	//	as := ""
+	//	if strings.Contains(s, "(") {
+	//		as = strings.Split(s, "(")[0]
+	//	} else {
+	//		as = s
+	//	}
+	//
+	//	switch true {
+	//	case strings.Contains(as, "TB"):
+	//		as = strings.Split(as, " TB")[0]
+	//		fl, err := strconv.ParseFloat(as, 64)
+	//		if err != nil {
+	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+	//			break
+	//		}
+	//
+	//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
+	//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
+	//	case strings.Contains(as, "GB"):
+	//		as = strings.Split(as, " GB")[0]
+	//		fl, err := strconv.ParseFloat(as, 64)
+	//		if err != nil {
+	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+	//			break
+	//		}
+	//
+	//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
+	//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
+	//
+	//	case strings.Contains(as, "MB"):
+	//		as = strings.Split(as, " MB")[0]
+	//		fl, err := strconv.ParseFloat(as, 64)
+	//		if err != nil {
+	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+	//			break
+	//		}
+	//		ApplicationSize = fmt.Sprintf("%.2f", fl)
+	//	case strings.Contains(as, "KB"):
+	//		as = strings.Split(as, " KB")[0]
+	//		fl, err := strconv.ParseFloat(as, 64)
+	//		if err != nil {
+	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+	//			break
+	//		}
+	//		ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
+	//	case strings.Contains(as, "Not Run because of another job running for the same subclient"):
+	//		break
+	//	default:
+	//
+	//		application, e := strconv.Atoi(strings.TrimSpace(as))
+	//		if e != nil {
+	//			Log.Error("change type string:%s,err:%s", as, e)
+	//		}
+	//		if application == 0 {
+	//			ApplicationSize = "0"
+	//		}
+	//
+	//	}
 
-		switch true {
-		case strings.Contains(as, "TB"):
-			as = strings.Split(as, " TB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-
-			//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-			ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
-		case strings.Contains(as, "GB"):
-			as = strings.Split(as, " GB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-
-			//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-			ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
-
-		case strings.Contains(as, "MB"):
-			as = strings.Split(as, " MB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-			ApplicationSize = fmt.Sprintf("%.2f", fl)
-		case strings.Contains(as, "KB"):
-			as = strings.Split(as, " KB")[0]
-			fl, err := strconv.ParseFloat(as, 64)
-			if err != nil {
-				Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-				break
-			}
-			ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
-		case strings.Contains(as, "Not Run because of another job running for the same subclient"):
-			break
-		default:
-
-			application, e := strconv.Atoi(strings.TrimSpace(as))
-			if e != nil {
-				Log.Error("change type string:%s,err:%s", as, e)
-			}
-			if application == 0 {
-				ApplicationSize = "0"
-			}
-
-		}
-
-		break
+		//break
 	}
 	return
 }
@@ -391,7 +401,7 @@ func ReadHtml() (resultNum int) {
 			//fmt.Println(strings.Split(selection.Text(), "备份作业摘要报告"))
 			//fmt.Println(ss)
 			//fmt.Printf("GenTime :%+v\n", ss)
-			GenTime = strings.TrimSpace(ss)
+			GenTime = formatTime(strings.TrimSpace(ss))
 		}
 	})
 
@@ -487,6 +497,11 @@ func ReadHtml() (resultNum int) {
 	return 1
 }
 
+//func VersionDetailFields(mapFields map[int]string ,max int) (DetailFields []string) {
+//
+//}
+
+
 func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
 	var t_tbodyData *goquery.Selection
 
@@ -502,51 +517,64 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		if i == 0 { // 0行是列名
 			return
 		}
+		var rowjobtype string
+		//var rowstarttimeformat string //  行格式化后的 unixstamp
+		//var rowsubclient string
+		var rowReasonforfailure string //行 失败原因
+		var rowsolvetype string        // 行解决状态
+
 		rowColor, exists := rowsele.Attr("bgcolor")
 		if !exists {
 			//找不到颜色的，可能是失败原因的行
 			return
 		}
 
-		v, e := StatusColors[rowColor]
+		Statuscolor, e := StatusColors[rowColor]
 
 		if !e {
 			Log.Error("没找到颜色 Htmfile:%s,detail_rows:%d", HtmlFile, i)
 		}
 		//需要判断是不是 超过最大行数
 
-		switch v.Status {
+		switch Statuscolor.Status {
 		case 2:
 			return
 		case 1:
-			fmt.Println(22)
-			if len(rowsele.Next().Find(" td").Nodes)==1{
-				fmt.Println(i,rowsele.Next().Find(" td").Text())
+			if len(rowsele.Next().Find(" td").Nodes) == 1 {
+				//fmt.Println(i, rowsele.Next().Find(" td").Text())
+				rowjobtype = Statuscolor.ColorStatus
+				rowsolvetype = "未解决"
+				rowReasonforfailure = rowsele.Next().Find(" td").Text()
+			}else{
+				rowjobtype = Statuscolor.ColorStatus
+				rowsolvetype = "未解决"
+				rowReasonforfailure = "NULL"
 			}
 		case 0:
-
-		default:
+			rowjobtype = Statuscolor.ColorStatus
+			rowsolvetype = "NULL"
+			rowReasonforfailure = "NULL"
 
 
 		}
 
-
-
-		tmpSubData := make([]string, 0)
-		sa := rowsele.Find("td")
-		sa.Each(func(i int, selection *goquery.Selection) {
+		//tmpSubData := make([]string, 0)
+		tmpSubData := make(map[string]string,0)
+		cols := rowsele.Find("td")
+		cols.Each(func(i int, selection *goquery.Selection) {
 			ss1 := selection.Text()
 			//fmt.Println(selection.Attr("bgcolor"))
 			//switch true {
 			//case strings.Contains(ss1,"N/A"):
 			//	ss1=strings.Replace(ss1,"N/A","",-1)
 			//}
-			ss1 = formatValues(i, ss1) // todo 格式化 数据
+			ss1 = formatDetailValues(i, ss1) // todo 格式化 数据
 			tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData = append(tmpSubData, []string{CommCell, ApplicationSize, Subclient}...)
-
+		tmpSubData = append(tmpSubData, []string{CommCell,GenTime, rowjobtype,StartTime, Subclient,rowReasonforfailure,rowsolvetype}...)
+		fmt.Printf("%+v\n",tmpSubData)
+		fmt.Println()
 		//if version == 8 {
 		//	//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
 		//	if len(tmpSubData) == headlen { // 因为列头删除了一列
@@ -566,6 +594,7 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		//}
 
 	})
+	//fmt.Println(Data)
 	return
 }
 
