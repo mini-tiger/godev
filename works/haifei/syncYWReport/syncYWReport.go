@@ -48,7 +48,7 @@ var (
 	ApplicationSize string
 	Subclient       string
 	StartTimeArr    []string = make([]string, 0)
-
+	HtmlFile        string
 )
 
 var Log *logDiy.Log1
@@ -70,15 +70,31 @@ var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentIn
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
 	10: "Data Written", 11: "Data Size Change", 12: "Transfer Time", 13: "Throughput (GB/Hour)", 14: "Protected Objects", 15: "Failed Objects",
 	16: "Failed Folders",
-	17: "COMMCELL", 18: "REPORTTIME",                       // 与摘要表一样
-	19: "ERRTYPE", 20: "REASONFORFAILURE", 21: "SOLVETYPE", //哪种问题,失败原因，解决状态
-	22: "START TIME", 23: "DATASUBCLIENT",                  // 通过开始时间 和 子客户端，格式化出来的字段
+	17: "COMMCELL", 18: "REPORTTIME",                     // 与摘要表一样
+	19: "JOBTYPE", 22: "START TIME", 23: "DATASUBCLIENT", //哪种问题  ,通过开始时间 和 子客户端，格式化出来的字段
+	20: "REASONFORFAILURE", 21: "SOLVETYPE",              //失败原因，解决状态
 	24: "SOLVETIME", 25: "ENGINEER",} // 解决时间，工程师， 这几个字段不用插入数据，
 //todo 有问题的行 解决状态默认是未解决
 
-var StatusColors    map[string]string =map[string]string{"#66ABDD":"运行中","#CC99FF":"已延迟","#CCFFCC":"已完成","#FFCC99":"完成但有错误",
-														"#00FFCC":"完成但有警告","#FF99CC":"已终止","#FF3366":"失败",
-											"#CC9999":"过时","#FFFFFF":"无计划","#FF9999":"未运行","93C54B":"提交","#CCFFFF":"数据大小按 10% 或更多增加/减少"}
+type StatusColor struct {
+	ColorStatus string
+	Status      int
+}
+
+// 0 不检查直接录入， 1 检查下一行失败原因  2.不录入
+var StatusColors map[string]StatusColor = map[string]StatusColor{"#66ABDD": StatusColor{"运行中", 0},
+	"#CC99FF": StatusColor{"已延迟", 1},
+	"#CCFFCC": StatusColor{"已完成", 0},
+	"#FFCC99": StatusColor{"完成但有错误", 1},
+	"#00FFCC": StatusColor{"完成但有警告", 1},
+	"#FF99CC": StatusColor{"已终止", 1},
+	"#FF3366": StatusColor{"失败", 1},
+	"#CC9999": StatusColor{"过时", 0},
+	"#FFFFFF": StatusColor{"无计划", 2},
+	"#FF9999": StatusColor{"未运行", 1},
+	"93C54B": StatusColor{"提交", 0},
+	"#CCFFFF": StatusColor{"数据大小按 10% 或更多增加/减少", 0}}
+
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
 	HtmlBakDir  string `json:"htmlBakDir"`
@@ -152,7 +168,8 @@ func waitMovefile() {
 func waitHtmlFile(files []string) {
 	for _, file := range files {
 		Log.Printf("begin covert file:%s\n", file)
-		resultNum := ReadHtml(file)
+		HtmlFile = file
+		resultNum := ReadHtml()
 		switch resultNum {
 		case 1:
 			Log.Error("htmlFile %s, ERR:%s", file, "col not enough")
@@ -332,9 +349,9 @@ func formatValues(index int, s string) (rstr string) {
 	return
 }
 
-func ReadHtml(htmlfile string) (resultNum int) {
+func ReadHtml() (resultNum int) {
 
-	f, err := os.OpenFile(htmlfile, os.O_RDONLY, 0755)
+	f, err := os.OpenFile(HtmlFile, os.O_RDONLY, 0755)
 	if err != nil {
 		Log.Println(err)
 	}
@@ -380,7 +397,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 	//fmt.Println(GenTime)
 
-	FiledsHeader := new([]string) // 列头，序号为KEY
+	//FiledsHeader := new([]string) // 列头，序号为KEY
 
 	SummaryDomFindStr := "body > table:nth-child(10) > tbody > tr"
 	Summary_tbodyHeader := dom.Find(SummaryDomFindStr + ":nth-child(2) > td")
@@ -446,7 +463,7 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	//case (*FiledsHeader)[0] != "DATACLIENT": // col not English
 	//	return 2
 	//}
-	fmt.Printf("htmfile:%s, commcell:%s, GenTime:%s, version:%d,len(sum):%d, len(detail):%d", path.Base(htmlfile), CommCell, GenTime, version, len(Summary_tbodyHeader.Nodes), len(detail_tbodyHeader.Nodes))
+	fmt.Printf("htmfile:%s, commcell:%s, GenTime:%s, version:%d,len(sum):%d, len(detail):%d", path.Base(HtmlFile), CommCell, GenTime, version, len(Summary_tbodyHeader.Nodes), len(detail_tbodyHeader.Nodes))
 	fmt.Println()
 	//fmt.Println(CommCell)
 	//fmt.Println(GenTime)
@@ -455,25 +472,68 @@ func ReadHtml(htmlfile string) (resultNum int) {
 	//添加自定义列
 	//*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
 
-	var t_tbodyData *goquery.Selection
+	switch version {
 
-	if version == 8 {
-		t_tbodyData = dom.Find("body > table:nth-child(12) > tbody > tr")
-	} else {
-		t_tbodyData = dom.Find("body > table:nth-child(13) > tbody > tr")
+	case 11:
+
+		data := GenDetailData(detailDomFindStr, dom, DetailFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		fmt.Println(data)
 	}
 
+	f.Close()
+	//fmt.Println(FiledsHeader)
+
+	//return GenSqls(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
+	return 1
+}
+
+func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
+	var t_tbodyData *goquery.Selection
+
+	t_tbodyData = dom.Find(domstr)
+	//MaxRows:=len(t_tbodyData.Nodes)
+	//body > table:nth-child(13) > tbody > tr
 	//fmt.Println(t_tbodyData.Html())
 
-	headlen := len(*FiledsHeader)
-	Data := make([][]string, 0)
+	//headlen := len(FiledsHeader)
+	Data = make([][]string, 0)
 	//循环表格数据
-	t_tbodyData.Each(func(i int, s *goquery.Selection) {
+	t_tbodyData.Each(func(i int, rowsele *goquery.Selection) {
 		if i == 0 { // 0行是列名
 			return
 		}
+		rowColor, exists := rowsele.Attr("bgcolor")
+		if !exists {
+			//找不到颜色的，可能是失败原因的行
+			return
+		}
+
+		v, e := StatusColors[rowColor]
+
+		if !e {
+			Log.Error("没找到颜色 Htmfile:%s,detail_rows:%d", HtmlFile, i)
+		}
+		//需要判断是不是 超过最大行数
+
+		switch v.Status {
+		case 2:
+			return
+		case 1:
+			fmt.Println(22)
+			if len(rowsele.Next().Find(" td").Nodes)==1{
+				fmt.Println(i,rowsele.Next().Find(" td").Text())
+			}
+		case 0:
+
+		default:
+
+
+		}
+
+
+
 		tmpSubData := make([]string, 0)
-		sa := s.Find("td")
+		sa := rowsele.Find("td")
 		sa.Each(func(i int, selection *goquery.Selection) {
 			ss1 := selection.Text()
 			//fmt.Println(selection.Attr("bgcolor"))
@@ -487,31 +547,26 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		})
 		tmpSubData = append(tmpSubData, []string{CommCell, ApplicationSize, Subclient}...)
 
-		if version == 8 {
-			//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
-			if len(tmpSubData) == headlen { // 因为列头删除了一列
-				tmp := tmpSubData[:]
-				tmpSubData = tmp[0:9]
-				//tmpSubData = append(tmpSubData, []string{"", ""}...)
-				tmpSubData = append(tmpSubData, tmp[10:]...)
-				//fmt.Printf("%d,%v\n",len(tmpSubData),tmpSubData)
-				Data = append(Data, tmpSubData)
-			}
-
-		} else {
-
-			if len(tmpSubData) == headlen-1 { // 数据列数要与 列头一样长,少了start time
-				Data = append(Data, tmpSubData)
-			}
-		}
+		//if version == 8 {
+		//	//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
+		//	if len(tmpSubData) == headlen { // 因为列头删除了一列
+		//		tmp := tmpSubData[:]
+		//		tmpSubData = tmp[0:9]
+		//		//tmpSubData = append(tmpSubData, []string{"", ""}...)
+		//		tmpSubData = append(tmpSubData, tmp[10:]...)
+		//		//fmt.Printf("%d,%v\n",len(tmpSubData),tmpSubData)
+		//		Data = append(Data, tmpSubData)
+		//	}
+		//
+		//} else {
+		//
+		//	if len(tmpSubData) == headlen-1 { // 数据列数要与 列头一样长,少了start time
+		//		Data = append(Data, tmpSubData)
+		//	}
+		//}
 
 	})
-
-	f.Close()
-	//fmt.Println(FiledsHeader)
-
-	return GenSqls(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
-
+	return
 }
 
 func sliceToString(sl []string) (returnstring string) {
