@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 	"tjtools/logDiy"
+	"tjtools/nmap"
 	"tjtools/utils"
 )
 
@@ -60,11 +61,6 @@ var (
 var Log *logDiy.Log1
 var c Config
 
-// 摘要表
-//var FieldsMap map[string]string=map[string]string{"客户端":"ReportClient","主机名":"HOSTNAME","总作业数":"TOTALJOB",
-//													"已完成":"COMPLETED","完成但有错误":"COMPLETIONERROR","完成但有警告":"COMPLETIONWARN",
-//													"已终止":"TERMINATION","不成功":}
-
 var SummaryFieldsMap map[int]string = g.SummaryFieldsMap
 var SummaryFieldsMapCv10 map[int]string = g.SummaryFieldsMapCv10
 var SummaryFieldsMapCv8 map[int]string = g.SummaryFieldsMapCv8
@@ -75,6 +71,8 @@ var DetailFieldsMapPlus map[int]string = g.DetailFieldsMapPlus
 
 var StatusColors map[string]g.StatusColor = g.StatusColors
 var StatusColorsCv8 map[string]g.StatusColor = g.StatusColorsCv8
+
+var all *nmap.SafeMap = g.AllChEngSummaryMap
 
 type VerCol struct {
 	SummaryCol int
@@ -108,7 +106,7 @@ func readconfig() {
 }
 
 func main() {
-
+	fmt.Println(all)
 	readconfig()
 
 	// 初始化 日志

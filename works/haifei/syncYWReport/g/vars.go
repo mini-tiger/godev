@@ -1,5 +1,17 @@
 package g
 
+import "tjtools/nmap"
+
+//var FieldsMap map[string]string=map[string]string{"客户端":"ReportClient","主机名":"HOSTNAME","总作业数":"TOTALJOB",
+//													"已完成":"COMPLETED","完成但有错误":"COMPLETIONERROR","完成但有警告":"COMPLETIONWARN",
+//													"已终止":"TERMINATION","不成功":}
+var AllChEngSummaryMap *nmap.SafeMap = nmap.NewSafeMap()
+
+func init() {
+	AllChEngSummaryMap.Put("客户端", "ReportClient")
+
+}
+
 // 摘要表
 var SummaryFieldsMap map[int]string = map[int]string{0: "REPORTCLIENT", 1: "HOSTNAME", 2: "TOTALJOB",
 	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
