@@ -453,7 +453,7 @@ func ReadHtml() (resultNum int) {
 			GenTime = formatStr(ss)
 			//strings.TrimSpace(ss)
 			//GenTime = strings.Replace(ss, "\n", "", -1)
-			fmt.Printf("GenTime :%+v\n", ss)
+			//fmt.Printf("GenTime :%+v\n", ss)
 		}
 	})
 
@@ -621,6 +621,11 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 			ss1 = strings.TrimSpace(ss1)
 			if strings.Contains(FiledsHeader[colnum], "STARTTIME") {
 				ss1 = formatTime(ss1)
+				if _, err := strconv.Atoi(ss1); err != nil {
+					Log.Error("HTMLFILE:%s,headr:%s, 转换数字失败: 实际字符：%s", HtmlFile, "START TIME",ss1)
+					ss1="NULL"
+					return
+				}
 			}
 
 			if strings.Contains(FiledsHeader[colnum], "FAILEOBJECT") || strings.Contains(FiledsHeader[colnum], "FAILEDFOLDERS") ||
@@ -639,6 +644,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 				ss1 = strings.Join(strings.Split(ss1, ","), "")
 				if _, err := strconv.Atoi(ss1); err != nil {
 					Log.Error("HTMLFILE:%s,headr:%s, 转换数字失败", HtmlFile, FiledsHeader[colnum])
+					ss1="NULL"
 					return
 				}
 
