@@ -69,6 +69,21 @@ var SummaryFieldsMap map[int]string = map[int]string{0: "ReportClient", 1: "HOST
 	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
 	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
 
+// 摘要表cv10    缺少 1，12
+var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "ReportClient",  2: "TOTALJOB",
+	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
+	10: "NORUN", 11: "NOSCHEDULE",  13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
+	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
+	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+
+// 摘要表cv8   缺少 1，5，9，12
+var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "ReportClient",  2: "TOTALJOB",
+	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING",
+	10: "NORUN", 11: "NOSCHEDULE",  13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
+	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS",
+	20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
+
+
 // 详细数据表
 var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
