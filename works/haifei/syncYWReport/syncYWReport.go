@@ -96,8 +96,8 @@ var DetailFieldsMapCv8 map[int]string = map[int]string{0: "dataclient", 1: "Agen
 
 var DetailFieldsMapPlus map[int]string = map[int]string{
 	17: "COMMCELL", 18: "REPORTTIME",                     // 与摘要表一样
-	19: "JOBTYPE", 20: "START TIME", 21: "DATASUBCLIENT", //哪种问题  ,通过开始时间 和 子客户端，格式化出来的字段
-	22: "REASONFORFAILURE", 23: "SOLVETYPE",              //失败原因，解决状态
+	19: "JOBTYPE", 20: "START TIME", 21: "DATASUBCLIENT", //作业状态  ,通过开始时间 和 子客户端，格式化出来的字段
+	22: "REASONFORFAILURE", 23: "SOLVETYPE",              //失败原因(失败，完成..),，解决状态
 	24: "SOLVETIME", 25: "ENGINEER",} // 解决时间，工程师， 这几个字段不用插入数据，
 
 //todo 有问题的行 解决状态默认是未解决
