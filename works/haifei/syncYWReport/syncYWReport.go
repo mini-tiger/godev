@@ -36,8 +36,10 @@ const (
 	//htmlfileReg = "C:\\work\\go-dev\\src\\godev\\works\\haifei\\*.html"
 	//htmlBakDir  = "C:\\work\\go-dev\\src\\godev\\works\\haifei\\bak\\"
 	//timeinter   = 10
-	timeLayout = "2006-01-02 15:04:05"
-	FieldsLen  = 21 // 列一共有几列,使用时 要 减一
+	timeLayout   = "2006-01-02 15:04:05"
+	FieldsLen    = 21 // 列一共有几列,使用时 要 减一
+	DetailTable  = "HF_YWREPORTDETAIL"
+	SummaryTable = "HF_YWREPORTSUMMARY"
 )
 
 var MoveFileChan chan string = make(chan string, 0)
@@ -63,19 +65,19 @@ var c Config
 //													"已终止":"TERMINATION","不成功":}
 
 // 摘要表
-var SummaryFieldsMap map[int]string = map[int]string{0: "ReportClient", 1: "HOSTNAME", 2: "TOTALJOB",
+var SummaryFieldsMap map[int]string = map[int]string{0: "REPORTCLIENT", 1: "HOSTNAME", 2: "TOTALJOB",
 	3: "COMPLETED", 4: "COMPLETEDWITHERRORS", 5: "COMPLETEDWITHWARNINGS", 6: "KILLED", 7: "UNSUCCESSFUL", 8: "RUNNING", 9: "DELAYED",
 	10: "NORUN", 11: "NOSCHEDULE", 12: "COMMITTED", 13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
 	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS"}
 
 // 摘要表cv10    缺少 1，12
-var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "ReportClient", 1: "TOTALJOB",
+var SummaryFieldsMapCv10 map[int]string = map[int]string{0:"REPORTCLIENT", 1: "TOTALJOB",
 	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "COMPLETEDWITHWARNINGS", 5: "KILLED", 6: "UNSUCCESSFUL", 7: "RUNNING", 8: "DELAYED",
 	9: "NORUN", 10: "NOSCHEDULE", 11: "SIZEOFAPPLICATION", 12: "DATAWRITTEN", 13: "STARTTIME", 14: "ENDTIME", 15: "PROTECTEDOBJECTS",
 	16: "FAILEDOBJECTS", 17: "FAILEDFOLDERS"}
 
 // 摘要表cv8   缺少 1，5，9，12
-var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "ReportClient", 1: "TOTALJOB",
+var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "REPORTCLIENT", 1: "TOTALJOB",
 	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "KILLED", 5: "UNSUCCESSFUL", 6: "RUNNING",
 	7: "NORUN", 8: "NOSCHEDULE", 9: "SIZEOFAPPLICATION", 10: "DATAWRITTEN", 11: "STARTTIME", 12: "ENDTIME", 13: "PROTECTEDOBJECTS",
 	14: "FAILEDOBJECTS", 15: "FAILEDFOLDERS"}
@@ -83,13 +85,13 @@ var SummaryFieldsMapCv8 map[int]string = map[int]string{0: "ReportClient", 1: "T
 var SummaryFieldsMapPlus map[int]string = map[int]string{20: "COMMCELL", 21: "REPORTTIME"} // 这两个字段从页面上开头获取,唯一联合字段，也是和详细表 关系的字段
 
 // 详细数据表
-var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
+var DetailFieldsMap map[int]string = map[int]string{0: "DATACLIENT", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
 	10: "Data Written", 11: "Data Size Change", 12: "Transfer Time", 13: "Throughput (GB/Hour)", 14: "Protected Objects", 15: "Failed Objects",
 	16: "Failed Folders"}
 
 // 详细数据表 cv8
-var DetailFieldsMapCv8 map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
+var DetailFieldsMapCv8 map[int]string = map[int]string{0: "DATACLIENT", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application",
 	10: "Data Size Change", 11: "Transfer Time", 12: "Throughput (GB/Hour)", 13: "Protected Objects", 14: "Failed Objects",
 	15: "Failed Folders"}
@@ -526,41 +528,44 @@ func ReadHtml() (resultNum int) {
 
 	case 11:
 
-		GenDetailData(detailDomFindStr, dom, DetailFieldsMap,StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap)            // 生成 详细数据,version 11 使用默认DetailFieldsMap
 
-		rn=GenSqls(DetailSqlArr)
-		if rn>0 {
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
 			return rn
 		}
-		rn = GenSqls(SummarySqlArr)
-		fmt.Println(SummarySqlArr)
-		if rn>0{
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		//fmt.Println(SummarySqlArr)
+		if rn > 0 {
 			return rn
 		}
 
 	case 10:
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10)        // 生成 详细数据,version 10 使用默认DetailFieldsMap
 
-		rn=GenSqls(DetailSqlArr)
-		if rn>0 {
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
 			return rn
 		}
-		rn = GenSqls(SummarySqlArr)
-		fmt.Println(SummarySqlArr)
-		if rn>0{
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		//fmt.Println(SummarySqlArr)
+		if rn > 0 {
 			return rn
 		}
 	case 8:
 
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
-		rn=GenSqls(DetailSqlArr)
-		if rn>0 {
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8)               // 生成 详细数据,version 8 使用默认DetailFieldsMap
+
+		rn = GenSqls(DetailSqlArr, DetailTable)
+		if rn > 0 {
 			return rn
 		}
-		rn = GenSqls(SummarySqlArr)
-		fmt.Println(SummarySqlArr)
-		if rn>0{
+		rn = GenSqls(SummarySqlArr, SummaryTable)
+		//fmt.Println(SummarySqlArr)
+		if rn > 0 {
 			return rn
 		}
 	}
@@ -613,7 +618,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 		tmpSubData[DetailFieldsMapPlus[20]] = CommCell
 		tmpSubData[DetailFieldsMapPlus[21]] = GenTime
 
-		SummarySqlArr = append(SummarySqlArr,tmpSubData)
+		SummarySqlArr = append(SummarySqlArr, tmpSubData)
 	})
 
 	return
@@ -811,19 +816,20 @@ func sliceToStringValue(sl map[string]string) (returnstring string) {
 			//returnstring = returnstring
 			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
 			colsStr = colsStr + "\"" + v + "\")"
-			valueStr = valueStr + "\"" + sl[v] + "\")"
+			valueStr = valueStr + "'" + sl[v] + "')"
 
 			break
 		case i < len(sl)-1:
 			//returnstring = returnstring
 			colsStr = colsStr + "\"" + v + "\"" + ","
-			valueStr = valueStr + "\"" + sl[v] + "\"" + ","
+			valueStr = valueStr + "'" + sl[v] + "'" + ","
 			break
 		}
 
 	}
 	//fmt.Println(len(keys),len(sl))
 	returnstring = colsStr + " values(" + valueStr
+
 	return
 }
 
@@ -869,7 +875,7 @@ func updatesliceToString(sl map[string]string) (returnstring string) {
 			//returnstring = returnstring
 			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
 			colsStr = colsStr + "\"" + v + "\"='" + sl[v] + "'"
-			wherestring = wherestring + "\"" + v + "='" + sl[v] + "'"
+			wherestring = wherestring + "\"" + v + "\"='" + sl[v] + "'"
 
 			break
 		case i < len(sl)-1:
@@ -884,10 +890,10 @@ func updatesliceToString(sl map[string]string) (returnstring string) {
 	return
 }
 
-func GenSqls(DetailSqlArrCopy []map[string]string) (resultNum int) {
+func GenSqls(DetailSqlArrCopy []map[string]string, tablename string) (resultNum int) {
 
-	baseSql := "insert into HF_BACKUPDETAIL("
-	updateSql := "update HF_BACKUPDETAIL set "
+	baseSql := "insert into " + tablename + "("
+	updateSql := "update " + tablename + " set "
 	//fmt.Println(Data)
 	//fmt.Println(updateSql)
 	//fmt.Println(baseSql)
@@ -895,19 +901,19 @@ func GenSqls(DetailSqlArrCopy []map[string]string) (resultNum int) {
 	for _, value := range DetailSqlArrCopy {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
-		valueStr := strings.Replace(sliceToStringValue(value), "\"", "'", -1)
+		valueStr := sliceToStringValue(value)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
 		tmpmap["update"] = updateSql + updatesliceToString(value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
-	for _, v := range sqlArr {
-	fmt.Println(v["insert"])
-	fmt.Println(v["update"])
-	}
-	//return stmtSql(sqlArr)
-	return 1
+	//for _, v := range sqlArr {
+	//fmt.Println(v["insert"])
+	//fmt.Println(v["update"])
+	//}
+	return stmtSql(sqlArr)
+	//return 1
 }
 
 func stmtSql(sqlArr []map[string]string) (resultNum int) {
@@ -931,6 +937,7 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 	}
 	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
 	for i := 0; i < len(sqlArr); i++ {
+		//fmt.Println(sqlArr[i]["update"])
 		//fmt.Println(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
 		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
 		//fmt.Println(sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
@@ -944,6 +951,7 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 		//fmt.Println(Result.RowsAffected())
 		//fmt.Println("===========", r, err)
 		if err != nil {
+			fmt.Println(sqlArr[i]["update"])
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 			resultNum = 4
 			continue
@@ -958,6 +966,7 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 
 		if r == 0 {
 			_, err := db.Exec(sqlArr[i]["insert"])
+			fmt.Println(sqlArr[i]["insert"])
 			if err != nil {
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 				resultNum = 4
