@@ -70,6 +70,8 @@ var SummaryFieldsMap map[int]string = map[int]string{0: "REPORTCLIENT", 1: "HOST
 	10: "NORUN", 11: "NOSCHEDULE", 12: "COMMITTED", 13: "SIZEOFAPPLICATION", 14: "DATAWRITTEN", 15: "STARTTIME", 16: "ENDTIME", 17: "PROTECTEDOBJECTS",
 	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS"}
 
+
+
 // 摘要表cv10    缺少 1，12
 var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "REPORTCLIENT", 1: "TOTALJOB",
 	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "COMPLETEDWITHWARNINGS", 5: "KILLED", 6: "UNSUCCESSFUL", 7: "RUNNING", 8: "DELAYED",
@@ -623,8 +625,17 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 
 			if strings.Contains(FiledsHeader[colnum], "FAILEOBJECT") || strings.Contains(FiledsHeader[colnum], "FAILEDFOLDERS") ||
 				strings.Contains(FiledsHeader[colnum],"TOTALJOB") || strings.Contains(FiledsHeader[colnum], "COMPLETED") ||
-				strings.Contains(FiledsHeader[colnum], "") ||
-				strings.Contains(FiledsHeader[colnum],"TOTALJOB") {
+				strings.Contains(FiledsHeader[colnum], "COMPLETEDWITHERRORS") ||
+				strings.Contains(FiledsHeader[colnum],"COMPLETEDWITHWARNINGS") ||
+				strings.Contains(FiledsHeader[colnum], "KILLED") ||
+				strings.Contains(FiledsHeader[colnum],"UNSUCCESSFUL") ||
+				strings.Contains(FiledsHeader[colnum], "RUNNING") ||
+				strings.Contains(FiledsHeader[colnum],"DELAYED") ||
+				strings.Contains(FiledsHeader[colnum], "NORUN") ||
+				strings.Contains(FiledsHeader[colnum],"NOSCHEDULE") ||
+				strings.Contains(FiledsHeader[colnum], "COMMITTED") ||
+				strings.Contains(FiledsHeader[colnum],"COMMITTED") ||
+				strings.Contains(FiledsHeader[colnum], "PROTECTEDOBJECTS") {
 				ss1 = strings.Join(strings.Split(ss1, ","), "")
 				if _, err := strconv.Atoi(ss1); err != nil {
 					Log.Error("HTMLFILE:%s,headr:%s, 转换数字失败", HtmlFile, FiledsHeader[colnum])
