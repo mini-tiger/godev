@@ -71,7 +71,7 @@ var SummaryFieldsMap map[int]string = map[int]string{0: "REPORTCLIENT", 1: "HOST
 	18: "FAILEDOBJECTS", 19: "FAILEDFOLDERS"}
 
 // 摘要表cv10    缺少 1，12
-var SummaryFieldsMapCv10 map[int]string = map[int]string{0:"REPORTCLIENT", 1: "TOTALJOB",
+var SummaryFieldsMapCv10 map[int]string = map[int]string{0: "REPORTCLIENT", 1: "TOTALJOB",
 	2: "COMPLETED", 3: "COMPLETEDWITHERRORS", 4: "COMPLETEDWITHWARNINGS", 5: "KILLED", 6: "UNSUCCESSFUL", 7: "RUNNING", 8: "DELAYED",
 	9: "NORUN", 10: "NOSCHEDULE", 11: "SIZEOFAPPLICATION", 12: "DATAWRITTEN", 13: "STARTTIME", 14: "ENDTIME", 15: "PROTECTEDOBJECTS",
 	16: "FAILEDOBJECTS", 17: "FAILEDFOLDERS"}
@@ -219,7 +219,7 @@ func waitHtmlFile(files []string) {
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
 		default:
-			//MoveFileChan <- file
+			MoveFileChan <- file
 			Log.Printf("finish covert file:%s\n", file)
 		}
 
@@ -277,6 +277,10 @@ func formatTime(toBeCharge string) string {
 	//fmt.Println(sr)
 	return strconv.FormatInt(sr, 10)
 }
+func formatStr(s string) (string) {
+	return strings.Replace(strings.TrimSpace(s), "\n", "", -1)
+}
+
 func formatDetailValues(index int, s string) (rstr string) {
 	//fmt.Println(index, s)
 	if strings.Contains(s, "N/A") {
@@ -434,13 +438,20 @@ func ReadHtml() (resultNum int) {
 	//GenTimeSource := dom.Find("body:contains(备份作业摘要报告)")
 	cvSelection.Each(func(i int, selection *goquery.Selection) {
 		if i == 0 {
-			//fmt.Println(htmlfile,selection.Text())
+			//fmt.Println(HtmlFile,selection.Text())
 			//fmt.Println(strings.Contains(selection.Text(),"generated"))
+
 			ss := strings.Split(strings.Split(selection.Text(), "备份作业摘要报告")[1], "上生成的报表版本")[0]
+			//fmt.Println(strings.Split(selection.Text(), "备份作业摘要报告")[1])
 			//fmt.Println(strings.Split(selection.Text(), "备份作业摘要报告"))
 			//fmt.Println(ss)
-			//fmt.Printf("GenTime :%+v\n", ss)
-			GenTime = strings.TrimSpace(ss)
+			if strings.Contains(ss, "\n") {
+				ss = strings.Split(ss, "\n")[1]
+			}
+			GenTime = formatStr(ss)
+			//strings.TrimSpace(ss)
+			//GenTime = strings.Replace(ss, "\n", "", -1)
+			fmt.Printf("GenTime :%+v\n", ss)
 		}
 	})
 
@@ -532,49 +543,51 @@ func ReadHtml() (resultNum int) {
 		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap)            // 生成 详细数据,version 11 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 
 	case 10:
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
 		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10)        // 生成 详细数据,version 10 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 	case 8:
 
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
 		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8)               // 生成 详细数据,version 8 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
-		if rn > 0 {
-			return rn
-		}
+		//if rn > 0 {
+		//	return rn
+		//}
 	}
 
 	f.Close()
+	DetailSqlArr = make([]map[string]string, 0)
+	SummarySqlArr = make([]map[string]string, 0)
 	//fmt.Println(FiledsHeader)
 
 	//return GenSqls(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
-	return 1
+	return rn
 }
 
 func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
@@ -582,7 +595,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 
 	t_tbodyData = dom.Find(domstr)
 	//Data = make([][]string, 0)
-	Log.Printf("HtmlFile:%s,Summary rows:%d \n", HtmlFile, len(t_tbodyData.Nodes))
+	//Log.Printf("HtmlFile:%s,Summary rows:%d \n", HtmlFile, len(t_tbodyData.Nodes))
 	t_tbodyData.Each(func(i int, rowsele *goquery.Selection) {
 		if i < 2 { // 0行是 摘要 1行是列名
 			return
@@ -591,7 +604,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 		tmpSubData := make(map[string]string, 0)
 		cols := rowsele.Find("td")
 		if (len(FiledsHeader) != len(cols.Nodes)) { //
-			Log.Error("htmfile:%s ,summary no eq rows:%d", HtmlFile, i)
+			//Log.Error("htmfile:%s ,summary no eq rows:%d", HtmlFile, i)
 			return
 		}
 		cols.Each(func(colnum int, colsele *goquery.Selection) {
@@ -608,6 +621,20 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 				ss1 = formatTime(ss1)
 			}
 
+			if strings.Contains(FiledsHeader[colnum], "FAILEOBJECT") || strings.Contains(FiledsHeader[colnum], "FAILEDFOLDERS") ||
+				strings.Contains(FiledsHeader[colnum],"TOTALJOB") || strings.Contains(FiledsHeader[colnum], "COMPLETED") ||
+				strings.Contains(FiledsHeader[colnum], "") ||
+				strings.Contains(FiledsHeader[colnum],"TOTALJOB") {
+				ss1 = strings.Join(strings.Split(ss1, ","), "")
+				if _, err := strconv.Atoi(ss1); err != nil {
+					Log.Error("HTMLFILE:%s,headr:%s, 转换数字失败", HtmlFile, FiledsHeader[colnum])
+					return
+				}
+
+			}
+
+
+
 			//fmt.Println(i,colnum,FiledsHeader[colnum],strings.Contains(FiledsHeader[colnum],"Failed Folder"))
 			//
 			//fmt.Println(strings.Split())
@@ -615,9 +642,9 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 			//tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData[DetailFieldsMapPlus[20]] = CommCell
-		tmpSubData[DetailFieldsMapPlus[21]] = GenTime
-
+		tmpSubData[SummaryFieldsMapPlus[20]] = CommCell
+		tmpSubData[SummaryFieldsMapPlus[21]] = GenTime
+		//fmt.Println(tmpSubData)
 		SummarySqlArr = append(SummarySqlArr, tmpSubData)
 	})
 
@@ -692,12 +719,12 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 
 		if Version != 8 {
 			if (len(FiledsHeader) != len(cols.Nodes)) {
-				Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
+				//Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
 				return
 			}
 		} else {
 			if (len(FiledsHeader) != len(cols.Nodes)-1) { // 备份大小列 跳过
-				Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
+				//Log.Error("htmfile:%s ,no eq rows:%d", HtmlFile, i)
 				return
 			}
 
@@ -912,11 +939,11 @@ func GenSqls(DetailSqlArrCopy []map[string]string, tablename string) (resultNum 
 	//fmt.Println(v["insert"])
 	//fmt.Println(v["update"])
 	//}
-	return stmtSql(sqlArr)
+	return stmtSql(sqlArr, tablename)
 	//return 1
 }
 
-func stmtSql(sqlArr []map[string]string) (resultNum int) {
+func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 	os.Setenv("NLS_LANG", "")
 	//if len(os.Args) != 2 {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
@@ -930,8 +957,8 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 
 	defer db.Close()
 
-	updatenum := 0
-	insertnum := 0
+	var updatenum, insertnum int
+	//insertnum := 0
 	if len(sqlArr) == 0 {
 		return 3
 	}
@@ -966,8 +993,9 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 
 		if r == 0 {
 			_, err := db.Exec(sqlArr[i]["insert"])
-			fmt.Println(sqlArr[i]["insert"])
+
 			if err != nil {
+				fmt.Println(sqlArr[i]["insert"])
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 				resultNum = 4
 				continue
@@ -976,7 +1004,7 @@ func stmtSql(sqlArr []map[string]string) (resultNum int) {
 		}
 
 	}
-	Log.Printf("htmlfile : %s ,total sql:%d,success update sql:%d,insert sql:%d\n", HtmlFile, len(sqlArr), updatenum, insertnum)
+	Log.Printf("htmlfile : %s ,tablname:%s,total sql:%d,success update sql:%d,insert sql:%d\n", HtmlFile, tablename, len(sqlArr), updatenum, insertnum)
 	return
 
 }
