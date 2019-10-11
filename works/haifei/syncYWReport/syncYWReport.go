@@ -65,6 +65,17 @@ var c Config
 //													"已完成":"COMPLETED","完成但有错误":"COMPLETIONERROR","完成但有警告":"COMPLETIONWARN",
 //													"已终止":"TERMINATION","不成功":}
 
+var SummaryFieldsMap map[int]string = g.SummaryFieldsMap
+var SummaryFieldsMapCv10 map[int]string = g.SummaryFieldsMapCv10
+var SummaryFieldsMapCv8 map[int]string = g.SummaryFieldsMapCv8
+var SummaryFieldsMapPlus map[int]string = g.SummaryFieldsMapPlus
+var DetailFieldsMap map[int]string = g.DetailFieldsMap
+var DetailFieldsMapCv8 map[int]string = g.DetailFieldsMapCv8
+var DetailFieldsMapPlus map[int]string = g.DetailFieldsMapPlus
+
+var StatusColors map[string]g.StatusColor = g.StatusColors
+var StatusColorsCv8 map[string]g.StatusColor = g.StatusColorsCv8
+
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
 	HtmlBakDir  string `json:"htmlBakDir"`
@@ -450,8 +461,8 @@ func ReadHtml() (resultNum int) {
 
 	case 11:
 
-		GenDetailData(detailDomFindStr, dom, g.DetailFieldsMap, g.StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, g.SummaryFieldsMap)              // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap)            // 生成 详细数据,version 11 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
 		//if rn > 0 {
@@ -464,8 +475,8 @@ func ReadHtml() (resultNum int) {
 		//}
 
 	case 10:
-		GenDetailData(detailDomFindStr, dom, g.DetailFieldsMap, g.StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, g.SummaryFieldsMapCv10)          // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10)        // 生成 详细数据,version 10 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
 		//if rn > 0 {
@@ -478,8 +489,8 @@ func ReadHtml() (resultNum int) {
 		//}
 	case 8:
 
-		GenDetailData(detailDomFindStr, dom, g.DetailFieldsMapCv8, g.StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
-		GenSummaryData(SummaryDomFindStr, dom, g.SummaryFieldsMapCv8)                 // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8, StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8)               // 生成 详细数据,version 8 使用默认DetailFieldsMap
 
 		rn = GenSqls(DetailSqlArr, DetailTable)
 		//if rn > 0 {
@@ -566,8 +577,8 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 			//tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData[g.SummaryFieldsMapPlus[20]] = CommCell
-		tmpSubData[g.SummaryFieldsMapPlus[21]] = GenTime
+		tmpSubData[SummaryFieldsMapPlus[20]] = CommCell
+		tmpSubData[SummaryFieldsMapPlus[21]] = GenTime
 		//fmt.Println(tmpSubData)
 		SummarySqlArr = append(SummarySqlArr, tmpSubData)
 	})
@@ -695,13 +706,13 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 			//tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData[g.DetailFieldsMapPlus[17]] = CommCell
-		tmpSubData[g.DetailFieldsMapPlus[18]] = GenTime
-		tmpSubData[g.DetailFieldsMapPlus[19]] = rowjobtype
-		tmpSubData[g.DetailFieldsMapPlus[20]] = StartTime
-		tmpSubData[g.DetailFieldsMapPlus[21]] = Subclient
-		tmpSubData[g.DetailFieldsMapPlus[22]] = rowReasonforfailure
-		tmpSubData[g.DetailFieldsMapPlus[23]] = rowsolvetype
+		tmpSubData[DetailFieldsMapPlus[17]] = CommCell
+		tmpSubData[DetailFieldsMapPlus[18]] = GenTime
+		tmpSubData[DetailFieldsMapPlus[19]] = rowjobtype
+		tmpSubData[DetailFieldsMapPlus[20]] = StartTime
+		tmpSubData[DetailFieldsMapPlus[21]] = Subclient
+		tmpSubData[DetailFieldsMapPlus[22]] = rowReasonforfailure
+		tmpSubData[DetailFieldsMapPlus[23]] = rowsolvetype
 
 		//tmpSubData = append(tmpSubData, []string{CommCell, GenTime, rowjobtype, StartTime, Subclient, rowReasonforfailure, rowsolvetype}...)
 		//fmt.Printf("%+v\n", tmpSubData)
