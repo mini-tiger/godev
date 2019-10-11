@@ -16,6 +16,7 @@ import (
 	"tjtools/logDiy"
 	"tjtools/utils"
 	"path"
+	"sort"
 )
 
 //https://github.com/360EntSecGroup-Skylar/excelize
@@ -42,15 +43,16 @@ const (
 var MoveFileChan chan string = make(chan string, 0)
 var startRunTime = time.Now().Unix()
 var (
-	CommCell        string // 客户端名
-	GenTime         string
-	StartTime       string
+	CommCell  string // 客户端名
+	GenTime   string
+	StartTime string
 	//ApplicationSize string
-	Subclient       string
-	StartTimeArr    []string = make([]string, 0)
-	HtmlFile        string
-	DetailSqlArr    []map[string]string
-	SummerySqlArr   []map[string]string
+	Subclient     string
+	//StartTimeArr  []string = make([]string, 0)
+	HtmlFile      string
+	DetailSqlArr  []map[string]string
+	SummerySqlArr []map[string]string
+	Version 		int
 )
 
 var Log *logDiy.Log1
@@ -72,6 +74,12 @@ var DetailFieldsMap map[int]string = map[int]string{0: "dataclient", 1: "AgentIn
 	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application", 9: "Data Transferred",
 	10: "Data Written", 11: "Data Size Change", 12: "Transfer Time", 13: "Throughput (GB/Hour)", 14: "Protected Objects", 15: "Failed Objects",
 	16: "Failed Folders"}
+
+// 详细数据表 cv8
+var DetailFieldsMapCv8 map[int]string = map[int]string{0: "dataclient", 1: "AgentInstance", 2: "BackupSetSubclient", 3: "Job ID (CommCell)(Status)",
+	4: "Type", 5: "Scan Type", 6: "Start Time(Write Start Time)", 7: "End Time or Current Phase", 8: "Size of Application",
+	10: "Data Size Change", 11: "Transfer Time", 12: "Throughput (GB/Hour)", 13: "Protected Objects", 14: "Failed Objects",
+	15: "Failed Folders"}
 
 var DetailFieldsMapPlus map[int]string = map[int]string{
 	17: "COMMCELL", 18: "REPORTTIME",                     // 与摘要表一样
@@ -99,6 +107,17 @@ var StatusColors map[string]StatusColor = map[string]StatusColor{"#66ABDD": Stat
 	"#FF9999": StatusColor{"未运行", 1},
 	"93C54B": StatusColor{"提交", 0},
 	"#CCFFFF": StatusColor{"数据大小按 10% 或更多增加/减少", 0}}
+
+// 0 不检查直接录入， 1 检查下一行失败原因  2.不录入
+var StatusColorsCv8 map[string]StatusColor = map[string]StatusColor{"#CCFFFF": StatusColor{"运行中", 0},
+	"#CC99FF": StatusColor{"已延迟", 1},
+	"#CCFFCC": StatusColor{"已完成", 0},
+	"#FFCC99": StatusColor{"完成但有错误", 1},
+	"#FF99CC": StatusColor{"已终止", 1},
+	"#FF3366": StatusColor{"失败", 1},
+	"#CC9999": StatusColor{"过时", 0},
+	"#FFFFFF": StatusColor{"无保护", 0},
+	"66ABDD": StatusColor{"数据大小按 10% 或更多增加/减少", 0}}
 
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
@@ -227,8 +246,8 @@ func formatTime(toBeCharge string) string {
 	//toBeCharge := "09/04/2019 11:03:16"
 	// 待转化为时间戳的字符串 注意 这里的小时和分钟还要秒必须写 因为是跟着模板走的 修改模板的话也可以不写
 	timeLayout := "2006/01/02 15:04:05" // 中英文 时间格式不一样
-	if ii,_:=strconv.Atoi(strings.Split(toBeCharge,"/")[0]);ii<=12{
-		timeLayout = "01/02/2006 15:04:05"                           //转化所需模板
+	if ii, _ := strconv.Atoi(strings.Split(toBeCharge, "/")[0]); ii <= 12 {
+		timeLayout = "01/02/2006 15:04:05" //转化所需模板
 	}
 
 	loc, _ := time.LoadLocation("Local")                            //重要：获取时区
@@ -294,65 +313,65 @@ func formatDetailValues(index int, s string) (rstr string) {
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
 		break
-	//case index == 8: // starttime 赋值 全局变量，对应自定义列
-	//	as := ""
-	//	if strings.Contains(s, "(") {
-	//		as = strings.Split(s, "(")[0]
-	//	} else {
-	//		as = s
-	//	}
-	//
-	//	switch true {
-	//	case strings.Contains(as, "TB"):
-	//		as = strings.Split(as, " TB")[0]
-	//		fl, err := strconv.ParseFloat(as, 64)
-	//		if err != nil {
-	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-	//			break
-	//		}
-	//
-	//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-	//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
-	//	case strings.Contains(as, "GB"):
-	//		as = strings.Split(as, " GB")[0]
-	//		fl, err := strconv.ParseFloat(as, 64)
-	//		if err != nil {
-	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-	//			break
-	//		}
-	//
-	//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
-	//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
-	//
-	//	case strings.Contains(as, "MB"):
-	//		as = strings.Split(as, " MB")[0]
-	//		fl, err := strconv.ParseFloat(as, 64)
-	//		if err != nil {
-	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-	//			break
-	//		}
-	//		ApplicationSize = fmt.Sprintf("%.2f", fl)
-	//	case strings.Contains(as, "KB"):
-	//		as = strings.Split(as, " KB")[0]
-	//		fl, err := strconv.ParseFloat(as, 64)
-	//		if err != nil {
-	//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
-	//			break
-	//		}
-	//		ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
-	//	case strings.Contains(as, "Not Run because of another job running for the same subclient"):
-	//		break
-	//	default:
-	//
-	//		application, e := strconv.Atoi(strings.TrimSpace(as))
-	//		if e != nil {
-	//			Log.Error("change type string:%s,err:%s", as, e)
-	//		}
-	//		if application == 0 {
-	//			ApplicationSize = "0"
-	//		}
-	//
-	//	}
+		//case index == 8: // starttime 赋值 全局变量，对应自定义列
+		//	as := ""
+		//	if strings.Contains(s, "(") {
+		//		as = strings.Split(s, "(")[0]
+		//	} else {
+		//		as = s
+		//	}
+		//
+		//	switch true {
+		//	case strings.Contains(as, "TB"):
+		//		as = strings.Split(as, " TB")[0]
+		//		fl, err := strconv.ParseFloat(as, 64)
+		//		if err != nil {
+		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+		//			break
+		//		}
+		//
+		//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
+		//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024*1014)
+		//	case strings.Contains(as, "GB"):
+		//		as = strings.Split(as, " GB")[0]
+		//		fl, err := strconv.ParseFloat(as, 64)
+		//		if err != nil {
+		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+		//			break
+		//		}
+		//
+		//		//am:=strconv.FormatFloat(fl*1024,'E',-1,64)
+		//		ApplicationSize = fmt.Sprintf("%.2f", fl*1024)
+		//
+		//	case strings.Contains(as, "MB"):
+		//		as = strings.Split(as, " MB")[0]
+		//		fl, err := strconv.ParseFloat(as, 64)
+		//		if err != nil {
+		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+		//			break
+		//		}
+		//		ApplicationSize = fmt.Sprintf("%.2f", fl)
+		//	case strings.Contains(as, "KB"):
+		//		as = strings.Split(as, " KB")[0]
+		//		fl, err := strconv.ParseFloat(as, 64)
+		//		if err != nil {
+		//			Log.Printf("应用程序大小转换float失败 err:%s\n", err)
+		//			break
+		//		}
+		//		ApplicationSize = fmt.Sprintf("%.2f", fl/1024)
+		//	case strings.Contains(as, "Not Run because of another job running for the same subclient"):
+		//		break
+		//	default:
+		//
+		//		application, e := strconv.Atoi(strings.TrimSpace(as))
+		//		if e != nil {
+		//			Log.Error("change type string:%s,err:%s", as, e)
+		//		}
+		//		if application == 0 {
+		//			ApplicationSize = "0"
+		//		}
+		//
+		//	}
 
 		//break
 	}
@@ -401,7 +420,7 @@ func ReadHtml() (resultNum int) {
 			//fmt.Println(strings.Split(selection.Text(), "备份作业摘要报告"))
 			//fmt.Println(ss)
 			//fmt.Printf("GenTime :%+v\n", ss)
-			GenTime = formatTime(strings.TrimSpace(ss))
+			GenTime = strings.TrimSpace(ss)
 		}
 	})
 
@@ -435,6 +454,9 @@ func ReadHtml() (resultNum int) {
 	default:
 		version = 11
 	}
+	Version = version
+
+	GenTime = formatTime(GenTime)
 	/*
 	version 10 : summery:18cols,detail: 17cols
 			11 :20 17
@@ -486,8 +508,15 @@ func ReadHtml() (resultNum int) {
 
 	case 11:
 
-		data := GenDetailData(detailDomFindStr, dom, DetailFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
-		fmt.Println(data)
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap,StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		return GenSqls(DetailSqlArr)
+	case 10:
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMap,StatusColors) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		return GenSqls(DetailSqlArr)
+	case 8:
+
+		GenDetailData(detailDomFindStr, dom, DetailFieldsMapCv8,StatusColorsCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		return GenSqls(DetailSqlArr)
 	}
 
 	f.Close()
@@ -501,8 +530,7 @@ func ReadHtml() (resultNum int) {
 //
 //}
 
-
-func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
+func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string,StatusColors map[string]StatusColor) (Data [][]string) {
 	var t_tbodyData *goquery.Selection
 
 	t_tbodyData = dom.Find(domstr)
@@ -530,6 +558,7 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		}
 
 		Statuscolor, e := StatusColors[rowColor]
+		//fmt.Println(Statuscolor)
 
 		if !e {
 			Log.Error("没找到颜色 Htmfile:%s,detail_rows:%d", HtmlFile, i)
@@ -540,12 +569,13 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		case 2:
 			return
 		case 1:
+
 			if len(rowsele.Next().Find(" td").Nodes) == 1 {
 				//fmt.Println(i, rowsele.Next().Find(" td").Text())
 				rowjobtype = Statuscolor.ColorStatus
 				rowsolvetype = "未解决"
 				rowReasonforfailure = rowsele.Next().Find(" td").Text()
-			}else{
+			} else {
 				rowjobtype = Statuscolor.ColorStatus
 				rowsolvetype = "未解决"
 				rowReasonforfailure = "NULL"
@@ -555,26 +585,79 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 			rowsolvetype = "NULL"
 			rowReasonforfailure = "NULL"
 
-
 		}
 
 		//tmpSubData := make([]string, 0)
-		tmpSubData := make(map[string]string,0)
+		tmpSubData := make(map[string]string, 0)
 		cols := rowsele.Find("td")
-		cols.Each(func(i int, selection *goquery.Selection) {
-			ss1 := selection.Text()
+
+
+		if Version != 8{
+			if (len(FiledsHeader) != len(cols.Nodes) ) {
+				Log.Error("htmfile:%s ,no eq rows:%d",HtmlFile, i)
+				return
+			}
+		}else{
+			if (len(FiledsHeader) != len(cols.Nodes) -1  ) { // 备份大小列 跳过
+				Log.Error("htmfile:%s ,no eq rows:%d",HtmlFile, i)
+				return
+			}
+
+		}
+
+		cols.Each(func(colnum int, colsele *goquery.Selection) {
+			if Version ==8 && colnum == 9{
+				return
+			}
+			ss1 := colsele.Text()
 			//fmt.Println(selection.Attr("bgcolor"))
 			//switch true {
 			//case strings.Contains(ss1,"N/A"):
 			//	ss1=strings.Replace(ss1,"N/A","",-1)
 			//}
-			ss1 = formatDetailValues(i, ss1) // todo 格式化 数据
-			tmpSubData = append(tmpSubData, ss1)
+
+			ss1 = formatDetailValues(colnum, ss1) // todo 格式化 数据
+
+			//fmt.Println(i,colnum,FiledsHeader[colnum],strings.Contains(FiledsHeader[colnum],"Failed Folder"))
+			if strings.Contains(FiledsHeader[colnum],"Failed Object")|| strings.Contains(FiledsHeader[colnum],"Failed Folder") {
+				ss1 = strings.Join(strings.Split(ss1,","),"")
+				if sslvalue, err := strconv.Atoi(ss1); err == nil && sslvalue > 0 {
+					rowjobtype = "失败"
+					rowsolvetype = "未解决"
+				}
+
+			}
+
+			if strings.Contains(FiledsHeader[colnum],"Data Size Change"){
+				if cv,ce:=colsele.Attr("bgcolor");ce{
+					tmpStatcolor, ee := StatusColors[cv]
+					//fmt.Println(i,colnum,ee,cv,tmpStatcolor,strings.Contains(tmpStatcolor.ColorStatus,"数据大小按 10% 或更多增加/减少"))
+					if ee{
+						if strings.Contains(tmpStatcolor.ColorStatus,"数据大小按 10% 或更多增加/减少"){
+							rowjobtype = tmpStatcolor.ColorStatus
+						}
+					}
+				}
+
+			}
+			//
+			//fmt.Println(strings.Split())
+			tmpSubData[FiledsHeader[colnum]] = ss1
+			//tmpSubData = append(tmpSubData, ss1)
 			//fmt.Println(i,ss1)
 		})
-		tmpSubData = append(tmpSubData, []string{CommCell,GenTime, rowjobtype,StartTime, Subclient,rowReasonforfailure,rowsolvetype}...)
-		fmt.Printf("%+v\n",tmpSubData)
-		fmt.Println()
+		tmpSubData[DetailFieldsMapPlus[17]] = CommCell
+		tmpSubData[DetailFieldsMapPlus[18]] = GenTime
+		tmpSubData[DetailFieldsMapPlus[19]] = rowjobtype
+		tmpSubData[DetailFieldsMapPlus[20]] = StartTime
+		tmpSubData[DetailFieldsMapPlus[21]] = Subclient
+		tmpSubData[DetailFieldsMapPlus[22]] = rowReasonforfailure
+		tmpSubData[DetailFieldsMapPlus[23]] = rowsolvetype
+
+		//tmpSubData = append(tmpSubData, []string{CommCell, GenTime, rowjobtype, StartTime, Subclient, rowReasonforfailure, rowsolvetype}...)
+		//fmt.Printf("%+v\n", tmpSubData)
+		//fmt.Println()
+		DetailSqlArr = append(DetailSqlArr, tmpSubData)
 		//if version == 8 {
 		//	//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
 		//	if len(tmpSubData) == headlen { // 因为列头删除了一列
@@ -616,74 +699,125 @@ func sliceToString(sl []string) (returnstring string) {
 	return
 }
 
-func sliceToStringValue(sl []string) (returnstring string) {
-	sl1 := sl[0:len(sl)]
-	for i := 0; i < len(sl1); i++ {
+func sliceToStringValue(sl map[string]string) (returnstring string) {
+	//sl1 := sl[0:len(sl)]
+	var keys []string = make([]string, 0)
+	for k, _ := range sl {
+		keys = append(keys, k)
+
+	}
+	sort.Strings(keys)
+	valueStr := ""
+	colsStr := ""
+	for i, v := range keys {
+		if sl[v] == "NULL" || sl[v] == "" {
+			continue
+		}
 		switch true {
-		case i == len(sl1)-1:
-			returnstring = returnstring
+		case i == len(sl)-1:
+			//returnstring = returnstring
 			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
-			returnstring = returnstring + "\"" + sl1[i] + "\""
+			colsStr = colsStr + "\"" + v + "\")"
+			valueStr = valueStr + "\"" + sl[v] + "\")"
+
 			break
 		case i < len(sl)-1:
-			returnstring = returnstring
-			returnstring = returnstring + "\"" + sl1[i] + "\"" + ","
+			//returnstring = returnstring
+			colsStr = colsStr + "\"" + v + "\"" + ","
+			valueStr = valueStr + "\"" + sl[v] + "\"" + ","
 			break
 		}
+
 	}
+	//fmt.Println(len(keys),len(sl))
+	returnstring = colsStr + " values(" + valueStr
 	return
 }
 
-func updatesliceToString(sl []string, value []string) (returnstring string) {
-	wherestring := ""
+func updatesliceToString(sl map[string]string) (returnstring string) {
+
 	//fmt.Println(len(sl),len(value))
-	if len(sl)-1 == len(value) { // header  多start time
-		for i := 0; i < len(sl); i++ {
-			if len(value) > i {
-				if value[i] == "" { // 空值路过
-					continue
-				}
-			}
+	//if len(sl)-1 == len(value) { // header  多start time
+	//	for i := 0; i < len(sl); i++ {
+	//		if len(value) > i {
+	//			if value[i] == "" { // 空值路过
+	//				continue
+	//			}
+	//		}
+	//
+	//		if i == len(sl)-1 {
+	//			//returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+	//			//wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
+	//			returnstring = returnstring + "\"" + sl[i] + "\"" + "=%s"
+	//			wherestring = wherestring + "\"" + sl[i] + "\"" + "=%s"
+	//		} else {
+	//			returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "',"
+	//			wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "' and "
+	//		}
+	//
+	//	}
+	//}
+	//returnstring = returnstring + " where " + wherestring
 
-			if i == len(sl)-1 {
-				//returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
-				//wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "'"
-				returnstring = returnstring + "\"" + sl[i] + "\"" + "=%s"
-				wherestring = wherestring + "\"" + sl[i] + "\"" + "=%s"
-			} else {
-				returnstring = returnstring + "\"" + sl[i] + "\"" + "='" + value[i] + "',"
-				wherestring = wherestring + "\"" + sl[i] + "\"" + "='" + value[i] + "' and "
-			}
+	var keys []string = make([]string, 0)
+	for k, _ := range sl {
+		keys = append(keys, k)
 
-		}
 	}
-	returnstring = returnstring + " where " + wherestring
+	sort.Strings(keys)
+	wherestring := ""
+	colsStr := ""
+	for i, v := range keys {
+		if sl[v] == "NULL" || sl[v] == "" {
+			continue
+		}
+		switch true {
+		case i == len(sl)-1:
+			//returnstring = returnstring
+			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
+			colsStr = colsStr + "\"" + v + "\"='" + sl[v] + "'"
+			wherestring = wherestring + "\"" + v + "='" + sl[v] + "'"
+
+			break
+		case i < len(sl)-1:
+			//returnstring = returnstring
+			colsStr = colsStr + "\"" + v + "\"='" + sl[v] + "',"
+			wherestring = wherestring + "\"" + v + "\"='" + sl[v] + "' and "
+			break
+		}
+
+	}
+	returnstring = colsStr + " where " + wherestring
 	return
 }
 
-func GenSqls(Data [][]string, header *[]string, htmlfile string) (resultNum int) {
+func GenSqls(DetailSqlArrCopy []map[string]string) (resultNum int) {
 
-	baseSql := "insert into HF_BACKUPDETAIL(" + sliceToString(*header) + " values("
+	baseSql := "insert into HF_BACKUPDETAIL("
 	updateSql := "update HF_BACKUPDETAIL set "
 	//fmt.Println(Data)
 	//fmt.Println(updateSql)
 	//fmt.Println(baseSql)
 	sqlArr := make([]map[string]string, 0)
-	for _, value := range Data {
+	for _, value := range DetailSqlArrCopy {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
 		valueStr := strings.Replace(sliceToStringValue(value), "\"", "'", -1)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
-		tmpmap["update"] = updateSql + updatesliceToString(*header, value)
+		tmpmap["update"] = updateSql + updatesliceToString(value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
-
-	return stmtSql(sqlArr, htmlfile)
+	//for _, v := range sqlArr {
+		//fmt.Println(v["insert"])
+		//fmt.Println(v["update"])
+	//}
+	//return stmtSql(sqlArr)
+	return 1
 }
 
-func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
+func stmtSql(sqlArr []map[string]string) (resultNum int) {
 	os.Setenv("NLS_LANG", "")
 	//if len(os.Args) != 2 {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
@@ -712,27 +846,27 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 		//ctx,cancel:=context.WithTimeout(context.Background(),20*time.Second)
 		//r,err:=db.ExecContext(ctx,sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//cancel()
-		Result, err := db.Exec(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
+		Result, err := db.Exec(sqlArr[i]["update"])
 		//fmt.Println(Result.LastInsertId())
 		//fmt.Println(Result.RowsAffected())
 		//fmt.Println("===========", r, err)
 		if err != nil {
-			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
+			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 			resultNum = 4
 			continue
 		}
 		updatenum = updatenum + 1
 		r, e := Result.RowsAffected()
 		if err != nil {
-			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, e)
+			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, e)
 			resultNum = 4
 			continue
 		}
 
 		if r == 0 {
-			_, err := db.Exec(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
+			_, err := db.Exec(sqlArr[i]["insert"])
 			if err != nil {
-				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", htmlfile, err)
+				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 				resultNum = 4
 				continue
 			}
@@ -740,7 +874,7 @@ func stmtSql(sqlArr []map[string]string, htmlfile string) (resultNum int) {
 		}
 
 	}
-	Log.Printf("htmlfile : %s ,total sql:%d,success update sql:%d,insert sql:%d\n", htmlfile, len(sqlArr), updatenum, insertnum)
+	Log.Printf("htmlfile : %s ,total sql:%d,success update sql:%d,insert sql:%d\n", HtmlFile, len(sqlArr), updatenum, insertnum)
 	return
 
 }
