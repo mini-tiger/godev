@@ -11,7 +11,10 @@ func init() {
 
 	AllSummary := map[string]interface{}{"客户端":"REPORTCLIENT","主机名":"HOSTNAME","总作业数":"TOTALJOB",
 														"已完成":"COMPLETED","完成但有错误":"COMPLETIONERROR","完成但有警告":"COMPLETIONWARN",
-														"已终止":"KILLE","不成功":"UNSUCCESSFUL",""}
+														"已终止":"KILLE","不成功":"UNSUCCESSFUL","运行中":"RUNNING","已延迟":"DELAYED",
+										"未运行":"NORUN","无计划":"NOSCHEDULE","提交":"COMMITTED","应用程序大小（压缩率）":"SIZEOFAPPLICATION",
+										"写入数据（空间节省百分比":"DATAWRITTEN","开始时间":"STARTTIME","结束时间":"ENDTIME","受保护对象":"PROTECTEDOBJECTS",
+		"失败对象":"FAILEDOBJECTS","失败文件夹":"FAILEDFOLDERS"}
 	AllChEngSummaryMap.M=AllSummary
 	//var a *nmap.SafeMap=&nmap.SafeMap{M:AllChEngSummaryMap}
 
