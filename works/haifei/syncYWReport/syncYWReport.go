@@ -72,7 +72,7 @@ var DetailFieldsMapPlus map[int]string = g.DetailFieldsMapPlus
 var StatusColors map[string]g.StatusColor = g.StatusColors
 var StatusColorsCv8 map[string]g.StatusColor = g.StatusColorsCv8
 
-var all *nmap.SafeMap = g.AllChEngSummaryMap
+var AllSummaryMap *nmap.SafeMap = g.AllChEngSummaryMap
 
 type VerCol struct {
 	SummaryCol int
@@ -106,7 +106,7 @@ func readconfig() {
 }
 
 func main() {
-	fmt.Println(all)
+	fmt.Println(all.M)
 	readconfig()
 
 	// 初始化 日志
