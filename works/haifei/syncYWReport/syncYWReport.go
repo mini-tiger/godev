@@ -86,7 +86,7 @@ type VerCol struct {
 */
 var VersionCols map[int]VerCol = map[int]VerCol{11: VerCol{20, 17},
 	10: VerCol{18, 17},
-	8:  VerCol{16, 16}}
+	8: VerCol{16, 16}}
 
 type Config struct {
 	HtmlfileReg string `json:"htmlfileReg"`
@@ -106,7 +106,7 @@ func readconfig() {
 }
 
 func main() {
-	fmt.Println(all.M)
+
 	readconfig()
 
 	// 初始化 日志
@@ -173,10 +173,12 @@ func waitHtmlFile(files []string) {
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
 		case 5:
-			Log.Error("htmlFile %s, ERR:%s", file, "摘要列数或详细列数与定义好的不一致")
+			Log.Error("htmlFile %s, ERR:%s", file, "详细列数与定义好的不一致,摘要与详细都不插入数据库")
+		case 6:
+			Log.Error("htmlFile %s, ERR:%s", file, "摘要列不能自动生成，已经插入详细列")
 		default:
 			MoveFileChan <- file
-			Log.Printf("finish covert file:%s\n", file)
+			Log.Printf("finish covert file:%s\n", path.Base(file))
 		}
 
 	}
@@ -374,13 +376,12 @@ func ReadHtml() (resultNum int) {
 	var rn int
 
 	// 先插入detail数据
-	//比对是不是与定义好的 列数一样
 
-	if len(detail_tbodyHeader.Nodes) != VersionCols[Version].DetailCol {
+	if len(detail_tbodyHeader.Nodes) != VersionCols[Version].DetailCol { // //比对是不是与定义好的 列数一样
 		return 5
 	}
 
-	switch version {
+	switch Version {
 	case 11:
 		GenDetailData(detailDomFindStr, dom, DetailFieldsMap, StatusColors) // 生成 详细数据,version 11 使用默认DetailFieldsMap
 		rn = GenSqls(DetailSqlArr, DetailTable)
@@ -405,29 +406,43 @@ func ReadHtml() (resultNum int) {
 	// 清空数据
 	DetailSqlArr = make([]map[string]string, 0)
 
-	// 摘要数据
+	//fmt.Println(Version, len(Summary_tbodyHeader.Nodes), VersionCols[Version].SummaryCol)
+
+	// 摘要数据  ,列头数量不一样则 自动生成列头MAP
 	if len(Summary_tbodyHeader.Nodes) != VersionCols[Version].SummaryCol {
-		return 5
+		Version = 100
 	}
-	switch version {
+
+	breakFields :=make([]int,0)
+	switch Version {
 	case 11:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap,breakFields) // 生成 详细数据,version 11 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
-		fmt.Println(SummarySqlArr)
+		//fmt.Println(SummarySqlArr)
 		if rn > 0 {
 			return rn
 		}
 	case 10:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10,breakFields) // 生成 详细数据,version 10 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
-		fmt.Println(SummarySqlArr)
+		//fmt.Println(SummarySqlArr)
 		if rn > 0 {
 			return rn
 		}
 	case 8:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8) // 生成 详细数据,version 8 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8,breakFields) // 生成 摘要数据,version 8 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
-		fmt.Println(SummarySqlArr)
+		//fmt.Println(SummarySqlArr)
+		if rn > 0 {
+			return rn
+		}
+	case 100:
+
+		rn, breakFields, tmpfileds := GenSummaryFields(SummaryDomFindStr, dom) // 生成 摘要数据,version 1000 使用默认DetailFieldsMap
+		if rn > 0 {
+			return rn
+		}
+		GenSummaryData(SummaryDomFindStr, dom, tmpfileds,breakFields) // 生成 摘要数据,version 100
 		if rn > 0 {
 			return rn
 		}
@@ -440,7 +455,48 @@ func ReadHtml() (resultNum int) {
 	return rn
 }
 
-func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string) (Data [][]string) {
+func GenSummaryFields(domstr string, dom *goquery.Document) (int, []int, map[int]string) {
+	var t_tbodyData *goquery.Selection
+	var returnnum int = 0
+	t_tbodyData = dom.Find(domstr)
+	//Data = make([][]string, 0)
+	//Log.Printf("HtmlFile:%s,Summary rows:%d \n", HtmlFile, len(t_tbodyData.Nodes))
+	tmpFields := make(map[int]string)
+	breakFields := make([]int, 0) // 需要跳过的列
+	t_tbodyData.Each(func(i int, rowsele *goquery.Selection) {
+		if i != 1 { // 0行是 摘要 ,1行是列名
+			return
+		}
+		cols := rowsele.Find("td")
+
+		cols.Each(func(colnum int, colsele *goquery.Selection) {
+			ss1 := colsele.Text()
+			//fmt.Println(selection.Attr("bgcolor"))
+			//switch true {
+			//case strings.Contains(ss1,"N/A"):
+			//	ss1=strings.Replace(ss1,"N/A","",-1)
+			//}
+
+			if v, b := AllSummaryMap.Get(ss1); b {
+				tmpFields[colnum] = v.(string)
+			} else {
+				breakFields = append(breakFields, i)
+			}
+
+			//ss1 = formatDetailValues(colnum, ss1) // todo 格式化 数据
+			//fmt.Println(ss1)
+		})
+
+	})
+	if len(tmpFields) == 0 {
+		returnnum = 6
+	}
+
+	return returnnum, breakFields, tmpFields
+
+}
+
+func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, breakFields []int) (Data [][]string) {
 	var t_tbodyData *goquery.Selection
 
 	t_tbodyData = dom.Find(domstr)
@@ -459,6 +515,9 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 		}
 		cols.Each(func(colnum int, colsele *goquery.Selection) {
 			ss1 := colsele.Text()
+			if b, _ := utils.Contain(colnum, breakFields); b { // 如果有需要跳过的列
+				return
+			}
 			//fmt.Println(selection.Attr("bgcolor"))
 			//switch true {
 			//case strings.Contains(ss1,"N/A"):
@@ -867,7 +926,7 @@ func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 		}
 
 	}
-	Log.Printf("htmlfile : %s ,tablname:%s,total sql:%d,success update sql:%d,insert sql:%d\n", HtmlFile, tablename, len(sqlArr), updatenum, insertnum)
+	Log.Printf("htmlfile : %s ,tablname:%s,total sql:%d,success update sql:%d,insert sql:%d\n", path.Base(HtmlFile), tablename, len(sqlArr), updatenum, insertnum)
 	return
 
 }
