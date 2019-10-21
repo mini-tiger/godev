@@ -413,24 +413,24 @@ func ReadHtml() (resultNum int) {
 		Version = 100
 	}
 
-	breakFields :=make([]int,0)
+	breakFields := make([]int, 0)
 	switch Version {
 	case 11:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap,breakFields) // 生成 详细数据,version 11 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMap, breakFields) // 生成 详细数据,version 11 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
 		if rn > 0 {
 			return rn
 		}
 	case 10:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10,breakFields) // 生成 详细数据,version 10 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv10, breakFields) // 生成 详细数据,version 10 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
 		if rn > 0 {
 			return rn
 		}
 	case 8:
-		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8,breakFields) // 生成 摘要数据,version 8 使用默认DetailFieldsMap
+		GenSummaryData(SummaryDomFindStr, dom, SummaryFieldsMapCv8, breakFields) // 生成 摘要数据,version 8 使用默认DetailFieldsMap
 		rn = GenSqls(SummarySqlArr, SummaryTable)
 		//fmt.Println(SummarySqlArr)
 		if rn > 0 {
@@ -442,7 +442,7 @@ func ReadHtml() (resultNum int) {
 		if rn > 0 {
 			return rn
 		}
-		GenSummaryData(SummaryDomFindStr, dom, tmpfileds,breakFields) // 生成 摘要数据,version 100
+		GenSummaryData(SummaryDomFindStr, dom, tmpfileds, breakFields) // 生成 摘要数据,version 100
 		if rn > 0 {
 			return rn
 		}
@@ -455,7 +455,7 @@ func ReadHtml() (resultNum int) {
 	return rn
 }
 
-func GenSummaryFields(domstr string, dom *goquery.Document) (int, []int, map[int]string) {
+func GenSummaryFields(domstr string, dom *goquery.Document) (int, []int, map[int]string) { // 生成摘要表的列名
 	var t_tbodyData *goquery.Selection
 	var returnnum int = 0
 	t_tbodyData = dom.Find(domstr)
@@ -496,7 +496,7 @@ func GenSummaryFields(domstr string, dom *goquery.Document) (int, []int, map[int
 
 }
 
-func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, breakFields []int) (Data [][]string) {
+func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, breakFields []int) {
 	var t_tbodyData *goquery.Selection
 
 	t_tbodyData = dom.Find(domstr)
@@ -578,7 +578,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 //
 //}
 
-func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, StatusColors map[string]g.StatusColor) (Data [][]string) {
+func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]string, StatusColors map[string]g.StatusColor) {
 	var t_tbodyData *goquery.Selection
 
 	t_tbodyData = dom.Find(domstr)
@@ -587,7 +587,7 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 	//fmt.Println(t_tbodyData.Html())
 
 	//headlen := len(FiledsHeader)
-	Data = make([][]string, 0)
+	//Data = new([][]string, 0)
 	//循环表格数据
 	t_tbodyData.Each(func(i int, rowsele *goquery.Selection) {
 		if i == 0 { // 0行是列名
@@ -746,10 +746,10 @@ func sliceToString(sl []string) (returnstring string) {
 	return
 }
 
-func sliceToStringValue(sl map[string]string) (returnstring string) {
+func sliceToStringValue(sl *(map[string]string)) (returnstring string) {
 	//sl1 := sl[0:len(sl)]
 	var keys []string = make([]string, 0)
-	for k, _ := range sl {
+	for k, _ := range *sl {
 		keys = append(keys, k)
 
 	}
@@ -757,21 +757,21 @@ func sliceToStringValue(sl map[string]string) (returnstring string) {
 	valueStr := ""
 	colsStr := ""
 	for i, v := range keys {
-		if sl[v] == "NULL" || sl[v] == "" {
+		if (*sl)[v] == "NULL" || (*sl)[v] == "" {
 			continue
 		}
 		switch true {
-		case i == len(sl)-1:
+		case i == len(*sl)-1:
 			//returnstring = returnstring
 			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
 			colsStr = colsStr + "\"" + v + "\")"
-			valueStr = valueStr + "'" + sl[v] + "')"
+			valueStr = valueStr + "'" + (*sl)[v] + "')"
 
 			break
-		case i < len(sl)-1:
+		case i < len(*sl)-1:
 			//returnstring = returnstring
 			colsStr = colsStr + "\"" + v + "\"" + ","
-			valueStr = valueStr + "'" + sl[v] + "'" + ","
+			valueStr = valueStr + "'" + (*sl)[v] + "'" + ","
 			break
 		}
 
@@ -782,7 +782,7 @@ func sliceToStringValue(sl map[string]string) (returnstring string) {
 	return
 }
 
-func updatesliceToString(sl map[string]string) (returnstring string) {
+func updatesliceToString(sl *(map[string]string)) (returnstring string) {
 
 	//fmt.Println(len(sl),len(value))
 	//if len(sl)-1 == len(value) { // header  多start time
@@ -808,7 +808,7 @@ func updatesliceToString(sl map[string]string) (returnstring string) {
 	//returnstring = returnstring + " where " + wherestring
 
 	var keys []string = make([]string, 0)
-	for k, _ := range sl {
+	for k, _ := range *sl {
 		keys = append(keys, k)
 
 	}
@@ -816,21 +816,21 @@ func updatesliceToString(sl map[string]string) (returnstring string) {
 	wherestring := ""
 	colsStr := ""
 	for i, v := range keys {
-		if sl[v] == "NULL" || sl[v] == "" {
+		if (*sl)[v] == "NULL" || (*sl)[v] == "" {
 			continue
 		}
 		switch true {
-		case i == len(sl)-1:
+		case i == len(*sl)-1:
 			//returnstring = returnstring
 			//returnstring = returnstring + "\"" + sl1[i] + "\"" + ")"
-			colsStr = colsStr + "\"" + v + "\"='" + sl[v] + "'"
-			wherestring = wherestring + "\"" + v + "\"='" + sl[v] + "'"
+			colsStr = colsStr + "\"" + v + "\"='" + (*sl)[v] + "'"
+			wherestring = wherestring + "\"" + v + "\"='" + (*sl)[v] + "'"
 
 			break
-		case i < len(sl)-1:
+		case i < len(*sl)-1:
 			//returnstring = returnstring
-			colsStr = colsStr + "\"" + v + "\"='" + sl[v] + "',"
-			wherestring = wherestring + "\"" + v + "\"='" + sl[v] + "' and "
+			colsStr = colsStr + "\"" + v + "\"='" + (*sl)[v] + "',"
+			wherestring = wherestring + "\"" + v + "\"='" + (*sl)[v] + "' and "
 			break
 		}
 
@@ -850,22 +850,22 @@ func GenSqls(DetailSqlArrCopy []map[string]string, tablename string) (resultNum 
 	for _, value := range DetailSqlArrCopy {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
-		valueStr := sliceToStringValue(value)
+		valueStr := sliceToStringValue(&value)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
-		tmpmap["update"] = updateSql + updatesliceToString(value)
+		tmpmap["update"] = updateSql + updatesliceToString(&value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
 	//for _, v := range sqlArr {
 	//fmt.Println(v["insert"])
 	//fmt.Println(v["update"])
 	//}
-	return stmtSql(sqlArr, tablename)
+	return stmtSql(&sqlArr, tablename)
 	//return 1
 }
 
-func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
+func stmtSql(sqlArr *([]map[string]string), tablename string) (resultNum int) {
 	os.Setenv("NLS_LANG", "")
 	//if len(os.Args) != 2 {
 	//	log.Fatalln(os.Args[0] + " user/password@host:port/sid")
@@ -881,11 +881,11 @@ func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 
 	var updatenum, insertnum int
 	//insertnum := 0
-	if len(sqlArr) == 0 {
+	if len(*sqlArr) == 0 {
 		return 3
 	}
 	//ss := []string{"to_date('2019-08-25 22:11:11','yyyy-mm-dd hh24:mi:ss')"}
-	for i := 0; i < len(sqlArr); i++ {
+	for i := 0; i < len(*sqlArr); i++ {
 		//fmt.Println(sqlArr[i]["update"])
 		//fmt.Println(fmt.Sprintf(sqlArr[i]["update"], StartTimeArr[i], StartTimeArr[i]))
 		//fmt.Println(fmt.Sprintf(sqlArr[i]["insert"]+",%s)", StartTimeArr[i]))
@@ -895,12 +895,12 @@ func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 		//ctx,cancel:=context.WithTimeout(context.Background(),20*time.Second)
 		//r,err:=db.ExecContext(ctx,sqlArr[i]["insert"]+",:1)",StartTimeArr[i])
 		//cancel()
-		Result, err := db.Exec(sqlArr[i]["update"])
+		Result, err := db.Exec((*sqlArr)[i]["update"])
 		//fmt.Println(Result.LastInsertId())
 		//fmt.Println(Result.RowsAffected())
 		//fmt.Println("===========", r, err)
 		if err != nil {
-			fmt.Println(sqlArr[i]["update"])
+			fmt.Println((*sqlArr)[i]["update"])
 			Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 			resultNum = 4
 			continue
@@ -914,10 +914,10 @@ func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 		}
 
 		if r == 0 {
-			_, err := db.Exec(sqlArr[i]["insert"])
+			_, err := db.Exec((*sqlArr)[i]["insert"])
 
 			if err != nil {
-				fmt.Println(sqlArr[i]["insert"])
+				fmt.Println((*sqlArr)[i]["insert"])
 				Log.Error("HtmlFile:%s ,Sql Exec Err:%s", HtmlFile, err)
 				resultNum = 4
 				continue
@@ -926,7 +926,7 @@ func stmtSql(sqlArr []map[string]string, tablename string) (resultNum int) {
 		}
 
 	}
-	Log.Printf("htmlfile : %s ,tablname:%s,total sql:%d,success update sql:%d,insert sql:%d\n", path.Base(HtmlFile), tablename, len(sqlArr), updatenum, insertnum)
+	Log.Printf("htmlfile : %s ,tablname:%s,total sql:%d,success update sql:%d,insert sql:%d\n", path.Base(HtmlFile), tablename, len(*sqlArr), updatenum, insertnum)
 	return
 
 }
