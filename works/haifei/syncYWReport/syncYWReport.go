@@ -53,8 +53,8 @@ var (
 	Subclient string
 	//StartTimeArr  []string = make([]string, 0)
 	HtmlFile      string
-	DetailSqlArr  []map[string]string
-	SummarySqlArr []map[string]string
+	DetailSqlArr  [](*map[string]string)
+	SummarySqlArr [](*map[string]string)
 	Version       int
 )
 
@@ -404,7 +404,7 @@ func ReadHtml() (resultNum int) {
 	}
 
 	// 清空数据
-	DetailSqlArr = make([]map[string]string, 0)
+	DetailSqlArr = make([]*(map[string]string),0)
 
 	//fmt.Println(Version, len(Summary_tbodyHeader.Nodes), VersionCols[Version].SummaryCol)
 
@@ -448,7 +448,7 @@ func ReadHtml() (resultNum int) {
 		}
 	}
 
-	SummarySqlArr = make([]map[string]string, 0)
+	SummarySqlArr = make([]*map[string]string,0)
 	//fmt.Println(FiledsHeader)
 
 	//return GenSqls(Data, FiledsHeader, htmlfile) // 这里应该包括数据库插入 ，可以是后台 go 后面
@@ -567,7 +567,7 @@ func GenSummaryData(domstr string, dom *goquery.Document, FiledsHeader map[int]s
 		tmpSubData[SummaryFieldsMapPlus[20]] = CommCell
 		tmpSubData[SummaryFieldsMapPlus[21]] = GenTime
 		//fmt.Println(tmpSubData)
-		SummarySqlArr = append(SummarySqlArr, tmpSubData)
+		SummarySqlArr = append(SummarySqlArr, &tmpSubData)
 	})
 
 	return
@@ -704,7 +704,7 @@ func GenDetailData(domstr string, dom *goquery.Document, FiledsHeader map[int]st
 		//tmpSubData = append(tmpSubData, []string{CommCell, GenTime, rowjobtype, StartTime, Subclient, rowReasonforfailure, rowsolvetype}...)
 		//fmt.Printf("%+v\n", tmpSubData)
 		//fmt.Println()
-		DetailSqlArr = append(DetailSqlArr, tmpSubData)
+		DetailSqlArr = append(DetailSqlArr, &tmpSubData)
 		//if version == 8 {
 		//	//fmt.Printf("%d,%d\n", len(tmpSubData), len(*FiledsHeader))
 		//	if len(tmpSubData) == headlen { // 因为列头删除了一列
@@ -839,7 +839,7 @@ func updatesliceToString(sl *(map[string]string)) (returnstring string) {
 	return
 }
 
-func GenSqls(DetailSqlArrCopy []map[string]string, tablename string) (resultNum int) {
+func GenSqls(DetailSqlArrCopy []*map[string]string, tablename string) (resultNum int) {
 
 	baseSql := "insert into " + tablename + "("
 	updateSql := "update " + tablename + " set "
@@ -850,11 +850,11 @@ func GenSqls(DetailSqlArrCopy []map[string]string, tablename string) (resultNum 
 	for _, value := range DetailSqlArrCopy {
 		tmpmap := make(map[string]string, 0)
 		//fmt.Println(index, baseSql+sliceToString(value))
-		valueStr := sliceToStringValue(&value)
+		valueStr := sliceToStringValue(value)
 		//fmt.Println(valueStr)
 		//sqlArr = append(sqlArr, baseSql+valueStr)
 		tmpmap["insert"] = baseSql + valueStr
-		tmpmap["update"] = updateSql + updatesliceToString(&value)
+		tmpmap["update"] = updateSql + updatesliceToString(value)
 		sqlArr = append(sqlArr, tmpmap)
 	}
 	//for _, v := range sqlArr {
