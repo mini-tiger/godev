@@ -24,5 +24,5 @@ func FormatTime(toBeCharge string) string {
 	sr := theTime.Unix()                                            //转化为时间戳 类型是int64
 	//fmt.Println(theTime)                                            //打印输出theTime 2015-01-01 15:15:00 +0800 CST
 	//fmt.Println(sr)
-	return strconv.FormatInt(sr, 10)
+	return strconv.FormatInt(sr, 10) + "000"
 }

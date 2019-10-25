@@ -226,8 +226,8 @@ func formatValues(index int, s string) (rstr string) {
 		StartTimeValue = strings.TrimSpace(StartTimeValue)
 		//StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
 		StartTimeValue = formatTime(StartTimeValue)
-		StartTimeArr = append(StartTimeArr, StartTimeValue)
-		StartTime = "%s"
+		StartTimeArr = append(StartTimeArr, fmt.Sprintf("%s000",StartTimeValue))
+		//StartTime = "%s"
 
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
