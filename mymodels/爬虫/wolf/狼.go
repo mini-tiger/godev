@@ -188,7 +188,7 @@ func ForumGet() {
 	}
 	for i := 1; i <= PAGES; i++ {
 		url := fmt.Sprintf("%sthread-htm-fid-99-page-%d.html", MasterUrl, i) // 亚洲原创
-		log.Printf("亚洲原创 request : %s\n", url)
+		log.Printf("亚洲无码原创 request : %s\n", url)
 		go func() {
 			masterChan <- UrlDomGet(url)
 		}()
@@ -239,9 +239,9 @@ func UrlDomGet(url string) *goquery.Document {
 	//}()
 
 	response, err := client.Do(request)
+
 	if err != nil {
-		log.Printf("[Error]:%s, url:%s", err, url)
-		return UrlDomGet(url)
+		log.Printf("[Error]:request:%s, url:%s", err, url)
 	}
 
 	//if response.StatusCode == 200 {
@@ -258,7 +258,7 @@ func UrlDomGet(url string) *goquery.Document {
 	dom, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		//log.Fatal(err)
-		log.Printf("[Error]:%s, url:%s", err, url)
+		log.Printf("[Error]:response:%s, url:%s", err, url)
 	}
 	//fmt.Println(dom)
 	return dom
@@ -279,10 +279,10 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 
 		transport := &http.Transport{Proxy: proxy, TLSHandshakeTimeout: 30 * time.Second}
 
-		client = &http.Client{Transport: transport, Timeout: 300 * time.Second}
+		client = &http.Client{Transport: transport, Timeout: 60 * time.Second}
 	} else {
 		client = &http.Client{
-			Timeout: 300 * time.Second,
+			Timeout: 60 * time.Second,
 		}
 	}
 
@@ -353,7 +353,7 @@ func DownFile(url, fp string, wdownload *sync.WaitGroup, tmpUseProxy bool) {
 		//wdownload.Done()
 		return
 	}
-	//log.Printf("Download 成功: %+v\n", fp)
+	log.Printf("Download 成功: %+v\n", fp)
 	//c <- struct{}{}
 
 	//wdownload.Done()
