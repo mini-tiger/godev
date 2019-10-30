@@ -30,6 +30,9 @@ const (
 	FieldsLen  = 21 // 列一共有几列,使用时 要 减一
 )
 
+var NeedFields []string = []string{"DATACLIENT", "AgentInstance", "BackupSetSubclient", "Job ID (CommCell)(Status)",
+	"Type", "Scan Type", "Start Time(Write Start Time)", "End Time or Current Phase", "Size of Application"}
+
 var MoveFileChan chan string = make(chan string, 0)
 var startRunTime = time.Now().Unix()
 var (
@@ -127,6 +130,8 @@ func waitHtmlFile(files []string) {
 			Log.Error("htmlFile %s, ERR:%s", file, "sql Gen err,sqlarr len is 0")
 		case 4:
 			Log.Error("htmlFile %s, ERR:%s", file, "insert or update have err")
+		case 5:
+			Log.Error("htmlFile %s, ERR:%s", file, "NeedField not enough")
 		default:
 			MoveFileChan <- file
 			Log.Printf("finish covert file:%s\n", file)
@@ -226,8 +231,8 @@ func formatValues(index int, s string) (rstr string) {
 		StartTimeValue = strings.TrimSpace(StartTimeValue)
 		//StartTimeValue = fmt.Sprint("to_date('" + StartTimeValue + "','mm/dd/yyyy hh24:mi:ss')")
 		StartTimeValue = formatTime(StartTimeValue)
-		StartTimeArr = append(StartTimeArr, StartTimeValue)
-		StartTime = "%s"
+		StartTimeArr = append(StartTimeArr, fmt.Sprintf("%s000", StartTimeValue))
+		//StartTime = "%s"
 
 		//StartTime = fmt.Sprintf("to date(%s mm/dd/yyyy hh24:mi:ss)",StartTime)
 		//StartTime = "2019-08-12 04:00:00"
@@ -322,7 +327,6 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 	})
 
-
 	// 生成的时间
 	GenTimeSource := dom.Find("body:contains(on)")
 	GenTimeSource.Each(func(i int, selection *goquery.Selection) {
@@ -336,7 +340,6 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		}
 	})
 
-
 	FiledsHeader := new([]string) // 列头，序号为KEY
 	t_tbodyHeader := dom.Find("body > table:nth-child(13) > tbody > tr:nth-child(1) > td")
 
@@ -346,7 +349,6 @@ func ReadHtml(htmlfile string) (resultNum int) {
 		cv8 = true
 		t_tbodyHeader = dom.Find("body > table:nth-child(12) > tbody > tr:nth-child(1) > td")
 	}
-
 
 	// 循环找出列头
 	t_tbodyHeader.Each(func(i int, s *goquery.Selection) {
@@ -386,6 +388,14 @@ func ReadHtml(htmlfile string) (resultNum int) {
 
 	//fmt.Println(CommCell)
 	//fmt.Println(GenTime)
+
+	// 与 定义好的 9列进行比对， 这9列必须存在
+	for i:=0;i<len(NeedFields);i++{
+		if NeedFields[i] != (*FiledsHeader)[i]{
+			fmt.Printf("%+v\n", NeedFields[i])
+			return 5
+		}
+	}
 
 	//添加自定义列
 	*FiledsHeader = append(*FiledsHeader, []string{"COMMCELL", "APPLICATIONSIZE", "DATASUBCLIENT", "START TIME"}...)
