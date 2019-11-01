@@ -242,6 +242,7 @@ func UrlDomGet(url string) *goquery.Document {
 
 	if err != nil {
 		log.Printf("[Error]:request:%s, url:%s", err, url)
+		return nil
 	}
 
 	//if response.StatusCode == 200 {
@@ -252,6 +253,7 @@ func UrlDomGet(url string) *goquery.Document {
 	if response.StatusCode != 200 {
 		//log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
 		log.Printf("url :%s,status code error: %d %s", url, response.StatusCode, response.Status)
+		return nil
 	}
 
 	// Load the HTML document
