@@ -1,88 +1,46 @@
 package main
 
 import (
-	"errors"
+	"container/list"
 	"fmt"
-	"reflect"
 )
 
-// 判断obj是否在target中，target支持的类型arrary,slice,map
-func Contain(obj interface{}, target interface{}) (bool, error) {
-	targetValue := reflect.ValueOf(target)
-	switch reflect.TypeOf(target).Kind() {
-	case reflect.Slice, reflect.Array:
-		for i := 0; i < targetValue.Len(); i++ {
-			if targetValue.Index(i).Interface() == obj {
-				return true, nil
-			}
-		}
-	case reflect.Map:
-		if targetValue.MapIndex(reflect.ValueOf(obj)).IsValid() {
-			return true, nil
-		}
+func main() {
+	l := list.New() //创建一个新的list
+	for i := 0; i < 5; i++ {
+		l.PushBack(i)
+	}
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出list的值,01234
+	}
+	fmt.Println("")
+	fmt.Println(l.Front().Value) //输出首部元素的值,0
+	fmt.Println(l.Back().Value)  //输出尾部元素的值,4
+	l.InsertAfter(6, l.Front())  //首部元素之后插入一个值为10的元素
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出list的值,061234
+	}
+	fmt.Println("")
+	l.MoveBefore(l.Front().Next(), l.Front()) //首部两个元素位置互换
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出list的值,601234
+	}
+	fmt.Println("")
+	l.MoveToFront(l.Back()) //将尾部元素移动到首部
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出list的值,460123
+	}
+	fmt.Println("")
+	l2 := list.New()
+	l2.PushBackList(l) //将l中元素放在l2的末尾
+	for e := l2.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出l2的值,460123
+	}
+	fmt.Println("")
+
+	fmt.Print(l.Len()) //0
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value) //输出list的值,无内容
 	}
 
-	return false, errors.New("not in array")
-}
-
-func main() {
-	testMap()
-
-	testArray()
-	testSlice()
-}
-
-func testArray() {
-	a := 1
-	b := [3]int{1, 2, 3}
-
-	fmt.Println(Contain(a, b))
-
-	c := "a"
-	d := [4]string{"b", "c", "d", "a"}
-	fmt.Println(Contain(c, d))
-
-	e := 1.1
-	f := [4]float64{1.2, 1.3, 1.1, 1.4}
-	fmt.Println(Contain(e, f))
-
-	g := 1
-	h := [4]interface{}{2, 4, 6, 1}
-	fmt.Println(Contain(g, h))
-
-	i := [4]int64{}
-	fmt.Println(Contain(a, i))
-}
-
-func testSlice() {
-	a := 1
-	b := []int{1, 2, 3}
-
-	fmt.Println(Contain(a, b))
-
-	c := "a"
-	d := []string{"b", "c", "d", "a"}
-	fmt.Println(Contain(c, d))
-
-	e := 1.1
-	f := []float64{1.2, 1.3, 1.1, 1.4}
-	fmt.Println(Contain(e, f))
-
-	g := 1
-	h := []interface{}{2, 4, 6, 1}
-	fmt.Println(Contain(g, h))
-
-	i := []int64{}
-	fmt.Println(Contain(a, i))
-}
-
-func testMap() {
-	var a = map[int]string{1: "1", 2: "2"}
-	fmt.Println(Contain(3, a))
-
-	var b = map[string]int{"1": 1, "2": 2}
-	fmt.Println(Contain("1", b))
-
-	var c = map[string][]int{"1": {1, 2}, "2": {2, 3}}
-	fmt.Println(Contain("6", c))
 }
