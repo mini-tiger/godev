@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"gitee.com/taojun319/tjtools/utils"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/toolkits/file"
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -18,7 +19,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"tjtools/utils"
 )
 
 // todo https://godoc.org/github.com/PuerkitoBio/goquery
