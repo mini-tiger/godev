@@ -1,8 +1,8 @@
 {
-  "master_url": "http://avl.2avlang.com/",
+  "master_url": "http://t.avlang2.xyz/",
   "master_dir": "g:\\image_wolf\\",
-  "pages": 2,
-  "max_old": 5,
+  "pages": 3,
+  "max_old": 15,
   "downloadInterval":200,
   "exist_cover": false,
   "use_proxy": false,
