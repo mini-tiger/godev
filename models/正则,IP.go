@@ -1,8 +1,8 @@
 package main
 
 import (
-	"regexp"
 	"fmt"
+	"regexp"
 )
 
 // http://c2pblog.sinaapp.com/archives/504
@@ -15,12 +15,11 @@ func main() {
 	}
 	fmt.Println(a)
 
-
 	p := `(\d+)\.(\d+)\.(\d+)\.(\d+)`
 	p1 := "192.168.1.1"
 	p2 := "127.0.0.1"
 	i, err := regexp.MatchString(p, p1)
-	fmt.Println(i)
+	fmt.Println("p1", i)
 	i, err = regexp.MatchString(p, p2)
 	fmt.Println(i)
 
