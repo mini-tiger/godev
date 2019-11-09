@@ -1,44 +1,43 @@
 package main
+
 import (
 	"errors"
-	"flag"
 	"fmt"
+	"gitee.com/taojun319/tjtools/file"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func getFileList(path string) ([]string,error){
-	files := make([]string,0)
-
-	f,err:=os.Stat(path)
-	if err!=nil {
-		return files,errors.New(fmt.Sprintf("path: %s ,Err:%s",path,err))
+func GetFatherDir(sf string) (string, error) {
+	if !file.IsExist(sf) {
+		return "", errors.New(sf + "Not Exist")
 	}
-	if !f.IsDir(){
-		return files,errors.New(fmt.Sprintf("path: %s ,Not Dir",path))
+	dirList := strings.Split(sf, string(os.PathSeparator))
+	if len(dirList) <= 1 {
+		return sf, nil
 	}
-
-
-	err = filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
-		if ( f == nil ) {
-			return err
-		}
-		if f.IsDir() {
-			return nil
-		}
-		files= append(files,filepath.Join(path,f.Name()))
-		return nil
-	})
-	if err != nil {
-		return files,errors.New(fmt.Sprintf("path: %s ,err:%s",path,err))
-	}
-	return files,nil
+	return strings.Join(dirList[0:len(dirList)-1], string(os.PathSeparator)), nil
 }
 
-func main(){
-	flag.Parse()
-	//root := flag.Arg(0)
-	f,e:=getFileList("/home/go/GoDevEach/works/haifei/syncHtml/htmlData/")
-	fmt.Println(f)
-	fmt.Println(e)
+func main() {
+	a := "D:\\work\\project-dev\\GoDevEach\\works\\haifei\\syncHtml\\HisData\\10.135.13.164_5day_Chinese.html"
+	fmt.Println(filepath.Base(a))
+	fmt.Println(filepath.Split(a))
+	dir, filename := filepath.Split(a)
+	fmt.Println(dir)
+	fmt.Println(filepath.Dir(dir))
+	fmt.Println(filepath.Dir(filename))
+	fmt.Println(filepath.Base(dir))
+	fmt.Println(strings.Split(a, string(os.PathSeparator)))
+	fmt.Println(strings.Split(a, "D:\\work\\project-dev\\GoDevEach\\works\\haifei\\syncHtml\\HisData\\"))
+
+	fmt.Println(GetFatherDir(a))
+	if b, e := GetFatherDir(a); e == nil {
+		fmt.Println(GetFatherDir(b))
+	}
+
+	fmt.Println(GetFatherDir("d:\\"))
+	fmt.Println(filepath.Abs("d:\\"))
+
 }
