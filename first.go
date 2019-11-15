@@ -1,9 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 func main()  {
-	s:=make(map[string]string,10)
+	s:="default//oracle/client"
 
-	fmt.Printf("%+v\n",s)
+	var dd =regexp.MustCompile("/.*")
+	match :=dd.FindString(s)
+	fmt.Println(match)
+
 }
