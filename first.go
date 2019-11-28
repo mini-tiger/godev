@@ -1,8 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func main()  {
-	A:=make(map[int]string,1)
-	fmt.Println(len(A))
+	s:="dd d \n   ddd "
+	ss:=&s
+	fmt.Println(*ss)
+
+	fmt.Println(strings.ReplaceAll(strings.ReplaceAll(*ss,"\n","")," ",""))
 }
