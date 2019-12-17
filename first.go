@@ -1,62 +1,20 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"time"
-	"unsafe"
-	"sync/atomic"
-	"sync"
-	"math/rand"
-)
+import "fmt"
 
-var data []string
-
-// get data atomically
-func Data() string {
-	p := (*string)(atomic.LoadPointer(
-		(*unsafe.Pointer)(unsafe.Pointer(&data)),
-	))
-	if p == nil {
-		return ""
-	} else {
-		return *p
-	}
+func add(a,b int) int {
+	return a+b
 }
 
-// set data atomically
-func SetData(d string) {
-	atomic.StorePointer(
-		(*unsafe.Pointer)(unsafe.Pointer(&data)),
-		unsafe.Pointer(&d),
-	)
+type  N struct {
+	A func(int,int) int
 }
 
-func main() {
-	var wg sync.WaitGroup
-	wg.Add(200)
-
-	for range [100]struct{}{} {
-		go func() {
-			time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
-
-			log.Println(Data()) //xxx 提取数据
-			wg.Done()
-		}()
-	}
-
-	for i := range [100]struct{}{} {
-		go func(i int) {
-			time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
-			s := fmt.Sprint("#", i)
-			log.Println("====", s)
-
-			SetData(s) // xxx 写入数据，在没有写完前 其它纯种提取不到数据
-			wg.Done()
-		}(i)
-	}
-
-	wg.Wait()
-
-	fmt.Printf("final data = %v\n ", data)
+func main()  {
+	aa:=1
+	bb:=2
+	fmt.Println("=",add(aa,bb))
+	fmt.Printf("add pointer %p\n",add)
+	n:=N{add}
+	fmt.Println(n.A(aa,bb))
 }
