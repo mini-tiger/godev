@@ -17,6 +17,8 @@ func main() {
 	index := 5;
 	ss = append(ss[:index], ss[index+1:]...)
 	print("after delete", ss)
+
+
 	//xxx 在切片中间插入元素insert element at index;
 	//xxx 注意：保存后部剩余元素，必须新建一个临时切片
 	rear := append([]string{}, ss[index:]...)

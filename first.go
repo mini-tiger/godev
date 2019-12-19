@@ -1,37 +1,20 @@
 package main
 
-import (
-	"fmt"
-	"sync"
-)
+import "fmt"
 
-type A struct {
-	AA string
-}
 
 func main() {
-	// 初始化一个pool
-	pool := &sync.Pool{
-		// 默认的返回值设置，不写这个参数，默认是nil
-		New: func() interface{} {
-			return &A{}
-		},
-	}
 
-	// 看一下初始的值，这里是返回0，如果不设置New函数，默认返回nil
-	init := pool.Get().(*A)
-	init.AA="a"
-	fmt.Println(init)
+	//var b bool=bool(true)
+	var c []int=make([]int,5,10)
+	fmt.Println(len(c))
+	var cc []int
+	cc=append(cc,[]int{1,2,3,4,5,6,7,8}...)
+	fmt.Println(len(cc),cap(cc))
 
-	// 设置一个参数1
-	pool.Put(1)
-	pool.Put(2)
+	var ccc []int=make([]int,0)
+	ccc=append(ccc,[]int{1,2,3,4,5,6,7,8}...)
+	fmt.Println(len(ccc),cap(ccc))
 
-	// 获取查看结果
-	num := pool.Get()
-	fmt.Println(num)
 
-	// 再次获取，会发现，已经是空的了，只能返回默认的值。
-	num = pool.Get()
-	fmt.Println(num)
 }
