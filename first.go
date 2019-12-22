@@ -1,52 +1,25 @@
 package main
 
 import (
-	"fmt"
+	"gitee.com/taojun319/tjtools/utils"
+	"haifei/syncHtml/g"
+	"log"
+
+	"time"
 )
 
-type R interface {
-	Read()
+func ClearMap() {
+	tmpLock := make(chan struct{}, 0)
+	_=cap(tmpLock)
 }
 
-type W interface {
-	Write(name string)
-}
-
-type RW interface {
-	R
-	W
-}
-
-type log struct {
-	name []string
-	r    int
-}
-
-func (t *log) Read() {
-	if len(t.name) > t.r {
-		fmt.Println(t.name[t.r])
-		t.r++
-	} else {
-		fmt.Println(len(t.name),"empty")
-	}
-}
-func (t *log) Write(name string) {
-	t.name = append(t.name, name)
-	fmt.Println("wirte success.", t.name)
-
-}
 func main() {
-	var r R = &log{}
-	var w W = &log{}
-	w.Write("write first")
-	w.Write("write second")
-	r.Read()
-	r.Read()
-	val, ok := w.(RW)
-	if !ok {
-		fmt.Println("hi")
-	} else {
-		val.Read()
-		val.Read()
+	startRunTime:=time.Now().Unix()
+	for {
+		sinter := time.Now().Unix() - startRunTime
+		utils.GetTime(&sinter, &d, &h, &m, &s)
+		log.Info("开始运行时间 %s,已经运行%d天%d小时%d分钟%d秒\n", time.Unix(startRunTime, 0).Format(g.TimeLayout), d, h, m, s)
+		time.Sleep(time.Duration(900) * time.Second)
 	}
+
 }
