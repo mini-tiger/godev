@@ -1,3 +1,5 @@
 gitee.com/taojun319/godaemon v0.0.0-20180906150213-33be0b026b29/go.mod h1:fv2epyGJFj6eUTh4JAKamlP6EUvqY9dMWceqsVXliss=
+gitee.com/taojun319/tjtools v0.0.0-20191221034246-ba40be3f14d8 h1:mAOqtiJslsmDLUyf0oNCoLR1N4vyAhB+765jOT9L1ro=
+gitee.com/taojun319/tjtools v0.0.0-20191221034246-ba40be3f14d8/go.mod h1:oidR4ATYa98tNvxmziw6Q/VkeUDGmMOgSnaD7tqwlng=
 github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0 h1:udkysLJUqLf/Tz0w8Wuuf5M9gT3JSnd05FYR8RNfaFc=
 github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0/go.mod h1:/M9VLO+lUPmxvoOK2PfWRZ8mTtB4q1Hy9lEGijv9Nr8=
