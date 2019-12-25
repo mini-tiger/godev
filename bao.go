@@ -1,33 +1,31 @@
 package main
 
-import "fmt"
+import (
+	"time"
+)
 
+var tmpLock = make(chan struct{}, 0)
 
-type A struct{
-	AA []int
-	BB map[int]int
-	Ab AB
+func main() {
+
+	go func() {
+		for {
+			aa()
+			time.Sleep(time.Duration(2 * time.Second))
+		}
+	}()
+	go func() {
+		for {
+			<-tmpLock
+			time.Sleep(time.Duration(1 * time.Second))
+		}
+	}()
+
+	select {}
 }
 
-
-type AB struct{
-	ABAB []int
-}
-
-
-func (a *A)getArry() []int {
-	return a.AA
-}
-
-func (ab *AB)getArry() []int {
-	return ab.ABAB
-}
-
-
-func main () {
-	m1:=[]int{1,1,2,2,3,4,5,1}
-	var a A=A{m1,map[int]int{1:1},AB{m1}}
-	fmt.Println(a)
-	fmt.Println(a.getArry())
-	fmt.Println(a.Ab.getArry())
+func aa()  {
+	defer func() {
+		tmpLock <- struct{}{}
+	}()
 }
