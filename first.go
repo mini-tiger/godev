@@ -19,6 +19,9 @@ func ClearMap() {
 
 func main() {
 	go FindHtml() // 生产者
+	go func() {
+		log.Println(http.ListenAndServe("0.0.0.0:7778", nil))
+	}()
 	select {}
 
 }
@@ -31,15 +34,7 @@ var OnceHtmlFiles = sync.Pool{
 
 func FindHtml() { // xxx 这里必须要放在for 里，不能routine， 等待执行结束在重新扫描
 	go ddd()
-	go func() {
-		for {
-			time.Sleep(time.Duration(5 * time.Second))
-			runtime.GC()
-		}
-	}()
-	go func() {
-		log.Println(http.ListenAndServe("0.0.0.0:7778", nil))
-	}()
+
 
 	go RunStatus() // xxx 定时打印运行状态,GC
 	select {}
