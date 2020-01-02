@@ -40,7 +40,7 @@ func main() {
 	var w W = &log{}
 	w.Write("write first")
 	w.Write("write second")
-	r.Read() // xxx  r与 w蛮理两个不同的对象，所以打印没有值
+	r.Read() // xxx  r与 w分别是两个不同的对象，所以打印没有值
 	r.Read()
 	val, ok := w.(RW) // xxx 转换为其它接口 ，调用方法
 	if !ok {
