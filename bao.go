@@ -1,31 +1,18 @@
 package main
 
-import (
-	"time"
-)
+import "fmt"
 
-var tmpLock = make(chan struct{}, 0)
+var s []string=make([]string,0)
 
-func main() {
-
-	go func() {
-		for {
-			aa()
-			time.Sleep(time.Duration(2 * time.Second))
-		}
-	}()
-	go func() {
-		for {
-			<-tmpLock
-			time.Sleep(time.Duration(1 * time.Second))
-		}
-	}()
-
-	select {}
-}
-
-func aa()  {
-	defer func() {
-		tmpLock <- struct{}{}
-	}()
+func main()  {
+	fmt.Printf("%p\n",s)
+	s=append(s,"1")
+	fmt.Printf("%p\n",s)
+	s=s[0:0]
+	fmt.Printf("%p\n",s)
+	s=append(s,"1")
+	s=append(s,"2")
+	fmt.Printf("%p\n",s)
+	s=s[0:0]
+	fmt.Printf("%p\n",s)
 }
