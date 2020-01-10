@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -16,7 +17,7 @@ https://www.kancloud.cn/digest/batu-go/153537
 
 var data *string
 var m map[int]interface{}
-var arr []int
+var arr []string
 
 // get data atomically
 func Data() (string, *string) {
@@ -48,7 +49,7 @@ func mData() {
 }
 
 func aData() {
-	p := (*[]int)(atomic.LoadPointer(
+	p := (*[]string)(atomic.LoadPointer(
 		(*unsafe.Pointer)(unsafe.Pointer(&arr)),
 	))
 	if p == nil {
@@ -61,7 +62,7 @@ func aData() {
 }
 
 // set data atomically
-func SetData(d *string, tm map[int]interface{}, ta []int) {
+func SetData(d *string, tm map[int]interface{}, ta []string) {
 	atomic.StorePointer(
 		(*unsafe.Pointer)(unsafe.Pointer(&data)),
 		unsafe.Pointer(d),
@@ -104,7 +105,8 @@ func main() {
 			s := fmt.Sprint("#", i)
 			log.Printf("====%v,%p", s, &s)
 			ms := map[int]interface{}{i: i}
-			as := []int{i}
+
+			as := []string{strconv.Itoa(i)}
 			log.Printf("====%v,%p", ms, ms)
 			log.Printf("====%v,%p", as, as)
 			SetData(&s, ms, as) // xxx 写入数据，在没有写完前 其它线程提取不到数据
