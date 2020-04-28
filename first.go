@@ -1,10 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 func main()  {
-	var d []string
-
-	d=[]string{"a","b"}
-	fmt.Println(d[0:2])
+	fmt.Println(filepath.Abs("/home/123/123"))
 }
