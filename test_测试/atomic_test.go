@@ -11,16 +11,16 @@ import (
 
 func tt1()  {
 	var wg sync.WaitGroup
-	wg.Add(200)
+	wg.Add(100)
 
-	for range [100]struct{}{} {
-		go func() {
-			time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
-
-			//log.Println(business.Data())
-			wg.Done()
-		}()
-	}
+	//for range [100]struct{}{} {
+	//	go func() {
+	//		time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
+	//
+	//		//log.Println(business.Data())
+	//		wg.Done()
+	//	}()
+	//}
 
 	for i := range [100]struct{}{} {
 		go func(i int) {
@@ -41,16 +41,16 @@ func tt1()  {
 
 func tt2()  {
 	var wg sync.WaitGroup
-	wg.Add(200)
+	wg.Add(100)
 	var ss business.Ldata
-	for range [100]struct{}{} {
-		go func() {
-			time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
-
-			//log.Println(ss.Data())
-			wg.Done()
-		}()
-	}
+	//for range [100]struct{}{} {
+	//	go func() {
+	//		time.Sleep(time.Second * time.Duration(rand.Intn(1000)) / 1000)
+	//
+	//		//log.Println(ss.Data())
+	//		wg.Done()
+	//	}()
+	//}
 
 	for i := range [100]struct{}{} {
 		go func(i int) {

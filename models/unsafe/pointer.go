@@ -8,6 +8,7 @@ import (
 
 func main() {
 
+
 	// 整形5 的地址 强制转换为float
 	num:=5
 	floatnum :=(*float32)(unsafe.Pointer(&num))

@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
+	"strings"
 )
 
+type A struct {
+	S strings.Builder
+}
 func main()  {
-	fmt.Println(filepath.Abs("/home/123/123"))
+	var tmp strings.Builder
+	tmp.Grow(10)
+	tmp.WriteString("1")
+	fmt.Println(tmp.String())
 }

@@ -20,13 +20,13 @@ func uuB() string {
 	return *p
 }
 
-func Benchmark_uu1(b *testing.B) {
+func Benchmark_uu3(b *testing.B) {
 	for i := 0; i < b.N; i ++ {
 		_ = uuA()
 	}
 }
 
-func Benchmark_uu2(b *testing.B) {
+func Benchmark_uu4(b *testing.B) {
 	for i := 0; i < b.N; i ++ {
 		_ = uuB()
 	}
