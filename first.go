@@ -6,11 +6,12 @@ import (
 )
 
 type A struct {
-	S strings.Builder
+	S *strings.Builder
 }
 func main()  {
-	var tmp strings.Builder
-	tmp.Grow(10)
-	tmp.WriteString("1")
-	fmt.Println(tmp.String())
+	a:=A{}
+	a.S=&strings.Builder{}
+	a.S.Grow(10)
+	a.S.WriteString("1")
+	fmt.Println(a.S.String())
 }
