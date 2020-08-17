@@ -2,32 +2,22 @@ package main
 
 import (
 	"fmt"
-	"sync"
-	"time"
+	"sync/atomic"
+	"unsafe"
 )
 
-var locker = new(sync.Mutex)
-var cond = sync.NewCond(locker)
-
 func main() {
-	// xxx 建立10个 goroutine
-	for i := 0; i < 10; i++ {
-		go func(x int) {
-			cond.L.Lock()         //获取锁
-			defer cond.L.Unlock() //释放锁
-			cond.Wait()           //等待通知，阻塞当前goroutine
-			fmt.Println(x)
-		}(i)
-	}
+	var i int = 1
+	p := unsafe.Pointer(&i) //转换为通用指针
+	var ii int = 2
+	p1 := unsafe.Pointer(&ii)
 
-	time.Sleep(time.Second * 1)	// 睡眠1秒，使所有goroutine进入 Wait 阻塞状态
-	fmt.Println("Signal...")
-	cond.Signal()               // 1秒后下发一个通知给已经获取锁的goroutine
-	time.Sleep(time.Second * 1)
-	fmt.Println("Signal...")
-	cond.Signal()               // 1秒后下发下一个通知给已经获取锁的goroutine
-	time.Sleep(time.Second * 1)
-	cond.Broadcast()            // 1秒后下发广播给所有等待的goroutine
-	fmt.Println("Broadcast...")
-	time.Sleep(time.Second * 1)	// 睡眠1秒，等待所有goroutine执行完毕
+	fmt.Printf("%p\n", p) // 原本的地址
+	fmt.Printf("%p\n", p1)
+
+	pp := atomic.SwapPointer(&p, p1) // 交换变量地址，  pp是返回 p的地址
+
+	fmt.Printf("%p\n", p) // 和P1地址一样
+	fmt.Printf("%p\n", pp)
+	fmt.Println(*(*int)(p)) // (*int)(p) 转换为整形指针  ,*(*int)(p)取指针的值
 }
