@@ -9,4 +9,5 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0 // indirect
 	github.com/shirou/gopsutil v2.19.12+incompatible // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 )
