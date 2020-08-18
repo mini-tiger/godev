@@ -98,7 +98,7 @@ type Config struct {
 }
 
 func readconfig() {
-	cfgstr := g.ParseConfig("/home/go/src/godev/works/haifei/syncYWReport/syncYWReport.json")
+	cfgstr := g.ParseConfig("/home/go/src/godev/works/haifei/syncYWReport/monitorEmail.json")
 	err := json.Unmarshal([]byte(cfgstr), &c)
 	if err != nil {
 		log.Fatalln("parse config file fail:", err)
