@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 	"log"
+	"path/filepath"
+	"runtime"
 
 	"google.golang.org/grpc"
 
-
 	pb "godev/mymodels/grpc/CutstomTLS/proto"
-	"path"
 	"google.golang.org/grpc/credentials"
+	"path"
 )
 
-const PORT = "5002"
+const PORT = "5003"
 
 type Auth struct {
 	AppKey    string
@@ -28,13 +29,14 @@ func (a *Auth) RequireTransportSecurity() bool {
 }
 
 func main() {
-	devDir:="/home/go/src/godev/mymodels/grpc/CutstomTLS/perm"
-	certFile := path.Join(devDir,"server1.pem")
-
+	_, file, _, _ := runtime.Caller(0)
+	Basedir := filepath.Dir(filepath.Dir(file))
+	devDir := filepath.Join(Basedir, "perm")
+	//devDir:="/home/go/src/godev/mymodels/grpc/CutstomTLS/perm"
+	certFile := path.Join(devDir, "server1.pem")
 
 	c, err := credentials.NewClientTLSFromFile(certFile,
 		"tj-test") // todo 认证时候的名字
-
 
 	if err != nil {
 		log.Fatalf("tlsClient.GetTLSCredentials err: %v", err)
