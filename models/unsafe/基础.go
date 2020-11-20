@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"sync/atomic"
 	"unsafe"
 )
 
@@ -23,6 +25,9 @@ uintptr：用于指针运算，GC 不把 uintptr 当指针，uintptr 无法持�
 
 　　也就是说 todo unsafe.Pointer 是桥梁，可以让任意类型的指针实现相互转换，也可以将任意类型的指针转换为 uintptr 进行指针运算。
 */
+type A struct {
+	AA int
+}
 
 func main() {
 	var i int = 1
@@ -35,4 +40,20 @@ func main() {
 	*pu = 12
 	fmt.Printf("i变量类型%T, 内容是:%d\n", i, i)
 
+	print("===========================================")
+	a := A{1}
+	a1 := A{2}
+	fmt.Printf("a:%v,addr:%p\n", a, &a)
+	fmt.Printf("a1:%v,addr:%p\n", a1, &a1)
+
+	au:=unsafe.Pointer(&a)
+	au1:=unsafe.Pointer(&a1)
+	a2:=atomic.SwapPointer(&au,au1)
+	print("atomic.SwapPointer(&au,au1)转换后\n")
+	fmt.Printf("a:%v,addr:%p\n", a, &a)
+	fmt.Printf("a1:%v,addr:%p\n", a1, &a1)
+
+	fmt.Printf("au:%v,addr:%p\n",(*A)(au), &au)
+	fmt.Printf("au1:%v,addr:%p\n",(*A)(au1), &au1)
+	fmt.Printf("a2Type:%v,a2:%v,addr:%p\n", reflect.TypeOf(a2),(*A)(a2) ,&a2)
 }
