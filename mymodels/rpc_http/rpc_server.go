@@ -25,7 +25,7 @@ func main() {
 	//方式二
 	newServer := rpc.NewServer()
 	newServer.Register(ms)
-	ll, e := net.Listen("tcp", "127.0.0.1:1234") // any available address
+	ll, e := net.Listen("tcp", "127.0.0.2:1234") // any available address
 	if e != nil {
 		log.Fatalf("net.Listen tcp :0: %v", e)
 	}
