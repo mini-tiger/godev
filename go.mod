@@ -8,7 +8,9 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1 // indirect
 	github.com/astaxie/beego v1.12.3
 	github.com/betacraft/yaag v1.0.0 // indirect
+	github.com/coocood/freecache v1.1.1 // indirect
 	github.com/gin-gonic/gin v1.6.3
+	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9
 	github.com/golang/protobuf v1.4.2
 	github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0 // indirect
 	github.com/shirou/gopsutil v2.19.12+incompatible // indirect

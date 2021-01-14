@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/coocood/freecache"
 	"strconv"
+	"time"
 )
 
 //doc : https://pkg.go.dev/github.com/coocood/freecache?tab=doc
@@ -35,5 +36,5 @@ func main() {
 	//} else {
 	//	fmt.Println(string(got))
 	//}
-
+	time.Sleep(10 * time.Second)
 }
