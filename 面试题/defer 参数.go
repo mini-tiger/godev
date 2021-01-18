@@ -4,7 +4,7 @@ import "fmt"
 
 func fun() *int { //int类型指针函数
 	var tmp int = 1
-	defer fmt.Println(tmp * 2)
+	defer fmt.Println(tmp * 2) // eee 这里打印 2 ，而不是4，程序执行时要 为defer准备好参数 这时tmp是1
 	tmp = 2
 	return &tmp //返回局部变量tmp的地址
 }
