@@ -1,12 +1,13 @@
 package main
+
 // rpc  传送list可能会有问题
 import (
 	//_ "github.com/CodyGuo/godaemon"
 	"fmt"
 	"godev/mymodels/rpc_http/common"
-	"net/rpc"
-	"net"
 	"log"
+	"net"
+	"net/rpc"
 	"time"
 )
 
@@ -26,18 +27,18 @@ func main() {
 	//}
 	//fmt.Println("调用结果：", result.Value)
 	//方式二
-	var args= common.Args{17, 8}
-	var result= common.Result{}
+	var args = common.Args{17, 8}
+	var result = common.Result{}
 	for {
-		address, err := net.ResolveTCPAddr("tcp", "127.0.0.1:1234")
+		address, err := net.ResolveTCPAddr("tcp", "192.168.43.26:1234")
 		if err != nil {
-			time.Sleep(1*time.Second)
+			time.Sleep(1 * time.Second)
 			log.Println("1s after reconn")
 			continue
 		}
 		conn, err := net.DialTCP("tcp", nil, address)
-		if err!=nil {
-			time.Sleep(1*time.Second)
+		if err != nil {
+			time.Sleep(1 * time.Second)
 			log.Println("1s after reconn")
 			continue
 		}
@@ -51,6 +52,6 @@ func main() {
 			fmt.Println("arith error:", err)
 		}
 		log.Println(result)
-		time.Sleep(2*time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
