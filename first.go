@@ -1,31 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
-func GetNums(min int, max int, step int) (nums [][]int) {
-	nums = make([][]int, 0)
-	if min >= max {
+func main() {
+	buf := "http://btbtdy3.com/down/34845-0-11.html"
+	//解析正则表达式，如果成功返回解释器
+	reg1 := regexp.MustCompile(`(.*)(\d{2,3}).html`)
+	if reg1 == nil { //解释失败，返回nil
+		fmt.Println("regexp err")
 		return
 	}
-	allnums := make([]int, 0)
-	for i := min; i <= max; i++ {
-		allnums = append(allnums, i)
-	}
-	for i := 0; i < len(allnums); i = i + step {
-		var tmpnum []int
-		if i+step >= len(allnums) {
-			tmpnum = allnums[i:len(allnums)]
-		} else {
-			tmpnum = allnums[i : i+step]
-		}
-		nums = append(nums, tmpnum)
-	}
-
-	return nums
-}
-func main() {
-	fmt.Println(GetNums(0, 10, 2))
-	a := []int{1, 2, 3, 4, 5, 6, 7}
-	fmt.Println(a[0:2])
-	fmt.Println()
+	//根据规则提取关键信息
+	result1 := reg1.FindAllStringSubmatch(buf, -1)
+	fmt.Println("result1 = ", result1[0][2])
 }
