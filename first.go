@@ -38,11 +38,19 @@ func main() {
 	fmt.Printf("%+v\n", file.Sys())
 	rf := reflect.TypeOf(file.Sys())
 	fmt.Println(rf.String())
+
 	s := file.Sys().(*syscall.Stat_t)
-	fmt.Printf("%+v\n", s)
+
+	//fmt.Printf("%+v\n", s)
 	err = os.Chown(filePath, int(s.Uid), int(s.Gid))
 	if os.IsPermission(err) {
 		fmt.Println("not perm")
+	}
+
+	fmt.Println(os.Getegid())
+	fmt.Println(os.Getuid())
+	if err := os.Chown("/root/", int(os.Getuid()), int(os.Getgid())); err != nil {
+		fmt.Println(err)
 	}
 }
 func ValidateContextDirectory(srcPath string) error {
