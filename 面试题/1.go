@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"runtime"
 	"sync"
-	"reflect"
 )
 
 func main() {
-	//defer_call()  // defer panic 顺序
+	defer_call() // defer panic 顺序
 	// defer_call_panic()
 	//pase_student() //循环赋值指针
 	//three() // 随机性和闭包，变量作用域
@@ -16,7 +16,7 @@ func main() {
 	//five() // defer  嵌套函数 执行顺序
 	//six() // 满足接口的方法，golang的方法集仅仅影响接口实现和方法表达式转化，与通过实例或者指针调用方法无关
 	//seven() // defer 在return 之前执行，变量作用域
-	eight() // const  iota
+	//eight() // const  iota
 }
 
 func defer_call() {
@@ -25,12 +25,11 @@ func defer_call() {
 	defer func() {
 		fmt.Println("打印后")
 		panic(111) // 这里也是在defer后面打印，不会影响上面两个Defer打印
-}()
+	}()
 
 	panic("触发异常")
 	// todo 考点 打印  顺序  panic应该在 defer 后面打印
 }
-
 
 func defer_call_panic() {
 	defer func() {
@@ -119,10 +118,10 @@ func five() {
 	b := 2
 	defer calc("1", a, calc("10", a, b))
 	/*
-	与下面写法有区别
-	虽然 第一个defer后执行，但 calc("1", a, calc("10", a, b))，里面的calc有先执行
-	注释中的写法，func中的 calc("1", a, calc("10", a, b))，会整体后执行
-	todo  执行到defer后，  会准备好defer所需要的参数，由于第三个参数是  函数，所以先执行
+		与下面写法有区别
+		虽然 第一个defer后执行，但 calc("1", a, calc("10", a, b))，里面的calc有先执行
+		注释中的写法，func中的 calc("1", a, calc("10", a, b))，会整体后执行
+		todo  执行到defer后，  会准备好defer所需要的参数，由于第三个参数是  函数，所以先执行
 	*/
 	//defer func() {
 	//	defer calc("1", a, calc("10", a, b))
@@ -152,14 +151,12 @@ func six() {
 	var peo People = &Stduent1{} //  这里必须是 内存地址&,如果func (stu Stduent1)不用指针 ，这里可以不用地址
 	//receiver 都是 value receiver，执行代码可以看到无论是 pointer 还是 value 都可以正确执行。
 	/*
-	如果是按 pointer 调用，go 会自动进行转换，因为有了指针总是能得到指针指向的值是什么，
-	如果是 value 调用，go 将无从得知 value 的原始值是什么，因为 value 是份拷贝。go 会把指针进行隐式转换得到 value，但反过来则不行。
+		如果是按 pointer 调用，go 会自动进行转换，因为有了指针总是能得到指针指向的值是什么，
+		如果是 value 调用，go 将无从得知 value 的原始值是什么，因为 value 是份拷贝。go 会把指针进行隐式转换得到 value，但反过来则不行。
 	*/
 	think := "bitch"
 	fmt.Println(peo.Speak(think))
 }
-
-
 
 func seven() {
 
@@ -167,6 +164,7 @@ func seven() {
 	println(DeferFunc2(1))
 	println(DeferFunc3(1))
 }
+
 /* 在return 分为两个部分
 1. return 返回 已经声明的变量， DeferFunc1(i int) (t int) 声明了返回值t
 2. 在defer 后进先出
@@ -188,7 +186,7 @@ func DeferFunc2(i int) int {
 }
 
 func DeferFunc3(i int) (t int) {
-	defer func() {   // 在return 之后执行 ,t=2,在执行t=1+2
+	defer func() { // 在return 之后执行 ,t=2,在执行t=1+2
 		t += i
 	}()
 	return 2
@@ -202,7 +200,7 @@ const (
 	p = iota
 )
 
-func eight()  {
-	fmt.Println(x,y,z,k,p) // 0 1 zz zz 4
+func eight() {
+	fmt.Println(x, y, z, k, p) // 0 1 zz zz 4
 	// &x 错误，不能 取地址
 }

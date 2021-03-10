@@ -14,14 +14,14 @@ func foo() {
 		}()
 		panic(2) // 4.执行这里 触发当前Goroutine 下的defer， xxx 这是后面触发的panic
 	}()
-	panic(1) // 2. 运行到这里后 开始触发 执行当前Goroutine 下的 defer
+	panic(54321) // 2. 运行到这里后 开始触发 执行当前Goroutine 下的 defer
 }
 
 func Panic() {
 	defer func() {
 		pv := recover()
 		fmt.Println("recover err :")
-		fmt.Println("11:", pv, reflect.TypeOf(pv)) // 8.   pv 收集的是最后一次 panic 的2
+		fmt.Println("11:", pv, reflect.TypeOf(pv)) // 8.   pv 收集的是最后一次 panic 的2, 如果没有recover 两次panic都打印
 	}()
 
 	foo() // 7. 这里触发了panic 不会在执行下面的代码，触发本Goroutine 下的defer

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 	"time"
 )
 
@@ -18,26 +17,24 @@ func (s *Score) Do() {
 }
 
 func main() {
-	num := 100 * 100 * 2 //开启 2万个线程
-	// debug.SetMaxThreads(num + 1000) //设置最大线程数
-	// 注册工作池，传入任务
-	// 参数1 worker并发个数
-	p := NewWorkerPool(num)
-	p.Run()
-
-	//写入一千万条数据
-	dataNum := 100 * 100 * 100 * 10
+	var chan1 = make(chan int, 1)
+	var chan2 = make(chan int, 1)
 	go func() {
-		for i := 1; i <= dataNum; i++ {
-			sc := &Score{Num: i}
-			p.JobQueue <- sc //数据传进去会被自动执行Do()方法，具体对数据的处理自己在Do()方法中定义
+		for {
+			select {
+			case i := <-chan2:
+				fmt.Println(i)
+			}
 		}
+
 	}()
-	//循环打印输出当前进程的Goroutine 个数
-	for {
-		fmt.Println("runtime.NumGoroutine() :", runtime.NumGoroutine())
-		time.Sleep(5 * time.Second)
-	}
+	go func() {
+		chan1 <- 1
+		chan2 <- <-chan1
+	}()
+
+	time.Sleep(5 * time.Second)
+	fmt.Println(len(chan2), len(chan1))
 
 }
 
