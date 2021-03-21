@@ -8,6 +8,7 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1 // indirect
 	github.com/astaxie/beego v1.12.3
 	github.com/betacraft/yaag v1.0.0 // indirect
+	github.com/ccpaging/nxlog4go v2.0.3+incompatible
 	github.com/coocood/freecache v1.1.1 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/gin-gonic/gin v1.6.3
@@ -16,8 +17,10 @@ require (
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0 // indirect
 	github.com/shirou/gopsutil v2.19.12+incompatible // indirect
+	github.com/tidwall/gjson v1.6.8 // indirect
 	github.com/uber/go-torch v0.0.0-20181107071353-86f327cc820e // indirect
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	google.golang.org/grpc v1.31.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )

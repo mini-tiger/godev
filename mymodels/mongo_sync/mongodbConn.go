@@ -1,10 +1,12 @@
 package main
 
 import (
+	"godev/mymodels/mongo_sync/bussiness"
 	"gopkg.in/mgo.v2"
 	"time"
-	"godev/mymodels/mongo_sync/bussiness"
 )
+
+// xxx 不维护 其它方法见 GoDevEach\web框架\GinDemo\main.go
 
 //type tableInfo struct {
 //	databaseSession *mgo.Session
