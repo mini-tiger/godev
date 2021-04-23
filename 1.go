@@ -12,9 +12,9 @@ func main() {
 	for i := 0; i < 6; i++ {
 		str2[i] = strconv.Itoa(i)
 	}
-	str2=append(str2,str1...)
+
+	str2 = append(str2, str1...)
 	fmt.Println(str1)
 	fmt.Println(str2)
-
 
 }
