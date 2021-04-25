@@ -2,19 +2,30 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"sync"
 )
+
+func rangefn(key, value interface{}) bool {
+	fmt.Printf("key:%v,value:%v\n", key, value)
+	defer sw.Done()
+	return true
+}
+
+var sw sync.WaitGroup
 
 func main() {
 
-	str1 := []string{"A", "B", "C", "D", "E", "F", "G"}
-	str2 := make([]string, 6)
-	for i := 0; i < 6; i++ {
-		str2[i] = strconv.Itoa(i)
+	m := new(sync.Map)
+
+	go func() {
+		m.Range(rangefn)
+	}()
+
+	for i := 0; i < 100; i++ {
+		m.Store(i, i)
+		sw.Add(1)
 	}
 
-	str2 = append(str2, str1...)
-	fmt.Println(str1)
-	fmt.Println(str2)
-
+	//time.Sleep(5*time.Second)
+	sw.Wait()
 }
