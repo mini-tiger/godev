@@ -1,12 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"time"
 )
 
 func main() {
 	defer println("in main")
-	go func() {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("test", err)
+		}
+	}()
+	go func() { // xxx 在gorouine内 外面recover() 捕捉不到
 		defer println("in goroutine")
 		panic("")
 	}()

@@ -1,31 +1,33 @@
 package main
 
-import (
-	"fmt"
-	"sync"
-)
+import "fmt"
 
-func rangefn(key, value interface{}) bool {
-	fmt.Printf("key:%v,value:%v\n", key, value)
-	defer sw.Done()
-	return true
+/**
+ * @Author: Tao Jun
+ * @Description: main
+ * @File:  结构体
+ * @Version: 1.0.0
+ * @Date: 2021/5/17 上午11:26
+ */
+
+type Foo struct {
+	bar string
 }
 
-var sw sync.WaitGroup
-
 func main() {
+	//s1 := []Foo{
+	//	{"A"},
+	//	{"B"},
+	//	{"C"},
+	//}
 
-	m := new(sync.Map)
+	var s1 []Foo
+	s1 = []Foo{{"A"}, {"B"}, {"C"}}
 
-	go func() {
-		m.Range(rangefn)
-	}()
-
-	for i := 0; i < 100; i++ {
-		m.Store(i, i)
-		sw.Add(1)
+	s2 := make([]*Foo, len(s1))
+	for i, value := range s1 {
+		s2[i] = &value
 	}
-
-	//time.Sleep(5*time.Second)
-	sw.Wait()
+	fmt.Printf("%+v\n", s1)
+	fmt.Println(s2[0], s2[1], s2[2])
 }
