@@ -46,7 +46,7 @@ func mloop() {
 		"C": 3,
 	}
 	var count int64 = 0
-	for k, v := range m { //
+	for k, v := range m { //map是指针，副本也是指向源MAP的指针
 		if count == 0 {
 			delete(m, "A")
 		}

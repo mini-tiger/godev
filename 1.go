@@ -10,24 +10,18 @@ import "fmt"
  * @Date: 2021/5/17 上午11:26
  */
 
-type Foo struct {
-	bar string
+type N int
+
+func (n N) test() {
+	fmt.Println(n)
 }
-
 func main() {
-	//s1 := []Foo{
-	//	{"A"},
-	//	{"B"},
-	//	{"C"},
-	//}
-
-	var s1 []Foo
-	s1 = []Foo{{"A"}, {"B"}, {"C"}}
-
-	s2 := make([]*Foo, len(s1))
-	for i, value := range s1 {
-		s2[i] = &value
-	}
-	fmt.Printf("%+v\n", s1)
-	fmt.Println(s2[0], s2[1], s2[2])
+	var n N = 10
+	fmt.Println(n)
+	n++
+	f1 := N.test
+	f1(n)
+	n++
+	f2 := (*N).test
+	f2(&n)
 }

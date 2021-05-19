@@ -19,7 +19,7 @@ func (stu *Student) Show() {
 }
 func main() {
 	var s *Student
-	if s == nil { // 只有类型 为nil
+	if s == nil { // 只有类型 为nil,指针类型， nil 指针
 		fmt.Println("s is nil")
 	} else {
 		fmt.Println("s is not nil")

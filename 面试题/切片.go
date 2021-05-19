@@ -16,11 +16,23 @@ func func1(num ...int) {
 	fmt.Printf("%p\n", &num[0]) // 切片中第一个元素地址
 }
 
+func init_slice() {
+	nn := []int{2: 2, 3, 0: 1} // 2:2 索引2时   3  前面索引加1也就是索引3是3， 0:1 索引0是1 ,  缺少索引1 补0
+	fmt.Println(nn)            // [1 0 2 3]
+
+	//
+	var nn1 []int
+	nn1 = append(nn1, 1)
+	fmt.Println(nn1) // 没 make 可以append
+}
+
 func main() {
 	n := []int{1, 2, 3}
 	fmt.Printf("%p\n", n) // 切片第一个元素地址
 	func1(n...)
 	fmt.Printf("%+v\n", n)
+
+	init_slice()
 
 	func2()
 
