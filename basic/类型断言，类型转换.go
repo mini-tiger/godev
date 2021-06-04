@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
-	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
@@ -39,7 +39,7 @@ func main() {
 		case float64:
 			fmt.Println("float64")
 			v = v.(float64)
-			fmt.Printf("%v\n", v)
+			fmt.Printf("%T,%v\n", v, v)
 		case string:
 			fmt.Println("string")
 			v = v.(string)

@@ -17,7 +17,30 @@ type Student struct{}
 
 func (stu *Student) Show() {
 }
+
+type A struct {
+	AA int
+}
+
+func (a *A) pp() {
+	return
+}
+
+type dd interface {
+	pp()
+}
+
 func main() {
+
+	var a *A
+	fmt.Println(a == nil) // true 只有类型的指针
+
+	var d dd = a
+	fmt.Println(d == nil) // false
+
+	aa := &A{}
+	fmt.Println(aa == nil) // false
+
 	var s *Student
 	if s == nil { // 只有类型 为nil,指针类型， nil 指针
 		fmt.Println("s is nil")

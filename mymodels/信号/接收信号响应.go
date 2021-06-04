@@ -1,4 +1,4 @@
-package 信号
+package main
 
 import (
 	"fmt"
@@ -6,8 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 )
-
-
 
 /*
 信号	值	动作	说明
@@ -34,17 +32,16 @@ SIGTTOU	22,22,27	Stop	后台程序向终端中写数据时触发
 
 */
 
+func main() {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
 
-func main()  {
-	sigs := make(chan os.Signal,1)
-	done :=make(chan bool,1)
-
-	signal.Notify(sigs,syscall.SIGUSR1,syscall.SIGTERM) // 第二个参数  接收的信号类型， 第三个参数  信号的动作
+	signal.Notify(sigs, syscall.SIGUSR1, syscall.SIGTERM) // 第二个参数  接收的信号类型， 第三个参数  信号的动作  kill -10 pid
 	go func() {
-		sig:=<-sigs
+		sig := <-sigs
 		fmt.Println(11111)
 		fmt.Println(sig)
-		done<-true
+		done <- true
 	}()
 	<-done
 }

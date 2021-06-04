@@ -16,7 +16,7 @@ var ii interface{} = 1
 func main() {
 
 	switch ii.(type) {
-	case int:
+	case int, *int:
 		fmt.Println("int")
 	}
 

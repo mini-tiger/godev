@@ -1,4 +1,4 @@
-package 信号
+package main
 
 import (
 	"fmt"

@@ -27,9 +27,15 @@ func main() {
 		S []int
 	}
 	sm1 := sm{1, []int{1}}
-	sm2 := sm{1, []int{1}}
+	//sm2 := sm{1, []int{1}}
 	fmt.Println(&sm1 == &sm1) //true
-	fmt.Println(sm1 == sm2)
+	//fmt.Println(sm1 == sm2)
+
+	type Student struct {
+		Name string
+	}
+	fmt.Println(&Student{Name: "menglu"} == &Student{Name: "menglu"}) // false 指针地址
+	fmt.Println(Student{Name: "menglu"} == Student{Name: "menglu"})   // true 属性值
 }
 
 /*

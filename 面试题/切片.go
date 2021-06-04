@@ -9,6 +9,9 @@ import "fmt"
  * @Version: 1.0.0
  * @Date: 2021/5/17 上午9:10
  */
+type Student struct {
+	Age int
+}
 
 func func1(num ...int) {
 	fmt.Printf("%p\n", num) // 切片第一个元素地址
@@ -32,18 +35,22 @@ func main() {
 	func1(n...)
 	fmt.Printf("%+v\n", n)
 
+	s := []Student{{Age: 21}}
+	s[0].Age = 22 // xxx 切片索引可以寻址
+	fmt.Println(s)
+
 	init_slice()
 
-	func2()
+	capLen()
 
-	func3()
+	bijiao() //xxx 切片不能比较
 
 	nilslice()
 
 	loop()
 }
 
-func func2() {
+func capLen() {
 	println(".....func2......")
 	a := [5]int{1, 2, 3, 4, 5}
 	t := a[3:4:4]
@@ -69,7 +76,7 @@ xxx 形如 [i,j,k]，第三个参数 k ⽤来限制新切⽚的容量，但不�
 以例⼦中，切⽚ t 为 [4]，⻓度和容量都是 1。
 */
 
-func func3() {
+func bijiao() {
 	println(".....func3......")
 	a := [2]int{5, 6}
 	b := [2]int{5, 6}
