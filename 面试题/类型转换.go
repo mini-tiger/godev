@@ -14,6 +14,26 @@ import (
  * @Date: 2021/6/9 上午10:14
  */
 
+func stringTobytes(s string) []byte {
+	str := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	by := reflect.SliceHeader{
+		Data: str.Data,
+		Len:  str.Len,
+		Cap:  str.Len,
+	}
+	//在把by从sliceheader转为[]byte类型
+	return *(*[]byte)(unsafe.Pointer(&by))
+}
+func byteToString(b []byte) string {
+	by := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+
+	str := reflect.StringHeader{
+		Data: by.Data,
+		Len:  by.Len,
+	}
+	return *(*string)(unsafe.Pointer(&str))
+}
+
 func main() {
 	var s []int = []int{1, 2, 3}
 	ss := (*reflect.SliceHeader)(unsafe.Pointer(&s))
@@ -28,12 +48,14 @@ func main() {
 	var x []byte = []byte("AB")
 	fmt.Println(string(x))
 	fmt.Println(*((*string)(unsafe.Pointer(&x)))) // unsafe.Pointer 全能型指针
+	fmt.Println(byteToString(x))                  // xxx
 
 	fmt.Println("!!!! string  []byte 转换")
 
 	var xx string = "ABC"
 	fmt.Println([]byte(xx))
 	fmt.Println(*((*[]byte)(unsafe.Pointer(&xx))))
+	fmt.Println(stringTobytes(xx)) // xxx
 
 	fmt.Println("!!!!   struct []byte 转换")
 	type A struct {
