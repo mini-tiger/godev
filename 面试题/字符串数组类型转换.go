@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"time"
 	"unsafe"
 )
 
@@ -24,6 +25,7 @@ func stringTobytes(s string) []byte {
 	//在把by从sliceheader转为[]byte类型
 	return *(*[]byte)(unsafe.Pointer(&by))
 }
+
 func byteToString(b []byte) string {
 	by := (*reflect.SliceHeader)(unsafe.Pointer(&b))
 
@@ -56,6 +58,8 @@ func main() {
 	fmt.Println([]byte(xx))
 	fmt.Println(*((*[]byte)(unsafe.Pointer(&xx))))
 	fmt.Println(stringTobytes(xx)) // xxx
+
+	time.Sleep(5)
 
 	fmt.Println("!!!!   struct []byte 转换")
 	type A struct {

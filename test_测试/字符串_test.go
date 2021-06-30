@@ -1,11 +1,13 @@
 package test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
 import "unsafe"
 
+// xxx go test -v -bench=_ -benchmem a_test.go
 //func Test_ByteString(t *testing.T) {
 //	var x = []byte("Hello World!")
 //	var y = *(*string)(unsafe.Pointer(&x))
@@ -43,7 +45,7 @@ func Benchmark_StringsBuild(b *testing.B) {
 }
 
 func Benchmark_StringsBuildbyte(b *testing.B) {
-	var x strings.Builder
+	var x bytes.Buffer
 	x.Write([]byte("Hello "))
 	x.Write([]byte("World!"))
 
