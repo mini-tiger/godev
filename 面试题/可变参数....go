@@ -14,6 +14,7 @@ func main() {
 	args(1, 2)
 	args(1, 2, 3)
 	args([]int{1, 2}...)
+	args()
 }
 
 func args(n ...int) {
