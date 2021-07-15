@@ -1,35 +1,29 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+	"strings"
+	"unsafe"
+)
 
-type HH interface {
-	Abc() int
-	Bcd(func(int) int) int
-}
-
-type H interface {
-	Abc() int
-}
-
-type A int
-
-func (a *A) Abc() int {
-	return int(*a)
-}
-func (a *A) Bcd(f func(int) int) int {
-	return f(int(*a))
-}
+var s string
 
 func main() {
-	a := A(1)
-	h := H(&a)
-	h.Abc()
-	fmt.Printf("%T\n", h)
-	hh := h.(HH)
-	fmt.Printf("%T\n", hh)
+	s = "!23"
+	fmt.Printf("%v,%p\n", s, &s)
+	//sl:=strToSlice(&s)
+	sl := strings.Split(s, "")
+	fmt.Printf("%v,%p\n", sl, &sl)
 
-	fmt.Println(hh.Bcd(func(i int) int {
-		return i
-	}))
-
+}
+func strToSlice(s *string) []byte {
+	str := (*reflect.StringHeader)(unsafe.Pointer(s))
+	//fmt.Printf("%v,%p\n",sl,sl)
+	ss := reflect.SliceHeader{
+		Len:  str.Len,
+		Data: str.Data,
+		Cap:  str.Len,
+	}
+	return *(*[]byte)(unsafe.Pointer(&ss))
 }
