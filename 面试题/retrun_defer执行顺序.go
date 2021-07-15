@@ -35,7 +35,7 @@ func f1() (t int) { // 返回1,  调试模式
 4. 临时变量是5
 */
 
-func f2() int { // 返回1,  调试模式
+func f2() int { // 返回5,  调试模式
 	t := 5
 	defer func() {
 		t++

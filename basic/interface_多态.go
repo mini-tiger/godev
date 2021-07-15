@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 type people_money interface {
@@ -27,10 +26,6 @@ type milk struct {
 type water struct {
 	name         string
 	maichu_money float64
-}
-
-func ABc() {
-	os.Open()
 }
 
 //fish 绑定的方法
