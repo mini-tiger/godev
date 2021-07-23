@@ -1,9 +1,9 @@
 package main
 
 import (
-	"time"
 	"fmt"
 	"log"
+	"time"
 )
 
 var tt *time.Ticker
@@ -12,6 +12,7 @@ func main() {
 	fmt.Println(time.Now())
 	tt = time.NewTicker(time.Duration(2) * time.Second)
 	tr = time.NewTimer(time.Duration(5) * time.Second)
+
 	//go func() {
 	//	for {
 	//		<-tt.C

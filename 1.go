@@ -2,28 +2,45 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
-	"unsafe"
+	"sync"
+	"time"
 )
 
-var s string
+type Myint int
+
+func (m *Myint) Batch() {
+	defer s.Done()
+	time.Sleep(time.Duration(Myint(*m)) * time.Second)
+	fmt.Printf("%v,%v\n", int(*m), time.Now().Format(time.RFC3339))
+}
+
+var c chan *Myint = make(chan *Myint, 0)
+var s sync.WaitGroup
 
 func main() {
-	s = "!23"
-	fmt.Printf("%v,%p\n", s, &s)
-	//sl:=strToSlice(&s)
-	sl := strings.Split(s, "")
-	fmt.Printf("%v,%p\n", sl, &sl)
 
-}
-func strToSlice(s *string) []byte {
-	str := (*reflect.StringHeader)(unsafe.Pointer(s))
-	//fmt.Printf("%v,%p\n",sl,sl)
-	ss := reflect.SliceHeader{
-		Len:  str.Len,
-		Data: str.Data,
-		Cap:  str.Len,
+	go func() {
+		for i := 0; i < 10; i++ {
+			ii := Myint(i)
+			c <- &ii
+			time.Sleep(1 * time.Second)
+		}
+		close(c)
+	}()
+
+	for v := range c {
+		s.Add(1)
+		go v.Batch()
+
 	}
-	return *(*[]byte)(unsafe.Pointer(&ss))
+	s.Wait()
+
+	//fmt.Println(Abc())
+	//time.Sleep(3*time.Second)
+}
+
+func Abc() (i int) {
+	defer fmt.Println(i)
+	fmt.Println(1)
+	panic(i)
 }
