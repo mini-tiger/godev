@@ -11,16 +11,17 @@ import (
 // xxx 对齐从 占用 小 到大 排序，如果达到最大对齐8（占用大于等于8），就无法优化
 
 type Demo2 struct {
-	S  [1]int8 // 1字节
-	A2 int64   // 8字节
-	A3 int16   // 2字节
-
+	S  [1]int8  // 1字节
+	A2 int64    // 8字节
+	A3 int16    // 2字节
+	x  [][]byte // 24字节   占用 3*8=24  data len  cap
 }
 
 type Demo3 struct {
 	S  [1]int8
 	A3 int16
 	A2 int64
+	x  [][]byte
 }
 
 type More struct {
@@ -52,6 +53,12 @@ func main() {
 		unsafe.Offsetof(Demo2{}.A3),
 		unsafe.Sizeof(Demo2{}.A3),
 		unsafe.Alignof(Demo2{}.A3))
+
+	fmt.Printf("Demo2 x type: %v ,偏移: %d , 占用: %d ,对齐: %d \n",
+		reflect.TypeOf(Demo2{}.x),
+		unsafe.Offsetof(Demo2{}.x),
+		unsafe.Sizeof(Demo2{}.x),
+		unsafe.Alignof(Demo2{}.x))
 
 	/*
 		xxx 最大对齐是 8
