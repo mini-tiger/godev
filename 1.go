@@ -1,18 +1,36 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	"io"
 )
 
+func md5V3(str string) string {
+	w := md5.New()
+	io.WriteString(w, str)
+	md5str := fmt.Sprintf("%x", w.Sum(nil))
+	return md5str
+}
 func main() {
-	msg := "Tom:admin@123" //11个字符应该装成15个base64编码的字符
-	encoded := base64.StdEncoding.EncodeToString([]byte(msg))
-	fmt.Println(encoded) //SGVsbG8sd29ybGQ=,后面的=是作填充用的
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	str := "12345678"
+	//md5Str := md5V(str)
+	//fmt.Println(md5Str)
+	//fmt.Println(md5V2(str))
+	fmt.Println(md5V3(str))
+
+	s := "test8|dashboard"
+	b := []byte(s)
+
+	sEnc := base64.StdEncoding.EncodeToString(b)
+	fmt.Printf("enc=[%s]\n", sEnc)
+
+	sDec, err := base64.StdEncoding.DecodeString("dGVzdDZ8ZGFzaGJvYXJk")
 	if err != nil {
-		fmt.Println("decode error:", err)
-		return
+		fmt.Printf("base64 decode failure, error=[%v]\n", err)
+	} else {
+		fmt.Printf("dec=[%s]\n", sDec)
 	}
-	fmt.Println(string(decoded)) //Hello,world
+
 }
