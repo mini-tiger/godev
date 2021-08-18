@@ -1,36 +1,25 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"io"
 )
 
-func md5V3(str string) string {
-	w := md5.New()
-	io.WriteString(w, str)
-	md5str := fmt.Sprintf("%x", w.Sum(nil))
-	return md5str
-}
 func main() {
-	str := "12345678"
-	//md5Str := md5V(str)
-	//fmt.Println(md5Str)
-	//fmt.Println(md5V2(str))
-	fmt.Println(md5V3(str))
+	json_str := "{\"device\": \"1\",\"data\": [{\"humidity\": \"27\",\"time\": \"2017-07-03 15:23:12\"}]}"
+	m := make(map[string]interface{})
+	err := json.Unmarshal([]byte(json_str), &m)
 
-	s := "test8|dashboard"
-	b := []byte(s)
+	fmt.Println(m)
 
-	sEnc := base64.StdEncoding.EncodeToString(b)
-	fmt.Printf("enc=[%s]\n", sEnc)
-
-	sDec, err := base64.StdEncoding.DecodeString("dGVzdDZ8ZGFzaGJvYXJk")
 	if err != nil {
-		fmt.Printf("base64 decode failure, error=[%v]\n", err)
+		fmt.Println(err)
 	} else {
-		fmt.Printf("dec=[%s]\n", sDec)
-	}
+		fmt.Println(m["device"])
+		data := m["data"]
 
+		if v, ok := data.([]interface{})[0].(map[string]interface{}); ok {
+			fmt.Println(ok, v["humidity"], v["time"])
+		}
+	}
 }
