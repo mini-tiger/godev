@@ -10,7 +10,7 @@ import (
 var logg_timeout *log.Logger
 
 func someHandler_timeout() {
-	ctx, cancel := context.WithTimeout(context.Background(),time.Duration(5*time.Second)) // xxx 5s超时 ctx.Done <-
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second)) // xxx 5s超时 ctx.Done <-
 	go doStuff_timeout(ctx)
 
 	//10秒后取消doStuff
@@ -38,4 +38,3 @@ func main() {
 	someHandler_timeout()
 	logg_timeout.Printf("down")
 }
-

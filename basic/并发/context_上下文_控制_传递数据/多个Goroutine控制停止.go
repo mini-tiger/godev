@@ -6,25 +6,20 @@ import (
 	"time"
 )
 
-var key1 string = "name1"
-
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	//附加值
-	valueCtx1 := context.WithValue(ctx, key1, "[goroutine1]")
 
+	go watch(ctx, "goroutine1")
+	go watch(ctx, "goroutine2")
 
-	go watch(valueCtx1)
-
-
-	time.Sleep(10 * time.Second)
+	time.Sleep(3 * time.Second)
 	fmt.Println("可以了，通知 all goroutine停止")
 	cancel()
 	//为了检测监控过是否停止，如果没有监控输出，就表示停止了
 	time.Sleep(5 * time.Second)
 }
 
-func watch(ctx context.Context) {
+func watch(ctx context.Context, name string) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -33,7 +28,7 @@ func watch(ctx context.Context) {
 			return
 		default:
 			//取出值
-			fmt.Println(ctx.Value(key1), "goroutine监控中...")
+			fmt.Println(name, "goroutine监控中...")
 			time.Sleep(2 * time.Second)
 		}
 	}
