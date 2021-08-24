@@ -38,4 +38,3 @@ func main() {
 	someHandler()
 	logg.Printf("down")
 }
-
