@@ -25,7 +25,7 @@ type Demo3 struct {
 }
 
 type More struct {
-	c  chan int8      // chan 1*8 =8
+	c  chan int       // chan 1*8 =8
 	m  map[int]string // map 1*8 =8
 	s  string         // 占用 2*8=16  data len
 	ss []int          // 占用 3*8=24  data len  cap
