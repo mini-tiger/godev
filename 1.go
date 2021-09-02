@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -13,11 +14,13 @@ type Data struct {
 	S string      `json:"s"`
 }
 
+var s sync.Once
+
 func main() {
 
-	GenTime()
+	//GenTime()
 	//GenUser()
-	//Both()
+	Both()
 }
 
 func GenTime() {
