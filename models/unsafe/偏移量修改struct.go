@@ -16,9 +16,18 @@ func main() {
 	*pAge = 20
 
 	fmt.Println(*u)
+
+	f := (*func(int) string)(unsafe.Pointer(uintptr(unsafe.Pointer(u)) + unsafe.Offsetof(u.f)))
+
+	*f = func(a int) string {
+		return "1"
+	}
+
+	fmt.Println(*u, u.f(1))
 }
 
 type user struct {
 	name string
 	age  int
+	f    func(int) string
 }
