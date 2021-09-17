@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"time"
-)
+import "fmt"
 
 /**
  * @Author: Tao Jun
@@ -13,13 +10,33 @@ import (
  * @Date: 2021/9/10 下午2:56
  */
 
-func main() {
-	var arrs []string = []string{"1", "2", "3"}
+type A struct {
+	AA int
+}
+type B struct {
+	BB string
+}
 
-	for _, v := range arrs {
-		go func(v string) {
-			fmt.Println(v)
-		}(v)
-	}
-	time.Sleep(1 * time.Second)
+func (a *A) Data() {
+	fmt.Println(a.AA)
+}
+
+func (b *B) Data() {
+	fmt.Println(b.BB)
+}
+
+type Process interface {
+	Data()
+}
+type Pros struct {
+	MP Process
+}
+
+func main() {
+	var a1 Process = &A{AA: 1}
+	var b1 Process = &B{BB: "1"}
+
+	a1.Data()
+	b1.Data()
+
 }
