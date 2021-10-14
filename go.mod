@@ -15,13 +15,14 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9
 	github.com/golang/protobuf v1.4.2
-	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/mattn/go-oci8 v0.0.0-20191108001511-cbd8d5bc1da0 // indirect
 	github.com/mini-tiger/tjtools v0.0.0-20210425030000-93c7baefe5a6 // indirect
+	github.com/netdata/go-orchestrator v0.0.0-20190331081727-438b8d16d893 // indirect
+	github.com/netdata/go.d.plugin v0.30.0 // indirect
 	github.com/shirou/gopsutil v2.19.12+incompatible // indirect
 	github.com/tidwall/gjson v1.6.8 // indirect
 	github.com/uber/go-torch v0.0.0-20181107071353-86f327cc820e // indirect
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/net v0.0.0-20210716203947-853a461950ff
 	google.golang.org/grpc v1.31.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
