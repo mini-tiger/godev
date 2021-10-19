@@ -2,16 +2,13 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"runtime"
 	"unsafe"
 )
 
 func main() {
-	var bodyMap map[string]interface{} = make(map[string]interface{}, 3)
-	for i := 0; i < 10; i++ {
+	runtime.GOMAXPROCS(0)
 
-		bodyMap[strconv.Itoa(i)] = i
-		fmt.Println(unsafe.Sizeof(bodyMap), len(bodyMap))
-	}
-
+	var c chan interface{}
+	fmt.Println(unsafe.Sizeof(c))
 }
