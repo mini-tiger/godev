@@ -21,6 +21,7 @@ func main() {
 	//GenTime()
 	//GenUser()
 	Both()
+	Both()
 }
 
 func GenTime() {
