@@ -1,4 +1,4 @@
-module godev/内存
+module godev/mem
 
 go 1.14
 
