@@ -17,7 +17,6 @@ type Data struct {
 var s sync.Once
 
 func main() {
-
 	//GenTime()
 	//GenUser()
 	Both()
