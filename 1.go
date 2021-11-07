@@ -22,7 +22,6 @@ func main() {
 	Both()
 	Both()
 }
-
 func GenTime() {
 	startTime := time.Now()
 	max := 7
