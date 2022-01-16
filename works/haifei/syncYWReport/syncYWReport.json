@@ -1,8 +1,0 @@
-{
-  "htmlfileReg": "/home/go/src/godev/works/haifei/syncYWReport/htmlData/*.html",
-  "htmlBakDir": "/home/go/src/godev/works/haifei/syncYWReport/htmlData/bak/",
-  "logfile": "/home/go/src/godev/works/haifei/syncYWReport/run.log",
-  "logMaxDays": 7,
-  "timeinter": 10,
-  "oracledsn": "test/test@192.168.43.22:1521/orcl"
-}
