@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"encoding/base64"
+	"fmt"
+)
 
 func main() {
-	fmt.Println(1)
+	decoded, err := base64.StdEncoding.DecodeString("dGFvLmp1bjpUYW9qdW4yMDc=")
+	decodestr := string(decoded)
+	fmt.Println(decodestr, err)
 }
