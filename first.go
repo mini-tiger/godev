@@ -1,12 +1,24 @@
 package main
 
 import (
-	"encoding/base64"
+	"context"
 	"fmt"
+	"net"
+	"time"
 )
 
 func main() {
-	decoded, err := base64.StdEncoding.DecodeString("dGFvLmp1bjpUYW9qdW4yMDc=")
-	decodestr := string(decoded)
-	fmt.Println(decodestr, err)
+
+	r := &net.Resolver{
+		//PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: 10 * time.Second,
+			}
+			return d.DialContext(ctx, network, "192.168.1.11:53")
+		},
+	}
+
+	ips, _ := r.LookupHost(context.Background(), "21vianet.com")
+	fmt.Println(ips)
 }
