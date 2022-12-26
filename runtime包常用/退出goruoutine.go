@@ -18,7 +18,6 @@ func main() {
 
 	go func() {
 		fmt.Println("abc")
-
 		fun()
 		fmt.Println("bcd") // 这里不打印
 	}()

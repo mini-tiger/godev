@@ -1,24 +1,15 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"net"
+	"strings"
 	"time"
 )
 
 func main() {
-
-	r := &net.Resolver{
-		//PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{
-				Timeout: 10 * time.Second,
-			}
-			return d.DialContext(ctx, network, "192.168.1.11:53")
-		},
-	}
-
-	ips, _ := r.LookupHost(context.Background(), "21vianet.com")
-	fmt.Println(ips)
+	t1 := time.Now()
+	time.Sleep(2)
+	t2 := time.Now()
+	fmt.Println(t2.Sub(t1))
+	fmt.Println(strings.TrimSpace(t2.Sub(t1).String()))
 }
