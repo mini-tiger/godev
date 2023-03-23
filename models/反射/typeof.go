@@ -30,11 +30,31 @@ func main() {
 		Key{"2", "3"}: 12,
 	}
 	mm := reflect.TypeOf(m)
-	fmt.Println(mm, mm.String(), mm.Kind()) //map[main.Key]int map[main.Key]int map
+	fmt.Println(mm, mm.String(), mm.Kind(), mm.Elem()) //map[main.Key]int map[main.Key]int map
 
 	v := reflect.ValueOf(m)
 	fmt.Println(v)
+
 	// for _, key := range v.MapIndex() {
 	// 	fmt.Println(key, key.String(), key.Kind())
 	// }
+
+	m1 := map[string]int32{
+		"a": 1,
+		"b": 2,
+	}
+	mm1 := reflect.ValueOf(m1)
+	for i, vv := range mm1.MapKeys() {
+		fmt.Println(i, vv.String())
+	}
+	fmt.Println("=========")
+	mm1Range := mm1.MapRange()
+	for {
+		if !mm1Range.Next() {
+			break
+
+		}
+		fmt.Println(mm1Range.Key().String(), mm1Range.Value())
+	}
+
 }
