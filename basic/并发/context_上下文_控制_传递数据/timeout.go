@@ -2,48 +2,35 @@ package main
 
 import (
 	"context"
-	"log"
-	"os"
+	"fmt"
 	"time"
 )
 
-var logg_timeout *log.Logger
+func main() {
+	ctx := context.Background()
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
 
-func someHandler_timeout() {
-	ctx, _ := context.WithTimeout(context.Background(), time.Duration(5*time.Second)) // xxx 5s超时 ctx.Done <-
+	done := make(chan struct{})
+	go doSomething(ctxWithTimeout, done)
 
-	finchan := make(chan struct{}, 0)
-	go func() {
-		defer func() {
-			finchan <- struct{}{}
-		}()
-		doStuff_timeout()
+	time.Sleep(4 * time.Second)
 
-	}()
+	cancel()
+	<-done
+}
 
+func doSomething(ctx context.Context, done chan<- struct{}) {
 	for {
 		select {
 		case <-ctx.Done():
-			logg_timeout.Printf("timeout %v", ctx.Err())
+			// 执行清理操作
+			fmt.Println("ctx.Done...", ctx.Err())
+			done <- struct{}{}
 			return
-		case <-finchan:
-			logg_timeout.Printf("finish")
+		default:
+			time.Sleep(1 * time.Second)
+			fmt.Println("Doing something...")
 		}
 	}
-
-}
-
-//每1秒work一下，同时会判断ctx是否被取消了，如果是就退出
-func doStuff_timeout() {
-	for {
-		time.Sleep(1 * time.Second)
-		logg_timeout.Printf("%v\n", time.Now())
-	}
-
-}
-
-func main() {
-	logg_timeout = log.New(os.Stdout, "", log.Ltime)
-	someHandler_timeout()
-	//logg_timeout.Printf("down")
 }
