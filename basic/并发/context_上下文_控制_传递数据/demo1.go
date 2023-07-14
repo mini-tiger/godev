@@ -31,6 +31,7 @@ func DoTask(task TaskFunc, timeout time.Duration) error {
 }
 
 func main() {
+
 	// 测试任务
 	err := DoTask(func(ctx context.Context) error {
 		fmt.Println("Task started")
@@ -42,4 +43,11 @@ func main() {
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
+	// 保证不退出
+	finchan := make(chan struct{}, 0)
+	go func() {
+		time.Sleep(1000 * time.Second)
+		finchan <- struct{}{}
+	}()
+	<-finchan
 }
