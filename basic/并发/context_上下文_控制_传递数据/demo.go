@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
+var wg = sync.WaitGroup{}
+
 func DoTask1(timeout time.Duration) error {
+	defer wg.Done()
 	// 创建一个具有设定超时时间的 context
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -37,6 +41,7 @@ func Task1(ctx context.Context) error {
 }
 
 func main() {
+	wg.Add(1)
 	// 测试任务
 	go func() {
 		err := DoTask1(5 * time.Second)
@@ -46,10 +51,5 @@ func main() {
 	}()
 
 	// 保证不退出
-	finchan := make(chan struct{}, 0)
-	go func() {
-		time.Sleep(1000 * time.Second)
-		finchan <- struct{}{}
-	}()
-	<-finchan
+	wg.Wait()
 }

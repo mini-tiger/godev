@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
+
+var wg1 = sync.WaitGroup{}
 
 type TaskFunc func(ctx context.Context) error
 
@@ -31,9 +34,10 @@ func DoTask(task TaskFunc, timeout time.Duration) error {
 }
 
 func main() {
-
+	wg1.Add(1)
 	// 测试任务
 	err := DoTask(func(ctx context.Context) error {
+		defer wg1.Done()
 		fmt.Println("Task started")
 		time.Sleep(6 * time.Second)
 		fmt.Println("Task completed")
@@ -44,10 +48,5 @@ func main() {
 		fmt.Println("Error:", err)
 	}
 	// 保证不退出
-	finchan := make(chan struct{}, 0)
-	go func() {
-		time.Sleep(1000 * time.Second)
-		finchan <- struct{}{}
-	}()
-	<-finchan
+	wg1.Done()
 }
