@@ -1,35 +1,63 @@
 package main
 
-import (
-	"fmt"
-	"time"
-)
+import "fmt"
 
-var tc chan int = make(chan int, 100)
-
-func send() {
-	for i := 0; i < 10; i++ {
-		time.Sleep(200 * time.Millisecond)
-		fmt.Println("begin tc", time.Now())
-		tc <- 1
-		fmt.Println("end tc", time.Now())
-	}
-	close(tc)
-
+// 定义一个简单的链表节点结构
+type ListNode struct {
+	Val  int
+	Next *ListNode
 }
-func recv() {
-	for {
-		select {
-		case i, ok := <-tc:
-			fmt.Println(i, ok, time.Now())
-		}
-		time.Sleep(1 * time.Second)
+
+// 反转链表函数
+func reverseList(head *ListNode) *ListNode {
+	var prev *ListNode
+	current := head
+	for current != nil {
+		next := current.Next
+		current.Next = prev
+		prev = current
+		current = next
 	}
+	return prev
+}
+
+// 创建链表函数
+func createList(nums []int) *ListNode {
+	var head *ListNode
+	var tail *ListNode
+	for _, num := range nums {
+		node := &ListNode{Val: num}
+		if head == nil {
+			head = node
+			tail = node
+		} else {
+			tail.Next = node
+			tail = node
+		}
+	}
+	return head
+}
+
+// 打印链表函数
+func printList(head *ListNode) {
+	current := head
+	for current != nil {
+		fmt.Printf("%d ", current.Val)
+		current = current.Next
+	}
+	fmt.Println()
 }
 
 func main() {
-	go recv()
-	go send()
+	nums := []int{1, 2, 3, 4, 5}
+	head := createList(nums)
 
-	select {}
+	fmt.Println("原始链表：")
+	printList(head)
+
+	// 反转链表
+	reversedHead := reverseList(head)
+
+	fmt.Println("反转后的链表：")
+	printList(reversedHead)
 }
